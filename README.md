@@ -43,7 +43,7 @@ flowchart LR
     R["reset_handler()<br>clock · tick 1ms · console<br>C++ constructors"] --> M["main_app()<br>task_create · HW/SW init<br>watchdog · Modbus"] --> T["task_run() ∞<br>task_sheduler() → task_polling_run()"]
 ```
 
-Sơ đồ đầy đủ (bootloader, kernel AK, timer, bảng ưu tiên task): [docs/ak-base-kit-pio-luong-hoat-dong.md](docs/ak-base-kit-pio-luong-hoat-dong.md) · bản đồ họa: [docs/ak-base-kit-pio-luong-hoat-dong.html](docs/ak-base-kit-pio-luong-hoat-dong.html)
+Sơ đồ đầy đủ (bootloader, kernel AK, timer, bảng ưu tiên task): [docs/ak-base-kit-pio-luong-hoat-dong.md](docs/ak-base-kit-pio-luong-hoat-dong.md) · bản đồ họa: [akbasekitpio.netlify.app](https://akbasekitpio.netlify.app/)
 
 ## Cấu trúc
 

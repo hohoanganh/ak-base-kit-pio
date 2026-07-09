@@ -4,7 +4,7 @@
 
 Tài liệu mô tả kiến trúc và các luồng hoạt động chính của source base `ak-base-kit-pio` — nền tảng phát triển firmware EPCB, port từ AK Embedded Base Kit sang PlatformIO. Firmware gồm 2 phần độc lập: **bootloader** (8K, tự viết, hỗ trợ cập nhật firmware qua UART/external flash) và **application** (116K, chạy trên kernel AK — mô hình Active Object / message-driven, không dùng RTOS).
 
-> Bản HTML có sơ đồ đồ họa: `docs/ak-base-kit-pio-luong-hoat-dong.html`
+> Bản HTML có sơ đồ đồ họa: <https://akbasekitpio.netlify.app/> (file gốc: `docs/ak-base-kit-pio-luong-hoat-dong.html`)
 
 **Mục lục:** [1. Bản đồ bộ nhớ](#1-bản-đồ-bộ-nhớ-flash--ram) · [2. Kiến trúc phân lớp](#2-kiến-trúc-phân-lớp-application) · [3. Luồng bootloader](#3-luồng-nguồn-lên--bootloader-boot_main) · [4. Khởi động application](#4-luồng-khởi-động-application) · [5. Kernel AK](#5-kernel-ak--bộ-lập-lịch-message-driven) · [6. Luồng timer](#6-luồng-timer-systick--task) · [7. Bảng task](#7-bảng-task--mức-ưu-tiên-task_listcpp) · [8. Build & release](#8-luồng-build--release-platformio) · [9. Cấu trúc thư mục](#9-cấu-trúc-thư-mục)
 
