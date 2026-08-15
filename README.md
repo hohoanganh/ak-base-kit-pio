@@ -95,9 +95,17 @@ Chi tiết từng bước + code mẫu task + nguyên tắc kernel AK + port MCU
 ## Ghi chú quan trọng
 
 - **build_dir nằm ở %TEMP%** (xem `platformio.ini`): project trong OneDrive, build tại chỗ dễ bị khóa file `.o` gây lỗi "Permission denied" ngẫu nhiên.
+- **`-Wl,-z,max-page-size=4 -Wl,--nmagic` trong `pio_build_flags.py` là bắt buộc.** `-t upload` nạp bằng openocd `program firmware.elf`, mà openocd đọc *program header* chứ không đọc section. Mặc định `ld` căn segment theo trang 64K nên segment của app (đặt tại 0x08003000) bị kéo `p_paddr` về 0x08000000 và nuốt thêm 12K rác ở đầu — nạp app sẽ ghi đè header ELF lên bootloader và xoá BSF, board chết ngay. Hai cờ này ép segment bắt đầu đúng 0x08003000.
 - `task_zigbee.cpp` bị loại khỏi build (như bản gốc); muốn bật thêm `-DTASK_ZIGBEE_EN` và bỏ dòng loại trừ trong `build_src_filter`.
 - Thư mục `doc/` nặng (~95MB PDF) và demo/tests/tools của mbmaster **không copy theo** — xem bản gốc tại `_reference/ak-base-kit-stm32l151-main`.
 - Các file `Makefile.mk` còn trong `sources/` chỉ để tham khảo, PlatformIO không dùng.
+
+## AI assistant — tài liệu kernel AK qua MCP
+
+Repo có sẵn [.mcp.json](.mcp.json) tích hợp [mcp-docs-server](https://github.com/the-ak-foundation/mcp-docs-server)
+của AK Foundation: Claude Code / Cursor mở repo này sẽ tự có tool tra API kernel AK,
+guide viết task/driver, phân tích log UART. Cài đặt server trên máy mới + lưu ý phạm vi
+tài liệu: [docs/ak-mcp-docs-server.md](docs/ak-mcp-docs-server.md).
 
 ## Nguồn gốc
 
