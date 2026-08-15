@@ -21,9 +21,15 @@ Prompt mẫu: `ak-new-project`, `ak-new-task`, `ak-new-driver`, `ak-debug`.
 
 ## Cài đặt trên máy mới
 
-Gói `ak-mcp` **chưa publish lên npm** (README gốc ghi `npx -y ak-mcp` nhưng
-registry trả 404 — kiểm tra 08/2026), nên phải clone về build thủ công.
-Cần Node.js ≥ 20.
+**Bắt buộc clone về build thủ công** — không có cách cài nhanh:
+
+- `npx -y ak-mcp` (như README gốc ghi): gói **chưa publish lên npm**, registry
+  trả 404 (kiểm tra 08/2026).
+- `npx github:the-ak-foundation/mcp-docs-server`: cũng không chạy — repo
+  gitignore cả `dist/` lẫn `generated/corpus.json` và không có script
+  `prepare`, nên cài từ git xong vẫn không có gì để chạy.
+
+Cần Node.js ≥ 22.6 (theo `engines` trong `package.json`).
 
 ```powershell
 # Clone NGOAI OneDrive (node_modules hang nghin file nho, de OneDrive sync la hong)
@@ -41,15 +47,28 @@ File [.mcp.json](../.mcp.json) ở gốc repo trỏ tới bản build này:
   "mcpServers": {
     "ak-docs": {
       "command": "node",
-      "args": ["D:\\dev\\mcp-docs-server\\dist\\cli\\bin.js"]
+      "args": ["${AK_MCP_HOME:-D:/dev/mcp-docs-server}/dist/cli/bin.js"]
     }
   }
 }
 ```
 
-**Lưu ý:** đường dẫn trong `.mcp.json` là tuyệt đối theo máy — máy khác cài ở
-chỗ khác thì sửa lại dòng `args` cho khớp. Claude Code sẽ hỏi xác nhận lần đầu
-mở repo (project-scoped MCP server).
+Repo này nằm trên GitHub và được clone về nhiều máy, nên đường dẫn **không**
+hard-code: `.mcp.json` dùng cú pháp biến môi trường của Claude Code
+(`${VAR:-default}`). Máy nào cài server đúng `D:\dev\mcp-docs-server` thì chạy
+luôn không cần làm gì; máy cài chỗ khác chỉ cần đặt biến `AK_MCP_HOME`:
+
+```powershell
+# Windows - dat vinh vien cho user (mo terminal moi de co hieu luc)
+setx AK_MCP_HOME "E:\tools\mcp-docs-server"
+```
+
+```bash
+# Linux/macOS - them vao ~/.bashrc hoac ~/.zshrc
+export AK_MCP_HOME="$HOME/dev/mcp-docs-server"
+```
+
+Claude Code sẽ hỏi xác nhận lần đầu mở repo (project-scoped MCP server).
 
 ## Kiểm tra hoạt động
 

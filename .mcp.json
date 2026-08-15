@@ -2,7 +2,7 @@
   "mcpServers": {
     "ak-docs": {
       "command": "node",
-      "args": ["D:\\dev\\mcp-docs-server\\dist\\cli\\bin.js"]
+      "args": ["${AK_MCP_HOME:-D:/dev/mcp-docs-server}/dist/cli/bin.js"]
     }
   }
 }
