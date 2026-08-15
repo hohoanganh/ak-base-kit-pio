@@ -1,10 +1,26 @@
 # AK MCP Docs Server — tài liệu kernel AK cho AI assistant
 
-Repo này tích hợp [mcp-docs-server](https://github.com/the-ak-foundation/mcp-docs-server)
-của AK Foundation — MCP server cung cấp tài liệu kernel AK (Active Kernel) dạng
-tra cứu được cho Claude Code / Cursor / Copilot. Khi làm việc trong repo này,
-AI assistant tự có các tool tra API kernel, guide viết task/driver, và phân
-tích log UART — trả lời dựa trên tài liệu chính thức thay vì đoán.
+Repo này tích hợp mcp-docs-server của AK Foundation — MCP server cung cấp tài
+liệu kernel AK (Active Kernel) dạng tra cứu được cho Claude Code / Cursor /
+Copilot. Khi làm việc trong repo này, AI assistant tự có các tool tra API
+kernel, guide viết task/driver, và phân tích log UART — trả lời dựa trên tài
+liệu chính thức thay vì đoán.
+
+Dùng **fork của EPCB**, nhánh `epcb`:
+[hohoanganh/mcp-docs-server](https://github.com/hohoanganh/mcp-docs-server/tree/epcb)
+(upstream: [the-ak-foundation/mcp-docs-server](https://github.com/the-ak-foundation/mcp-docs-server)).
+
+**Vì sao phải fork:** corpus gốc viết cho bản build Makefile của
+`ak-base-kit-stm32l151`, một số guide chỉ sai cho repo PlatformIO này — ví dụ
+guide `agent-workflow` bảo sửa `RELEASE_OPTION` trong `application/Makefile`,
+file đó không tồn tại ở đây. Nhánh `epcb` thêm 2 guide riêng:
+
+| Guide | Nội dung |
+|---|---|
+| `epcb-platformio-build` | build/nạp bằng `pio`, RELEASE ở `platformio.ini`, **bắt buộc seed BSF sau khi nạp SWD**, cảnh báo không được bỏ cờ linker `max-page-size=4` |
+| `epcb-start-project` | khởi tạo sản phẩm mới từ source base theo tag, ghi lại version base |
+
+Phần kernel AK không đổi nên toàn bộ guide còn lại của upstream vẫn dùng nguyên.
 
 ## Tool được cung cấp
 
@@ -34,11 +50,14 @@ Cần Node.js ≥ 22.6 (theo `engines` trong `package.json`).
 ```powershell
 # Clone NGOAI OneDrive (node_modules hang nghin file nho, de OneDrive sync la hong)
 cd D:\dev
-git clone --depth 1 https://github.com/the-ak-foundation/mcp-docs-server.git
+git clone -b epcb https://github.com/hohoanganh/mcp-docs-server.git
 cd mcp-docs-server
+git remote add upstream https://github.com/the-ak-foundation/mcp-docs-server.git
 npm install
 npm run build
 ```
+
+Nhánh mặc định phải là `epcb` — nhánh `main` giữ sạch để đồng bộ upstream.
 
 File [.mcp.json](../.mcp.json) ở gốc repo trỏ tới bản build này:
 
@@ -78,19 +97,40 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 
 Trả về JSON có `"serverInfo":{"name":"ak-mcp"}` là server chạy đúng.
 
-## Cập nhật tài liệu
+## Cập nhật từ upstream
 
-Tài liệu kernel được vendor sẵn trong repo mcp-docs-server (snapshot theo tag,
-mặc định v1.3 của ak-base-kit-stm32l151). Khi AK Foundation cập nhật:
+Tài liệu kernel được vendor sẵn trong repo mcp-docs-server (snapshot theo tag
+của ak-base-kit-stm32l151). Khi AK Foundation cập nhật, merge vào nhánh `epcb`:
 
 ```powershell
 cd D:\dev\mcp-docs-server
-git pull
-npm run build
+git fetch upstream
+git checkout main; git merge --ff-only upstream/main; git push origin main
+git checkout epcb; git merge main
+npm run build        # bat buoc: corpus.json bi gitignore, khong tu sinh lai
+npm test             # 45 test
 ```
 
-**Lưu ý phạm vi:** tài liệu server phục vụ là của **ak-base-kit-stm32l151 bản
-gốc** (build Makefile). Repo này đã chuyển sang PlatformIO và có chỉnh sửa
-riêng (BSF, bootloader map, pio_*.py) — phần kernel AK (task, message, timer,
-fsm) dùng chung nên tra cứu vẫn đúng, nhưng phần build/flash thì theo tài liệu
-của repo này, không theo hướng dẫn Makefile của server.
+## Thêm guide EPCB mới
+
+Guide chỉ là markdown + frontmatter trong `corpus/guides/`, thêm file rồi
+`npm run build` là xong (`id` tự lấy từ tên file nếu không khai báo):
+
+```markdown
+---
+id: epcb-ten-guide
+title: "EPCB: tieu de"
+section: guide
+tags: epcb, tu, khoa, tim, kiem
+summary: Mot dong tom tat - hien trong ket qua search.
+---
+
+# Nội dung...
+```
+
+Sau khi build, kiểm tra bằng `npm run drift` (kiểm tra tham chiếu chéo) và
+`npm test`. Guide mới tự động vào enum của tool `get_ak_guide(topic=...)`.
+
+Nội dung nào **không riêng EPCB** (ví dụ bổ sung ngữ nghĩa cho API kernel —
+hiện mới phủ 15/54 hàm) thì nên làm trên nhánh `main` và gửi PR lên upstream,
+đừng để lẫn trong nhánh `epcb`.
