@@ -28,9 +28,27 @@
 
 1. **VS Code** + extension **PlatformIO IDE** (tự kéo toolchain ARM khi build lần đầu — cần mạng lần đầu).
 2. **ST-Link** (nạp + debug). Sản phẩm đã có boot thì nạp app qua UART cũng được.
-3. Copy toàn bộ thư mục `ak-base-kit-pio/` → đổi tên theo dự án, ví dụ `my-project-fw/`.
+3. Lấy source base **theo tag**, đừng copy thư mục tay:
 
-> Nếu project nằm trong OneDrive: giữ nguyên dòng `build_dir = ${sysenv.TEMP}/...` trong `platformio.ini` (sửa tên cho khỏi đụng dự án khác), tránh lỗi "Permission denied" do OneDrive khóa file `.o`.
+```bash
+git clone --depth 1 --branch v1.0.0 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
+cd my-project-fw
+rm -rf .git && git init
+```
+
+Rồi ghi ngay vào README của dự án mới:
+
+> Khởi tạo từ ak-base-kit-pio **v1.0.0**
+
+Một dòng thôi nhưng là thứ **duy nhất** giúp sau này biết dự án nào đang thiếu
+fix nào của source base. Copy thư mục tay thì mất hẳn thông tin này, vài tháng
+sau không ai nhớ bản gốc là bản nào.
+
+> **Đừng làm việc trong thư mục OneDrive.** OneDrive khóa file trong `.git` và
+> khóa file `.o` giữa lúc build (`ar.exe: unable to rename ...: Permission
+> denied`). Để repo ở `C:\Work\` hoặc `D:\dev\`. Nếu buộc phải nằm trong
+> OneDrive thì giữ dòng `build_dir = ${sysenv.TEMP}/...` trong `platformio.ini`
+> (sửa tên cho khỏi đụng dự án khác).
 
 ## 3. Việc Đầu Tiên Khi Tạo Dự Án Mới
 
@@ -138,28 +156,86 @@ pio run -e app                 # build firmware ứng dụng
 pio run -e boot                # build bootloader
 pio run -e boot -t upload      # nạp boot (lần đầu / board trắng)
 pio run -e app  -t upload      # nạp app
+pio run -e app  -t bsf         # seed BSF - BẮT BUỘC trên board trắng
 pio device monitor             # console UART1 115200
 ```
 
-- **Board trắng phải nạp cả boot lẫn app** (2 vùng flash khác nhau — xem memory map trong tài liệu luồng hoạt động).
+- **Board trắng phải nạp đủ BA bước**: `boot` → `app` → `bsf`.
+- **Vì sao cần `bsf`:** bootloader chỉ nhảy sang app khi đọc được trong vùng
+  *boot share flash* (`0x08002000`) cả hai điều kiện `fw_app_cmd.cmd ==
+  SYS_BOOT_CMD_NONE` và `current_fw_app_header.psk == FIRMWARE_PSK`. Vùng này
+  bình thường do luồng update UART/OTA ghi; nạp thẳng bằng ST-Link **không hề
+  đụng tới nó**, nên trên chip mới BSF vẫn trắng (`0xFF`) và bootloader rơi vào
+  nhánh "unexpected status" — `while(1)` nháy LED, **nhìn từ ngoài y hệt board
+  hỏng**. Chạy `-t bsf` một lần là xong, chỉ cần làm lại sau khi xóa toàn chip.
+- **Không được bỏ cờ linker `-Wl,-z,max-page-size=4`** trong
+  `pio_build_flags.py`: mặc định `ld` căn lề segment theo trang 64K, khiến
+  `p_paddr` của app (ở `0x08003000`) bị kéo lùi về `0x08000000`. `pio run -t
+  upload` nạp bằng openocd `program firmware.elf`, mà openocd đọc **program
+  header** chứ không đọc section → sẽ ghi đè lên bootloader và xóa luôn BSF.
+  Nạp xong là board chết ngay dù build báo thành công.
 - Thành phẩm: `release/app/` và `release/boot/` (tự sinh sau mỗi lần build).
 - Console có shell: gõ lệnh qua UART (xem `shell.cpp` để thêm lệnh mới — bảng `lgn_cmd_table`).
 - Log bật/tắt bằng các define `SYS_PRINT_EN`, `APP_DBG_EN`... trong `platformio.ini`.
 
 ## 6. Port Sang MCU Khác (Nâng Cao)
 
-Cùng dòng STM32L1 dung lượng khác: sửa `boards/*.json` (`maximum_size`), 2 file `ak.ld` (độ dài FLASH/RAM) và `APP_START_ADDR` nếu đổi layout. Khác dòng (F1/F4/G0...): thay `platform/stm32l/` bằng SPL/HAL + startup tương ứng, giữ nguyên `ak/`, `app/`, `common/`, `driver/` (driver chỉ đụng `io_cfg`) — đây chính là lợi ích của kiến trúc phân lớp.
+### 6.1. Phải thay bao nhiêu?
+
+Đo thực tế mức độ dính chip của từng lớp (đếm file có nhắc `stm32`):
+
+| Lớp | Số file | Dính chip? |
+|---|---|---|
+| `ak/` (kernel) | 13 | **Không hề** — dùng lại nguyên |
+| `common/` | 18 | **Không hề** |
+| `sys/` | 7 | Gần như không |
+| `driver/` | 22 | Chỉ **2/22** gọi thẳng SPL (`buzzer`, `nRF24`) |
+| `platform/` | 126 | **Toàn bộ** — SPL, CMSIS, startup, linker, `io_cfg` |
+
+Nói cách khác: đổi chip **không phải viết lại từ đầu**, gần như chỉ thay lớp
+`platform/`. Đây chính là lợi ích của kiến trúc phân lớp.
+
+### 6.2. Ba tình huống
+
+**a. Cùng STM32L1, khác dung lượng flash/RAM** — nhẹ nhất. Sửa
+`boards/*.json` (`maximum_size`), 2 file `ak.ld` (độ dài FLASH/RAM), và
+`APP_START_ADDR` nếu đổi layout.
+
+**b. Khác dòng nhưng vẫn có SPL** (F1, F4, L1 khác) — ST có Standard
+Peripheral Library cho các họ này. Thay `platform/stm32l/Libraries` bằng SPL
+tương ứng, viết lại `io_cfg.h/.c` và `system.c`, sửa `ak.ld`. Trong
+`platformio.ini` đổi `board`, `board_build.ldscript`, các đường dẫn `-I` và
+`build_src_filter`.
+
+**c. STM32 đời mới** (G0, G4, L4, U5, H7, C0...) — **ST KHÔNG làm SPL cho các
+họ này**, chỉ có STM32Cube HAL/LL. Nghĩa là lớp `platform/` phải viết lại theo
+HAL/LL chứ không port được từ SPL. Đây là điểm hay bị đánh giá thấp khi lên kế
+hoạch: nặng hơn hẳn tình huống (b), dù kernel AK vẫn giữ nguyên. Hai driver
+`buzzer` và `nRF24` cũng phải sửa theo.
+
+### 6.3. Đổi chip là phải tính lại bản đồ flash
+
+Bố cục hiện tại (boot 8K → BSF 4K @ `0x08002000` → app 116K) tính cho **flash
+128K** của L151CB. Chip khác dung lượng thì phải sửa:
+
+1. `ak.ld` của **cả** `boot` lẫn `app`
+2. **`BSF_ADDR` trong `pio_bsf.py`** — rất hay quên. Quên cái này thì
+   bootloader đọc BSF ở sai địa chỉ, không thấy cờ hợp lệ, và board nháy LED
+   nhìn y hệt bị treo dù app đã nạp đúng.
 
 ## 7. Checklist Bắt Đầu Dự Án Mới
 
-- [ ] Copy folder, đổi tên; đổi `APP_TITLE` / `APP_VERSION` (app + boot)
+- [ ] Clone **theo tag** (`--branch v1.0.0`), `rm -rf .git`, `git init`
+- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.0.0")
+- [ ] Đổi `APP_TITLE` / `APP_VERSION` (app + boot)
 - [ ] Đổi tên `build_dir` và prefix file release
 - [ ] Chọn module (define) + `build_src_filter` tương ứng
 - [ ] Sửa `io_cfg.h/.c` theo schematic board
 - [ ] Build thử `pio run -e app` và `-e boot` — phải 0 lỗi trước khi viết code mới
-- [ ] Nạp boot + app, xác nhận console lên log và LED life nhấp nháy
+- [ ] Nạp `boot` → nạp `app` → **`pio run -e app -t bsf`** (thiếu bước BSF là board nháy LED như treo)
+- [ ] Xác nhận console lên log và LED life nhấp nháy
 - [ ] Xóa task mẫu không dùng (display/zigbee/rf24...) hoặc để lại tham khảo
-- [ ] `git init` — commit mốc "clean base" trước khi phát triển
+- [ ] Commit mốc "clean base" trước khi phát triển
 
 ---
 
