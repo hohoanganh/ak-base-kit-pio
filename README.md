@@ -73,12 +73,21 @@ ak-base-kit-pio/
 ```bash
 pio run -e app                 # build firmware ứng dụng
 pio run -e boot                # build bootloader
-pio run -e boot -t upload      # nạp boot (board trắng phải nạp cả 2)
-pio run -e app  -t upload      # nạp app (ST-Link)
+pio run -e boot -t upload      # 1. nạp boot (board trắng phải nạp cả 2)
+pio run -e app  -t upload      # 2. nạp app (ST-Link)
+pio run -e app  -t bsf         # 3. seed boot share flash 0x08002000
 pio device monitor             # console UART1 115200
 ```
 
 Thành phẩm tự copy về `release/app/` và `release/boot/`, tên kèm version từ `-DAPP_VERSION`.
+
+**Bước 3 là bắt buộc khi nạp bằng SWD.** Bootloader chỉ nhảy sang app khi vùng
+BSF (0x08002000) có `fw_app_cmd.cmd == SYS_BOOT_CMD_NONE` và
+`current_fw_app_header.psk == FIRMWARE_PSK`. Vùng này bình thường chỉ được ghi
+bởi luồng update qua UART bootloader/OTA — nạp thẳng bằng ST-Link không đụng
+tới nó, nên BSF còn trắng (0xFF) thì boot rơi vào nhánh "unexpected status" và
+đứng ở `while(1)` nhấp nháy LED, nhìn từ ngoài giống hệt board treo. Target
+`bsf` ghi sẵn một bản BSF hợp lệ. Chỉ cần làm lại khi xoá toàn bộ flash.
 
 ## Dùng cho dự án mới — 7 bước
 

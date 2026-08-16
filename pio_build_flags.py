@@ -1,4 +1,4 @@
-# pio_build_flags.py
+﻿# pio_build_flags.py
 # Co bien dich RIENG TUNG NGON NGU + co cho buoc LINK. Khong the dat trong
 # build_flags cua platformio.ini vi build_flags chi vao CCFLAGS (ap cho ca C
 # lan C++), con LINKCOM khong doc CCFLAGS (kinh nghiem tu Smart-PDU-firmware:
@@ -20,12 +20,22 @@
 #   * --specs=nosys.specs: stub rong cho syscall newlib (_exit/_write/_sbrk...)
 #                         khi libc keo theo abort()/malloc.
 #   * -Os               : toi uu size o buoc link.
+#   * -Wl,-z,max-page-size=4 : BAT BUOC voi env:app. Mac dinh ld can le segment
+#                         theo trang 64K, nen segment PT_LOAD cua app (dat o
+#                         0x08003000) bi keo lui p_paddr ve 0x08000000 va nuot
+#                         them 12K rac o dau. `pio run -t upload` nap bang
+#                         openocd `program firmware.elf`, ma openocd doc
+#                         PROGRAM HEADER chu khong doc section -> se ghi de
+#                         header ELF len vung bootloader 0x08000000 va xoa BSF
+#                         -> nap app xong board treo ngay. Ep max-page-size=4
+#                         de segment bat dau dung 0x08003000.
 Import("env")
 
 env.Append(CFLAGS=["-std=gnu99"])
 env.Append(CXXFLAGS=["-std=gnu++11", "-fno-rtti", "-fno-exceptions",
                      "-fno-use-cxa-atexit"])
 env.Append(LINKFLAGS=["-nostartfiles", "--specs=nano.specs",
-                      "--specs=nosys.specs", "-Os"])
+                      "--specs=nosys.specs", "-Os",
+                      "-Wl,-z,max-page-size=4", "-Wl,--nmagic"])
 # Makefile goc link kem libm (xprintf co the dung float).
 env.Append(LIBS=["m"])
