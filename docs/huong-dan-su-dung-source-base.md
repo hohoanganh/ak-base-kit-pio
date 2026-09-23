@@ -31,14 +31,14 @@
 3. Lấy source base **theo tag**, đừng copy thư mục tay:
 
 ```bash
-git clone --depth 1 --branch v1.1.0 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
+git clone --depth 1 --branch v1.1.1 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
 cd my-project-fw
 rm -rf .git && git init
 ```
 
 Rồi ghi ngay vào README của dự án mới:
 
-> Khởi tạo từ ak-base-kit-pio **v1.1.0**
+> Khởi tạo từ ak-base-kit-pio **v1.1.1**
 
 Một dòng thôi nhưng là thứ **duy nhất** giúp sau này biết dự án nào đang thiếu
 fix nào của source base. Copy thư mục tay thì mất hẳn thông tin này, vài tháng
@@ -163,7 +163,7 @@ pio run -e app  -t bsf         # seed BSF - chỉ cần với bootloader cũ (< 
 pio device monitor             # console UART1 115200
 ```
 
-- **Board trắng nạp `boot` → `app` là đủ** với bootloader 0.0.2 trở lên (base v1.1.0):
+- **Board trắng nạp `boot` → `app` là đủ** với bootloader 0.0.2 trở lên (base v1.1.0 trở đi):
   bootloader tự kiểm bảng vector của app, thấy BSF chưa ai ghi thì tự vá rồi chạy app
   (console in `[BOOT] share boot repaired`). Board còn mang bootloader cũ thì vẫn cần
   bước `bsf` — xem [known-bugs.md](known-bugs.md) #3.
@@ -231,8 +231,8 @@ Bố cục hiện tại (boot 8K → BSF 4K @ `0x08002000` → app 116K) tính c
 
 ## 7. Checklist Bắt Đầu Dự Án Mới
 
-- [ ] Clone **theo tag** (`--branch v1.1.0`), `rm -rf .git`, `git init`
-- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.1.0")
+- [ ] Clone **theo tag** (`--branch v1.1.1`), `rm -rf .git`, `git init`
+- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.1.1")
 - [ ] Đổi `APP_TITLE` / `APP_VERSION` (app + boot)
 - [ ] Đổi tên `build_dir` và prefix file release
 - [ ] Chọn module (define) + `build_src_filter` tương ứng

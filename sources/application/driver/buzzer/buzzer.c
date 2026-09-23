@@ -116,10 +116,15 @@ void BUZZER_Init(void) {
 	TIM_OC3Init(BUZZER_TIM, &TIM_OCInitStructure);
 	TIM_OC3PreloadConfig(BUZZER_TIM, TIM_OCPreload_Enable);
 
+	/* Ban goc gan PreemptionPriority HAI LAN va KHONG BAO GIO gan SubPriority
+	 * -> truong do lay rac stack. Hien vo hai vi NVIC_PriorityGroup_4 che sach
+	 * mat na sub; nhung doi priority group la rac chui thang vao thanh ghi uu
+	 * tien cua ngat TIM buzzer, ma ngat nay dang o preemption 0 - cao hon ca
+	 * SysTick. Sua tu du an LoRa 18/09/2026. Xem docs/known-bugs.md #11. */
 	NVIC_InitStruct.NVIC_IRQChannel = BUZZER_TIM_IRQ;
 	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
 	NVIC_Init(&NVIC_InitStruct);
 
 	TIM_ARRPreloadConfig(BUZZER_TIM, ENABLE);

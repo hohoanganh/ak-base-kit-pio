@@ -102,7 +102,7 @@ Chi tiết từng bước + code mẫu task + nguyên tắc kernel AK + port MCU
 
 ## Ghi chú quan trọng
 
-- **Lỗi đã biết — đã sửa hết trong v1.1.0:** [docs/known-bugs.md](docs/known-bugs.md). Dự án tạo từ v1.0.0 còn mang hai lỗi nghiêm trọng: `HardwareSerial::write()` kẹt ring TX (giết RS485 bán song công) và bootloader kẹt ở "uart boot" khi BSF bị xoá giữa chừng — xem file đó để chép bản sửa sang.
+- **Lỗi đã biết — đã sửa hết trong v1.1.1:** [docs/known-bugs.md](docs/known-bugs.md). Dự án tạo từ bản cũ hơn còn mang các lỗi nghiêm trọng: `HardwareSerial::write()` kẹt ring TX (giết RS485 bán song công), bootloader kẹt ở "uart boot" khi BSF bị xoá giữa chừng, và `io_cfg_adc1()` nạp rác vào ADC làm kênh ngoài đọc ra 0 — xem file đó để chép bản sửa sang. Code mới: luôn `XXX_StructInit()` trước khi gán struct cấu hình SPL.
 - **build_dir nằm ở %TEMP%** (xem `platformio.ini`): project trong OneDrive, build tại chỗ dễ bị khóa file `.o` gây lỗi "Permission denied" ngẫu nhiên.
 - **`-Wl,-z,max-page-size=4 -Wl,--nmagic` trong `pio_build_flags.py` là bắt buộc.** `-t upload` nạp bằng openocd `program firmware.elf`, mà openocd đọc *program header* chứ không đọc section. Mặc định `ld` căn segment theo trang 64K nên segment của app (đặt tại 0x08003000) bị kéo `p_paddr` về 0x08000000 và nuốt thêm 12K rác ở đầu — nạp app sẽ ghi đè header ELF lên bootloader và xoá BSF, board chết ngay. Hai cờ này ép segment bắt đầu đúng 0x08003000.
 - `task_zigbee.cpp` bị loại khỏi build (như bản gốc); muốn bật thêm `-DTASK_ZIGBEE_EN` và bỏ dòng loại trừ trong `build_src_filter`. Zigbee tự bật `SERIAL2_EN`, nên phải tắt `TASK_MBMASTER_EN`.

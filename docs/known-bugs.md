@@ -1,8 +1,8 @@
 # Lỗi đã biết trong source base
 
-Các lỗi phát hiện khi dựng sản phẩm từ base này. **Tất cả đã sửa trong `v1.1.0`** — dự án mới
-clone từ tag `v1.1.0` trở đi không còn mang chúng. Dự án tạo từ `v1.0.0` thì phải tự chép bản sửa
-sang (xem dòng *File* của từng mục).
+Các lỗi phát hiện khi dựng sản phẩm từ base này. **Tất cả đã sửa** — #1–#7 trong `v1.1.0`,
+#8–#11 trong `v1.1.1`. Dự án mới clone từ tag `v1.1.1` trở đi không còn mang chúng. Dự án tạo từ
+bản cũ hơn thì phải tự chép bản sửa sang (xem dòng *File* của từng mục).
 
 | # | Lỗi | Mức | Trạng thái | Kiểm chứng |
 |---|---|---|---|---|
@@ -13,6 +13,10 @@ sang (xem dòng *File* của từng mục).
 | 5 | `Serial2.begin()` nằm trong `#if TASK_ZIGBEE_EN`; baud cố định 115200 | Trung bình | ✅ Đã sửa v1.1.0 | Build |
 | 6 | Không tắt được `TASK_MBMASTER_EN` — build hỏng | Trung bình | ✅ Đã sửa v1.1.0 | Build |
 | 7 | Macro chân USART2 và RS485 đảo TX/RX so với silicon | Thấp | ✅ Đã sửa v1.1.0 | Build |
+| 8 | `io_cfg_adc1()`: `ADC_InitTypeDef` không khởi tạo → rác vào CR1/CR2, kênh ADC ngoài đọc ra 0 | **Nghiêm trọng** | ✅ Đã sửa v1.1.1 | Phần cứng (dự án LoRa) |
+| 9 | `io_rs485_dir_mode_output()` thiếu `GPIO_PuPd` → rác vào PUPDR, lan sang chân RX RS485 | Cao | ✅ Đã sửa v1.1.1 | Phần cứng, đọc PUPDR |
+| 10 | `SPI.cpp` của bootloader: `setDataMode()` / `setClockDivider()` nạp struct rác vào SPI | Thấp (chưa ai gọi) | ✅ Đã sửa v1.1.1 (boot 0.0.3) | Build + boot chạy |
+| 11 | `buzzer.c`: `NVIC_IRQChannelSubPriority` không gán | Thấp (đang vô hại) | ✅ Đã sửa v1.1.1 | Build |
 
 Cộng thêm các [bẫy không phải lỗi](#bẫy--không-phải-lỗi-nhưng-đã-làm-mất-thời-gian) ở cuối.
 
@@ -20,8 +24,8 @@ Cộng thêm các [bẫy không phải lỗi](#bẫy--không-phải-lỗi-nhưng
 
 | Lỗi | Cần nạp lại |
 |---|---|
-| #1, #2, #4–#7 | **app** — là code của app |
-| #3 | **bootloader** — nạp `release/boot/ak_base_kit_boot_v1.1.0.bin` tại `0x08000000`. Console in `[BOOT] version: 0.0.2` là đã lên bản mới |
+| #1, #2, #4–#9, #11 | **app** — là code của app |
+| #3, #10 | **bootloader** — nạp `release/boot/ak_base_kit_boot_v1.1.1.bin` tại `0x08000000`. Console in `[BOOT] version: 0.0.3` là đã lên bản mới |
 
 ---
 
@@ -280,6 +284,100 @@ lỗi thật khi ai đó cấu hình riêng từng chân theo tên (TX open-drai
 break), hoặc tra tên macro khi vẽ board mới.
 
 **Đã sửa:** đổi lại `PIN`, `SOURCE` và `AF` cho cả `USART2_*` lẫn `USART_RS485_*`.
+
+---
+
+## Họ lỗi "struct cấu hình SPL không khởi tạo" (#8–#11)
+
+`XXX_InitTypeDef s;` khai báo cục bộ mà **không** qua `XXX_StructInit(&s)` (hay `= {0}`) thì mọi
+trường không gán là **rác trên stack**. Các hàm `XXX_Init()` của SPL OR thẳng các trường đó vào
+thanh ghi. Nguy hiểm ở chỗ **rác đổi theo từng bản build** (stack đổi khi thêm code), nên "bản
+trước chạy được" không chứng minh gì — và nó không bao giờ báo lỗi.
+
+Đã rà **toàn bộ 62 biến** `*_InitTypeDef` cục bộ trong `sources/` (script so từng trường được gán
+với định nghĩa struct của SPL), rồi đối chiếu tay với code SPL xem trường thiếu có được đọc không:
+
+| Chỗ | Trường thiếu | Kết luận |
+|---|---|---|
+| `io_cfg.c` `io_cfg_adc1()` | `ADC_Resolution`, `ADC_ExternalTrigConv` | **Lỗi #8** |
+| `io_cfg.c` `io_rs485_dir_mode_output()` | `GPIO_PuPd` | **Lỗi #9** — `GPIO_Init()` ghi PUPDR ở **mọi** mode |
+| boot `SPI.cpp` `setDataMode()` / `setClockDivider()` | gần hết | **Lỗi #10** |
+| `buzzer.c` `BUZZER_Init()` NVIC | `NVIC_IRQChannelSubPriority` | **Lỗi #11** |
+| `io_cfg.c` `adc_bat_io_cfg()` | `GPIO_Speed`, `GPIO_OType` | Vô hại: chân analog, `GPIO_Init()` chỉ đọc hai trường này khi mode OUT/AF |
+| `sys_cfg.c` (đưa mọi chân về analog) | `GPIO_OType` | Vô hại: như trên |
+| `buzzer.c` biến `GPIO_InitStructure` | — | Vô hại: biến **toàn cục** nên tự bằng 0, và được gán đủ trước khi dùng |
+| 53 biến còn lại | — | Gán đủ trường |
+
+**Quy tắc cho code mới:** luôn gọi `XXX_StructInit(&s)` ngay sau khai báo, rồi mới gán trường.
+
+### 8. `io_cfg_adc1()` — kênh ADC ngoài đọc ra 0
+
+**File:** `sources/application/platform/stm32l/io_cfg.c` · gọi lúc khởi động ở **mọi** dự án
+(`app.cpp`: "configure adc for thermistor and CT sensor")
+
+Bản cũ chỉ gán 5/7 trường, bỏ `ADC_Resolution` và `ADC_ExternalTrigConv`. `ADC_Init()` OR rác vào
+CR1/CR2. Dự án LoRa 18/09/2026: bản 1.5.0 CR2 = `0x361`, bản 1.5.1 (thêm code, stack đổi) CR2 =
+`0x365` — khác đúng **bit 2 = `ADC_CFG` = chọn Bank B**. Ở Bank B "kênh 0" không còn là PA0 → đọc
+ra 0. Rác còn bật cả DMA/DDS/DELS/PDD.
+
+**Vrefint là kênh nội bộ, không phụ thuộc bank → vẫn đọc đúng.** Chính điều này đánh lạc hướng:
+"ADC chạy tốt, chỉ kênh ngoài chết" trông y như lỗi phần cứng. Mất gần một buổi, thử sample time,
+delay, bật clock COMP, nghi đứt mạch — tất cả sai. Chứng minh bằng GDB trên chip: xoá bit 2 → PA0
+đọc 1144; bật lại → 0.
+
+Base mặc định chỉ đọc Vrefint (`sys_ctr_get_vbat_voltage()`), nên lỗi **nằm im** cho tới khi dự án
+đầu tiên đọc một kênh ngoài.
+
+**Đã sửa** (chép từ LoRa `node-stm32`, đã chạy trên phần cứng — Vin đo lệch +0,09 % so với đồng hồ):
+`ADC_StructInit()` trước khi gán, `ADC_Resolution_12b` tường minh, `NbrOfConversion = 1`, và
+`ADC_BankSelection(ADC1, ADC_Bank_A)` sau `ADC_Init()`.
+
+> Offset thanh ghi ADC của **STM32L1 khác F0/F1**: SQR5 = `0x40`, DR = `0x58`. Đọc nhầm offset
+> từng dẫn tới kết luận sai "DR = 0 nên hỏng phần cứng".
+
+### 9. `io_rs485_dir_mode_output()` — rác vào điện trở kéo của GPIOA
+
+**File:** `sources/application/platform/stm32l/io_cfg.c` · cấu hình mặc định **có** gọi, qua
+`mbportserial.c` của mbmaster
+
+Không gán `GPIO_PuPd`. `GPIO_Init()` ghi PUPDR **ở mọi mode** (khác OSPEEDR/OTYPER chỉ ghi khi
+OUT/AF), và ghi bằng `PUPDR |= GPIO_PuPd << (pin * 2)` **không cắt về 2 bit** — rác 32 bit dịch
+trái lan sang **các chân cao hơn** của GPIOA, chứ không chỉ chân DIR.
+
+**Đo trên chip, 23/09/2026** — nạp app base mặc định, đọc GPIOA lúc đang chạy. Hai bản chỉ khác
+đúng chỗ sửa:
+
+| | PUPDR | PA3 (**RS485 RX**) | PA4 |
+|---|---|---|---|
+| v1.1.0 | `0x241457D0` | `11` = **RESERVED** | `11` = **RESERVED** |
+| v1.1.1 | `0x24145450` | kéo lên (đúng cấu hình UART) | không kéo |
+
+`11` là giá trị **cấm dùng** theo reference manual. Rác rơi đúng vào chân thu RS485.
+
+Dự án LoRa đã sửa chỗ này 18/09/2026, nhưng ghi chú bên đó tin rằng rác chỉ ảnh hưởng 2 bit của
+chân DIR — phép đo trên cho thấy không phải.
+
+**Đã sửa:** `GPIO_StructInit()` + `GPIO_PuPd = GPIO_PuPd_NOPULL`.
+
+### 10. Bootloader `SPI.cpp` — setter nạp struct rác
+
+**File:** `sources/boot/platform/stm32l/arduino/SPI/SPI.cpp`
+
+`setDataMode()` và `setClockDivider()` khai `SPI_InitTypeDef` **cục bộ**, gán một hai trường rồi
+gọi `SPI_Init()` — nạp rác vào gần hết CR1 (chế độ master/slave, độ rộng dữ liệu, NSS, tốc độ) và
+CRCPR. Hiện **chưa ai gọi** hai hàm này trong bootloader nên chưa gây hỏng; bản của app
+(`libraries/SPI`) giữ struct làm thành viên lớp nên đúng.
+
+**Đã sửa:** một struct tĩnh `s_spi_init` dùng chung — `begin()` điền đủ, hai setter chỉ sửa trường
+của mình. Bootloader lên **0.0.3**, kích thước không đổi (6.820 byte).
+
+### 11. `buzzer.c` — SubPriority không gán
+
+**File:** `sources/application/driver/buzzer/buzzer.c`
+
+Gán `NVIC_IRQChannelPreemptionPriority` **hai lần**, không bao giờ gán `SubPriority`. Hiện vô hại vì
+`NVIC_PriorityGroup_4` che hết phần sub; nhưng đổi priority group là rác chui thẳng vào mức ưu tiên
+của ngắt TIM buzzer — ngắt đang ở preemption 0, cao hơn cả SysTick. Sửa từ dự án LoRa 18/09/2026.
 
 ---
 

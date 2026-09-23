@@ -313,12 +313,21 @@ void io_cfg_adc1(void) {
 
 	/* Enable ADC1 clock */
 	RCC_APB2PeriphClockCmd(BAT_ADC_CLOCK , ENABLE);
+	/* BAT BUOC ADC_StructInit TRUOC khi gan field. Ban cu chi gan 5 field, bo
+	 * ADC_Resolution va ADC_ExternalTrigConv -> ADC_Init() OR RAC TREN STACK vao
+	 * CR1/CR2. Rac doi theo tung ban build. Du an LoRa 18/09/2026: rac bat CR2
+	 * bit2 = CFG (chon BANK B) -> "kenh 0" khong con la PA0, doc ra 0, trong khi
+	 * Vrefint noi bo van dung nen trong nhu hong phan cung. Rac con bat ca
+	 * DMA/DDS/DELS/PDD. Xem docs/known-bugs.md #8. */
+	ADC_StructInit(&ADC_InitStructure);
+	ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
 	ADC_InitStructure.ADC_ScanConvMode = DISABLE;
 	ADC_InitStructure.ADC_ContinuousConvMode =DISABLE;
 	ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
 	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-	ADC_InitStructure.ADC_NbrOfConversion = 2;
+	ADC_InitStructure.ADC_NbrOfConversion = 1;
 	ADC_Init(ADC1, &ADC_InitStructure);
+	ADC_BankSelection(ADC1, ADC_Bank_A);	/* tuong minh: kenh 0 = PA0 */
 	ADC_Cmd(ADC1, ENABLE);
 }
 
@@ -749,8 +758,13 @@ void io_rs485_dir_mode_output() {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
 	RCC_AHBPeriphClockCmd(RS485_DIR_IO_CLOCK, ENABLE);
+	/* Ban cu khong gan GPIO_PuPd. GPIO_Init() LUON ghi PUPDR bang
+	 * (GPIO_PuPd << pinpos*2) khong che - rac tren stack lot sang ca cac chan
+	 * cao hon cua GPIOA, bat keo len/xuong bua. Xem docs/known-bugs.md #9. */
+	GPIO_StructInit(&GPIO_InitStructure);
 	GPIO_InitStructure.GPIO_Mode	= GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType	= GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd	= GPIO_PuPd_NOPULL;
 	GPIO_InitStructure.GPIO_Speed	= GPIO_Speed_2MHz;
 	GPIO_InitStructure.GPIO_Pin		= RS485_DIR_IO_PIN;
 	GPIO_Init(RS485_DIR_IO_PORT, &GPIO_InitStructure);

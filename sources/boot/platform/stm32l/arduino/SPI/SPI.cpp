@@ -4,6 +4,13 @@
 
 #define NOT_ACTIVE      (0xFF)
 
+/* Cau hinh SPI hien hanh. begin() dien day du; setDataMode() va
+ * setClockDivider() chi sua mot truong roi nap lai. Ban cu de hai ham do khai
+ * struct CUC BO khong khoi tao -> SPI_Init() nap RAC vao CR1 va CRCPR. Ban cua
+ * app (libraries/SPI) giu struct nay lam thanh vien nen dung. Xem
+ * docs/known-bugs.md #10. */
+static SPI_InitTypeDef s_spi_init;
+
 SPIClass::SPIClass(void) {
 	SSIModule = NOT_ACTIVE;
 	SSIBitOrder = MSBFIRST;
@@ -16,7 +23,7 @@ SPIClass::SPIClass(uint8_t module) {
 
 void SPIClass::begin() {
 	GPIO_InitTypeDef  GPIO_InitStructure;
-	SPI_InitTypeDef   SPI_InitStructure;
+	SPI_InitTypeDef&  SPI_InitStructure = s_spi_init;
 
 	/*!< SPI GPIO Periph clock enable */
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
@@ -85,7 +92,7 @@ void SPIClass::setDataMode(uint8_t mode) {
 	SPI_MODE2	1	0	Rising	Falling
 	SPI_MODE3	1	1	Falling	Rising
 	*/
-	SPI_InitTypeDef   spi_init;
+	SPI_InitTypeDef&  spi_init = s_spi_init;
 
 	switch(mode) {
 	case SPI_MODE0:
@@ -118,7 +125,7 @@ void SPIClass::setDataMode(uint8_t mode) {
 }
 
 void SPIClass::setClockDivider(uint8_t divider){
-	SPI_InitTypeDef   spi_init;
+	SPI_InitTypeDef&  spi_init = s_spi_init;
 	spi_init.SPI_BaudRatePrescaler = (uint16_t)divider;
 	SPI_Init(SPI1, &spi_init);
 }
