@@ -7,6 +7,10 @@
 # Nguoc lai no roi vao nhanh "unexpected status" -> while(1) nhap nhay LED,
 # nhin tu ngoai giong het board bi treo.
 #
+# TU BOOTLOADER 0.0.2 (base v1.1.0) KHONG CON BAT BUOC: bootloader tu kiem
+# bang vector cua app va tu va BSF (docs/known-bugs.md #3). Target nay giu
+# lai cho board con mang bootloader cu.
+#
 # BSF chi duoc ghi boi luong update qua UART bootloader / OTA. Khi nap thang
 # app bang SWD (pio run -e app -t upload) thi BSF van trang (0xFF) hoac 0x00
 # -> boot khong bao gio nhay sang app. Target nay ghi mot ban BSF hop le de

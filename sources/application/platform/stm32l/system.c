@@ -169,11 +169,12 @@ void (* const isr_vector[])() = {
 		default_handler,						//	SPI2
 		uart1_irq,								//	USART1
 
-		#if defined (TASK_MBMASTER_EN) && defined (TASK_ZIGBEE_EN)
-		default_handler,						//	USART2
-		#elif defined (TASK_MBMASTER_EN)
+		/* Chu cua USART2 quyet dinh o app.h. Phai la uart2_irq chu khong phai
+		 * sys_irq_uart2: uart2_irq boc task_entry/exit_interrupt() ma kernel
+		 * AK dung de dem do sau ngat. */
+		#if defined (TASK_MBMASTER_EN)
 		vMBPUSART2ISR,							//	USART2
-		#elif defined (TASK_ZIGBEE_EN)
+		#elif defined (SERIAL2_EN)
 		uart2_irq,								//	USART2
 		#else
 		default_handler,						//	USART2

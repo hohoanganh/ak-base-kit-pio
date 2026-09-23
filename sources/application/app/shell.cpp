@@ -31,7 +31,9 @@
 #include "app_flash.h"
 #include "app_eeprom.h"
 #include "app_non_clear_ram.h"
+#if defined (TASK_MBMASTER_EN)
 #include "app_modbus_pull.h"
+#endif
 
 #include "task_shell.h"
 #include "task_list.h"
@@ -82,7 +84,9 @@ int32_t shell_boot(uint8_t* argv);
 int32_t shell_fwu(uint8_t* argv);
 int32_t shell_psv(uint8_t* argv);
 int32_t shell_buzzer(uint8_t* argv);
+#if defined (TASK_MBMASTER_EN)
 int32_t shell_modbus(uint8_t* argv);
+#endif
 
 /*****************************************************************************/
 /*  command table
@@ -108,7 +112,9 @@ const cmd_line_t lgn_cmd_table[] = {
 	{(const int8_t*)"fwu",		shell_fwu,			(const int8_t*)"app burn firmware"},
 	{(const int8_t*)"psv",		shell_psv,			(const int8_t*)"psv"},
 	{(const int8_t*)"beep",		shell_buzzer,		(const int8_t*)"buzzer play tones"},
+#if defined (TASK_MBMASTER_EN)
 	{(const int8_t*)"modbus",	shell_modbus,		(const int8_t*)"modbus master"},
+#endif
 
 	/*************************************************************************/
 	/* debug command */
@@ -941,6 +947,7 @@ int32_t shell_buzzer(uint8_t* argv) {
 	return 0;
 }
 
+#if defined (TASK_MBMASTER_EN)
 int32_t shell_modbus(uint8_t* argv) {
 	switch (*(argv + 7)) {
 	case 'r':
@@ -969,3 +976,4 @@ int32_t shell_modbus(uint8_t* argv) {
 
 	return 0;
 }
+#endif /* TASK_MBMASTER_EN */

@@ -35,6 +35,8 @@ sys_boot_t app_sys_boot;
 
 static void update_boot_fw_info_to_share_boot();
 static void jump_to_application_before_reset_peripheral();
+static bool app_image_is_plausible();
+static void repair_share_boot_for_app();
 
 /**************************************************************************
 * uart boot handler function declare
@@ -130,8 +132,12 @@ int boot_main() {
 	/**
 	 * if it have not request update application and application is ready (app_sys_boot.fw_app_cmd.cmd == SYS_BOOT_CMD_NONE)
 	 */
+	/* Kiem ca anh app, khong chi tin BSF: BSF noi "chay app" ma flash app
+	 * trong (xoa bang SWD, nap do dang) thi ban cu nhay vao rac -> HardFault,
+	 * reset vong tron. Nay roi xuong nhanh "unexpected status" -> cho nap UART. */
 	if (app_sys_boot.fw_app_cmd.cmd == SYS_BOOT_CMD_NONE &&
-			app_sys_boot.current_fw_app_header.psk == FIRMWARE_PSK) {
+			app_sys_boot.current_fw_app_header.psk == FIRMWARE_PSK &&
+			app_image_is_plausible()) {
 		APP_PRINT("[BOOT] start application\n");
 		jump_to_application_before_reset_peripheral();
 	}
@@ -245,6 +251,29 @@ int boot_main() {
 			jump_to_application_before_reset_peripheral();
 		}
 	}
+
+	/**
+	 * BSF khong noi "chay app", nhung anh app trong flash van nguyen.
+	 *
+	 * sys_boot_set() XOA roi moi GHI BSF. Reset lot vao giua (IWDG, sut nguon,
+	 * debugger treo loi) de lai BSF da xoa - tren STM32L1 flash xoa doc ra 0,
+	 * nen cmd = 0, khong phai NONE/UPDATE_REQ/UPDATE_RES. Ban cu roi vao
+	 * "unexpected status" va dung cho nap UART mai mai, du app van con do.
+	 * Cung roi vao do: reset trong 5 s sau OTA (cmd = UPDATE_RES, app chua kip
+	 * xoa), hoac board moi nap app bang SWD ma chua nap BSF.
+	 *
+	 * Nay: kiem bang vector cua chinh app - khong dua vao BSF. Hop le thi va
+	 * lai BSF roi chay app. Flash app trong (chua nap, hoac dang cap nhat do
+	 * dang) thi van roi xuong nhanh duoi nhu cu. Xem docs/known-bugs.md #3.
+	 */
+	else if (app_image_is_plausible()) {
+		APP_PRINT("[BOOT] share boot not ready (app cmd %d), app image ok\n",
+				  app_sys_boot.fw_app_cmd.cmd);
+		repair_share_boot_for_app();
+
+		APP_PRINT("[BOOT] start application\n");
+		jump_to_application_before_reset_peripheral();
+	}
 	else {
 		/**
 		 * unexpected status
@@ -265,6 +294,70 @@ int boot_main() {
 	}
 
 	return 0;
+}
+
+/* Gioi han bo nho cho phep kiem bang vector app. Khop ak.ld cua app:
+ * SRAM 16K @ 0x20000000, FLASH 128K @ 0x08000000. */
+#define BOOT_APP_SRAM_START		(0x20000000UL)
+#define BOOT_APP_SRAM_END		(0x20000000UL + 16UL * 1024UL)
+#define BOOT_APP_FLASH_END		(0x08000000UL + 128UL * 1024UL)
+
+/**
+ * @brief app_image_is_plausible - bang vector app trong flash co hop ly khong
+ *
+ * Khong chung minh app dung tung byte (bootloader khong biet do dai app nen
+ * khong tinh duoc checksum), chi loai flash trong / rac:
+ *   - con tro stack ban dau nam trong SRAM, can 4 byte
+ *   - vector reset la dia chi Thumb (bit 0 = 1), nam trong vung app
+ * Flash da xoa tren L1 doc ra 0 -> ca hai deu truot.
+ */
+bool app_image_is_plausible() {
+	const uint32_t sp		= *(const volatile uint32_t*)(NORMAL_START_ADDRESS);
+	const uint32_t reset	= *(const volatile uint32_t*)(NORMAL_START_ADDRESS + 4);
+
+	const bool sp_ok	=	(sp > BOOT_APP_SRAM_START) &&
+							(sp <= BOOT_APP_SRAM_END) &&
+							((sp & 0x3UL) == 0);
+
+	const bool reset_ok	=	((reset & 0x1UL) == 0x1UL) &&
+							(reset > NORMAL_START_ADDRESS) &&
+							(reset < BOOT_APP_FLASH_END);
+
+	return sp_ok && reset_ok;
+}
+
+/**
+ * @brief repair_share_boot_for_app - va nhung truong BSF can de chay app
+ *
+ * Chi sua truong HONG (lenh ngoai NONE..UPDATE_RES, psk sai); lenh hop le thi
+ * giu nguyen - vi du UPDATE_RES de app con gui duoc thong bao "cap nhat xong".
+ * Header app (bin_len, checksum) de app tu dien lai o FW_CHECKING_REQ.
+ * Reset giua luc ghi thi lan boot sau lam lai tu dau - an toan.
+ */
+void repair_share_boot_for_app() {
+	bool changed = false;
+
+	if (app_sys_boot.fw_app_cmd.cmd < SYS_BOOT_CMD_NONE ||
+			app_sys_boot.fw_app_cmd.cmd > SYS_BOOT_CMD_UPDATE_RES) {
+		app_sys_boot.fw_app_cmd.cmd = SYS_BOOT_CMD_NONE;
+		changed = true;
+	}
+
+	if (app_sys_boot.fw_boot_cmd.cmd < SYS_BOOT_CMD_NONE ||
+			app_sys_boot.fw_boot_cmd.cmd > SYS_BOOT_CMD_UPDATE_RES) {
+		app_sys_boot.fw_boot_cmd.cmd = SYS_BOOT_CMD_NONE;
+		changed = true;
+	}
+
+	if (app_sys_boot.current_fw_app_header.psk != FIRMWARE_PSK) {
+		app_sys_boot.current_fw_app_header.psk = FIRMWARE_PSK;
+		changed = true;
+	}
+
+	if (changed) {
+		sys_boot_set(&app_sys_boot);
+		APP_PRINT("[BOOT] share boot repaired\n");
+	}
 }
 
 /**

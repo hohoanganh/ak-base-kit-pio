@@ -31,14 +31,14 @@
 3. Lấy source base **theo tag**, đừng copy thư mục tay:
 
 ```bash
-git clone --depth 1 --branch v1.0.0 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
+git clone --depth 1 --branch v1.1.0 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
 cd my-project-fw
 rm -rf .git && git init
 ```
 
 Rồi ghi ngay vào README của dự án mới:
 
-> Khởi tạo từ ak-base-kit-pio **v1.0.0**
+> Khởi tạo từ ak-base-kit-pio **v1.1.0**
 
 Một dòng thôi nhưng là thứ **duy nhất** giúp sau này biết dự án nào đang thiếu
 fix nào của source base. Copy thư mục tay thì mất hẳn thông tin này, vài tháng
@@ -66,12 +66,15 @@ Sửa luôn prefix tên file release trong `pio_copy_release.py` (chuỗi `ak_ba
 
 | Cờ | Module | Mặc định |
 |----|--------|----------|
-| `-DTASK_MBMASTER_EN` | Modbus master RTU | Bật |
+| `-DTASK_MBMASTER_EN` | Modbus master RTU — giữ USART2 | Bật |
+| `-DSERIAL2_EN` | Arduino `Serial2` giữ USART2 (Modbus slave, cầu UART…). Baud: `-DSERIAL2_BAUDRATE=9600`, mặc định 115200 | Tắt |
 | `-DIF_LINK_UART_EN` | Giao thức link UART (3 task link) | Bật |
 | `-DSSD1309_DRIVER_EN` / `-DSH1106_DRIVER_EN` | OLED 1.54"/1.3" | SSD1309 |
 | `-DTASK_ZIGBEE_EN` | Zigbee | Tắt |
 | `-DIF_NETWORK_NRF24_EN` | Mạng nRF24 | Tắt |
 | `-DUSE_EXTERNAL_FLASH` | External SPI flash | Bật |
+
+**USART2 chỉ có một chủ:** `TASK_MBMASTER_EN` **hoặc** `SERIAL2_EN` — bật cả hai là `#error` lúc biên dịch. `TASK_ZIGBEE_EN` tự bật `SERIAL2_EN`. Tắt `TASK_MBMASTER_EN` trả lại ~7,8 KB flash.
 
 Tắt module = xóa dòng define; nhớ bỏ/thêm dòng tương ứng trong `build_src_filter` nếu module có nhóm file riêng (xem comment trong `platformio.ini`).
 
@@ -156,12 +159,15 @@ pio run -e app                 # build firmware ứng dụng
 pio run -e boot                # build bootloader
 pio run -e boot -t upload      # nạp boot (lần đầu / board trắng)
 pio run -e app  -t upload      # nạp app
-pio run -e app  -t bsf         # seed BSF - BẮT BUỘC trên board trắng
+pio run -e app  -t bsf         # seed BSF - chỉ cần với bootloader cũ (< 0.0.2)
 pio device monitor             # console UART1 115200
 ```
 
-- **Board trắng phải nạp đủ BA bước**: `boot` → `app` → `bsf`.
-- **Vì sao cần `bsf`:** bootloader chỉ nhảy sang app khi đọc được trong vùng
+- **Board trắng nạp `boot` → `app` là đủ** với bootloader 0.0.2 trở lên (base v1.1.0):
+  bootloader tự kiểm bảng vector của app, thấy BSF chưa ai ghi thì tự vá rồi chạy app
+  (console in `[BOOT] share boot repaired`). Board còn mang bootloader cũ thì vẫn cần
+  bước `bsf` — xem [known-bugs.md](known-bugs.md) #3.
+- **Vì sao bootloader cũ cần `bsf`:** bootloader chỉ nhảy sang app khi đọc được trong vùng
   *boot share flash* (`0x08002000`) cả hai điều kiện `fw_app_cmd.cmd ==
   SYS_BOOT_CMD_NONE` và `current_fw_app_header.psk == FIRMWARE_PSK`. Vùng này
   bình thường do luồng update UART/OTA ghi; nạp thẳng bằng ST-Link **không hề
@@ -225,14 +231,14 @@ Bố cục hiện tại (boot 8K → BSF 4K @ `0x08002000` → app 116K) tính c
 
 ## 7. Checklist Bắt Đầu Dự Án Mới
 
-- [ ] Clone **theo tag** (`--branch v1.0.0`), `rm -rf .git`, `git init`
-- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.0.0")
+- [ ] Clone **theo tag** (`--branch v1.1.0`), `rm -rf .git`, `git init`
+- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.1.0")
 - [ ] Đổi `APP_TITLE` / `APP_VERSION` (app + boot)
 - [ ] Đổi tên `build_dir` và prefix file release
 - [ ] Chọn module (define) + `build_src_filter` tương ứng
 - [ ] Sửa `io_cfg.h/.c` theo schematic board
 - [ ] Build thử `pio run -e app` và `-e boot` — phải 0 lỗi trước khi viết code mới
-- [ ] Nạp `boot` → nạp `app` → **`pio run -e app -t bsf`** (thiếu bước BSF là board nháy LED như treo)
+- [ ] Nạp `boot` → nạp `app` (bootloader cũ < 0.0.2 thì thêm **`pio run -e app -t bsf`**, thiếu là board nháy LED như treo)
 - [ ] Xác nhận console lên log và LED life nhấp nháy
 - [ ] Xóa task mẫu không dùng (display/zigbee/rf24...) hoặc để lại tham khảo
 - [ ] Commit mốc "clean base" trước khi phát triển

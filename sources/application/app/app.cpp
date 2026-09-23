@@ -243,8 +243,8 @@ int main_app() {
 	}
 #endif
 
-#if defined (TASK_ZIGBEE_EN)
-	Serial2.begin();
+#if defined (SERIAL2_EN)
+	Serial2.begin();			/* baud: SERIAL2_BAUDRATE, xem io_cfg.h */
 	Serial2.setTimeout(100);
 #endif
 

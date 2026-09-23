@@ -11,7 +11,7 @@ extern "C"
 typedef  void (*p_jump_func)(void);
 
 #define NORMAL_START_ADDRESS			APP_START_ADDR  // Reference Makefile line 31, 32
-#define BOOT_VER		"0.0.1"
+#define BOOT_VER		"0.0.2"	/* 0.0.2: tu va BSF, kiem bang vector app - docs/known-bugs.md #3 */
 
 extern const char* boot_version;
 

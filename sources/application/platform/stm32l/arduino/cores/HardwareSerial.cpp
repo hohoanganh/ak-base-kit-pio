@@ -101,29 +101,63 @@ int HardwareSerial::availableForWrite(void) {
 }
 
 void HardwareSerial::flush() {
-
+	/* Cho ring TX rong that su.
+	 *
+	 * Ban goc de RONG - moi nguoi goi flush() deu tuong da doi xong trong khi
+	 * chua doi gi ca. Vo hai voi console (ai cung chi ghi roi di tiep), nhung
+	 * voi RS485 ban song cong thi la loi THAT: ha chan DE khi ring con du lieu
+	 * bang cat cut khung giua chung.
+	 *
+	 * Ring chi voi duoc khi ISR TXE chay, nen phai co chan giong write(). */
+	uint32_t guard = SERIAL_TX_FULL_GUARD;
+	while (_tx_buffer_head != _tx_buffer_tail) {
+		if (--guard == 0) {
+			return;
+		}
+	}
 }
 
 size_t HardwareSerial::write(uint8_t c) {
-	bool _flag_trigger_putc = false;
+	tx_buffer_index_t i = (_tx_buffer_head + 1) % SERIAL_TX_BUFFER_SIZE;
 
-	if (_tx_buffer_head == _tx_buffer_tail) {
-		_flag_trigger_putc = true;
+	/* Ring day thi cho ISR rut bot - nhung CO CHAN.
+	 *
+	 * Ban goc khong kiem tra gi ca: no GHI DE len byte chua kip gui.
+	 * Cho vo han cung khong duoc - ai goi write() ben trong ENTRY_CRITICAL
+	 * thi ngat dang tat, ISR khong the chay, ring khong bao gio voi va thiet
+	 * bi treo han. Het chan thi BO byte va bao 0: mat mot byte con hon treo. */
+	uint32_t guard = SERIAL_TX_FULL_GUARD;
+	while (i == _tx_buffer_tail) {
+		if (--guard == 0) {
+			return 0;
+		}
 	}
 
-	tx_buffer_index_t i = (_tx_buffer_head + 1) % SERIAL_TX_BUFFER_SIZE;
 	_tx_buffer[_tx_buffer_head] = c;
 
-	// make atomic to prevent execution of ISR between setting the
-	// head pointer and setting the interrupt flag resulting in buffer
-	// retransmission
 	ENTRY_CRITICAL();
 	_tx_buffer_head = i;
-	EXIT_CRITICAL();
 
-	if (_flag_trigger_putc) {
-		_pf_tringger_putc();
-	}
+	/* Bat ngat TXE NGAY TRONG critical section, va bat VO DIEU KIEN.
+	 *
+	 * Ban goc quyet dinh truoc vong ghi: "ring dang rong thi moi can danh
+	 * thuc". Giua luc doc head/tail va luc dat head moi, ISR co the rut not
+	 * byte cuoi roi TAT ngat TXE - the la byte vua ghi nam lai trong ring va
+	 * khong ai danh thuc nua. Lan ghi sau thay ring KHONG rong nen cung
+	 * khong danh thuc: ket cung cho den khi ring quay vong va tinh co
+	 * head == tail.
+	 *
+	 * Dat trong critical section thi ISR khong chen vao giua duoc, va luc nay
+	 * ring chac chan KHONG rong (vua ghi xong) nen bat TXE luon dung - khong
+	 * co chuyen ISR rut phai byte cu roi phat ra rac.
+	 *
+	 * Vo hai voi console mot chieu, nen no nam im trong nen bao lau nay.
+	 * Chi RS485 ban song cong moi lo ra, vi phai biet chinh xac luc nao duoc
+	 * ha chan DE. Trieu chung khi dinh loi (Modbus 9600, 22/09/2026): hong
+	 * theo cum DUNG 6 khung lien tiep - 256 byte ring chia 43 byte moi phan
+	 * hoi - va master nhan dung 2 byte dau roi im. */
+	_pf_tringger_putc();
+	EXIT_CRITICAL();
 
 	return 1;
 }

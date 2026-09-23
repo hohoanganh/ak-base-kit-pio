@@ -30,6 +30,13 @@
 #define SERIAL_RX_BUFFER_SIZE 256
 #define SERIAL_TX_BUFFER_SIZE 256
 
+/* Chan tren cho cac vong doi ring TX (write khi day, flush khi can).
+ * Khong phai don vi thoi gian - chi la so vong lap, du lon de khong cat ngang
+ * mot byte dang gui o moi toc do, nhung huu han de khong treo neu ngat dang
+ * tat. Khong dung millis(): SysTick cung tat trong critical section nen dong
+ * ho dung, chan theo thoi gian se khong bao gio het. */
+#define SERIAL_TX_FULL_GUARD  2000000UL
+
 #if (SERIAL_TX_BUFFER_SIZE>256)
 typedef uint16_t tx_buffer_index_t;
 #else

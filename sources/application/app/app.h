@@ -23,6 +23,26 @@ extern "C"
 #include "app_data.h"
 
 /*****************************************************************************/
+/* USART2 - chi co MOT chu
+ *
+ *   TASK_MBMASTER_EN   mbmaster giu USART2 (vector vMBPUSART2ISR, TIM4)
+ *   SERIAL2_EN         Arduino Serial2 giu USART2 (vector uart2_irq)
+ *
+ * Ban cu gan cung Serial2 vao TASK_ZIGBEE_EN: du an dung Serial2 cho viec
+ * khac (Modbus slave, cau UART...) ma khong bat Zigbee thi USART2 khong duoc
+ * mo va vector la default_handler. Bat ca hai chu thi vector cung la
+ * default_handler -> FATAL o byte dau tien. Xem docs/known-bugs.md #4, #5.
+ */
+/*****************************************************************************/
+#if defined (TASK_ZIGBEE_EN) && !defined (SERIAL2_EN)
+#define SERIAL2_EN      /* Zigbee noi chuyen qua Serial2 */
+#endif
+
+#if defined (TASK_MBMASTER_EN) && defined (SERIAL2_EN)
+#error "USART2 chi co mot chu: TASK_MBMASTER_EN va SERIAL2_EN (hoac TASK_ZIGBEE_EN) khong bat cung luc duoc"
+#endif
+
+/*****************************************************************************/
 /* SYSTEM task define
  */
 /*****************************************************************************/

@@ -75,25 +75,24 @@ pio run -e app                 # build firmware ứng dụng
 pio run -e boot                # build bootloader
 pio run -e boot -t upload      # 1. nạp boot (board trắng phải nạp cả 2)
 pio run -e app  -t upload      # 2. nạp app (ST-Link)
-pio run -e app  -t bsf         # 3. seed boot share flash 0x08002000
+pio run -e app  -t bsf         # 3. seed BSF - chi can voi bootloader cu (< 0.0.2)
 pio device monitor             # console UART1 115200
 ```
 
 Thành phẩm tự copy về `release/app/` và `release/boot/`, tên kèm version từ `-DAPP_VERSION`.
 
-**Bước 3 là bắt buộc khi nạp bằng SWD.** Bootloader chỉ nhảy sang app khi vùng
-BSF (0x08002000) có `fw_app_cmd.cmd == SYS_BOOT_CMD_NONE` và
-`current_fw_app_header.psk == FIRMWARE_PSK`. Vùng này bình thường chỉ được ghi
-bởi luồng update qua UART bootloader/OTA — nạp thẳng bằng ST-Link không đụng
-tới nó, nên BSF còn trắng (0xFF) thì boot rơi vào nhánh "unexpected status" và
-đứng ở `while(1)` nhấp nháy LED, nhìn từ ngoài giống hệt board treo. Target
-`bsf` ghi sẵn một bản BSF hợp lệ. Chỉ cần làm lại khi xoá toàn bộ flash.
+**Bước 3 không còn bắt buộc từ bootloader 0.0.2 (base v1.1.0).** Bootloader tự
+kiểm bảng vector của app; BSF (0x08002000) chưa ai ghi hoặc bị xoá giữa chừng
+thì nó tự vá rồi chạy app. Board còn mang bootloader cũ thì vẫn phải chạy
+`-t bsf` — thiếu bước này boot rơi vào nhánh "unexpected status" và đứng ở
+`while(1)` nhấp nháy LED, nhìn từ ngoài giống hệt board treo. Chi tiết:
+[docs/known-bugs.md](docs/known-bugs.md) #3.
 
 ## Dùng cho dự án mới — 7 bước
 
 1. **Copy** toàn bộ thư mục, đổi tên theo dự án; `git init`, commit mốc "clean base".
 2. **Đổi định danh** trong `platformio.ini`: `-DAPP_TITLE`, `-DAPP_VERSION` (cả `[env:app]` lẫn `[env:boot]`), đổi tên `build_dir`; đổi prefix tên file trong `pio_copy_release.py`.
-3. **Chọn module** bằng define trong `[env:app]`: `TASK_MBMASTER_EN`, `IF_LINK_UART_EN`, `SSD1309_DRIVER_EN`/`SH1106_DRIVER_EN`, `TASK_ZIGBEE_EN` (tắt), `IF_NETWORK_NRF24_EN` (tắt)... kèm `build_src_filter` tương ứng.
+3. **Chọn module** bằng define trong `[env:app]`: `TASK_MBMASTER_EN`, `SERIAL2_EN`, `IF_LINK_UART_EN`, `SSD1309_DRIVER_EN`/`SH1106_DRIVER_EN`, `TASK_ZIGBEE_EN` (tắt), `IF_NETWORK_NRF24_EN` (tắt)... kèm `build_src_filter` tương ứng. USART2 chỉ có **một chủ**: `TASK_MBMASTER_EN` hoặc `SERIAL2_EN`, bật cả hai là lỗi biên dịch.
 4. **Sửa phần cứng** theo schematic board mới: `sources/application/platform/stm32l/io_cfg.h/.c` (chân GPIO — chỗ sửa nhiều nhất), `sys_cfg.c` (clock, console).
 5. **Build thử cả 2 env** — phải 0 lỗi trước khi viết code mới; nạp boot + app, xác nhận console lên log, LED life nháy.
 6. **Viết chức năng mới** theo mô hình AK: thêm task ID vào `task_list.h` → đăng ký handler vào `task_list.cpp` → tạo `app/task_xxx.cpp` (tự vào build) → post message khởi động trong `main_app()`. Handler ngắn, không delay dài; giao tiếp giữa task chỉ qua `task_post_*`; chờ thì dùng `timer_set`.
@@ -103,10 +102,10 @@ Chi tiết từng bước + code mẫu task + nguyên tắc kernel AK + port MCU
 
 ## Ghi chú quan trọng
 
-- **Lỗi đã biết trong base — đọc trước khi dựng dự án mới:** [docs/known-bugs.md](docs/known-bugs.md). Có hai lỗi nghiêm trọng: `HardwareSerial::write()` kẹt ring TX (giết RS485 bán song công) và `sys_boot_set()` reset giữa chừng thì board không vào app.
+- **Lỗi đã biết — đã sửa hết trong v1.1.0:** [docs/known-bugs.md](docs/known-bugs.md). Dự án tạo từ v1.0.0 còn mang hai lỗi nghiêm trọng: `HardwareSerial::write()` kẹt ring TX (giết RS485 bán song công) và bootloader kẹt ở "uart boot" khi BSF bị xoá giữa chừng — xem file đó để chép bản sửa sang.
 - **build_dir nằm ở %TEMP%** (xem `platformio.ini`): project trong OneDrive, build tại chỗ dễ bị khóa file `.o` gây lỗi "Permission denied" ngẫu nhiên.
 - **`-Wl,-z,max-page-size=4 -Wl,--nmagic` trong `pio_build_flags.py` là bắt buộc.** `-t upload` nạp bằng openocd `program firmware.elf`, mà openocd đọc *program header* chứ không đọc section. Mặc định `ld` căn segment theo trang 64K nên segment của app (đặt tại 0x08003000) bị kéo `p_paddr` về 0x08000000 và nuốt thêm 12K rác ở đầu — nạp app sẽ ghi đè header ELF lên bootloader và xoá BSF, board chết ngay. Hai cờ này ép segment bắt đầu đúng 0x08003000.
-- `task_zigbee.cpp` bị loại khỏi build (như bản gốc); muốn bật thêm `-DTASK_ZIGBEE_EN` và bỏ dòng loại trừ trong `build_src_filter`.
+- `task_zigbee.cpp` bị loại khỏi build (như bản gốc); muốn bật thêm `-DTASK_ZIGBEE_EN` và bỏ dòng loại trừ trong `build_src_filter`. Zigbee tự bật `SERIAL2_EN`, nên phải tắt `TASK_MBMASTER_EN`.
 - Thư mục `doc/` nặng (~95MB PDF) và demo/tests/tools của mbmaster **không copy theo** — xem bản gốc tại `_reference/ak-base-kit-stm32l151-main`.
 - Các file `Makefile.mk` còn trong `sources/` chỉ để tham khảo, PlatformIO không dùng.
 

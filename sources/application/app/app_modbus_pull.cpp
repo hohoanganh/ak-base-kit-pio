@@ -1,3 +1,8 @@
+/* Client cua mbmaster - chi co nghia khi TASK_MBMASTER_EN bat. Boc ca file de
+ * tat duoc co do: ban cu luon bien dich file nay va hong o xMBMMaster.
+ * Xem docs/known-bugs.md #6. */
+#if defined (TASK_MBMASTER_EN)
+
 /* kernel include */
 #include "ak.h"
 #include "message.h"
@@ -163,3 +168,5 @@ eMBErrorCode appMBMasterWrite(UCHAR slAddr, uint8_t funCode, USHORT addReg, USHO
 	return errCodeRet;
 }
 #endif
+
+#endif /* TASK_MBMASTER_EN */

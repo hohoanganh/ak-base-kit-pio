@@ -114,20 +114,32 @@ extern "C"
 
 /****************************************************************************
  *Pin map UART2
+ *
+ * Theo datasheet STM32L151: PA2 = USART2_TX, PA3 = USART2_RX (AF7), khop net
+ * RS485_TX / RS485_RX tren AK MCU KIT 3I0. Ban cu dat nguoc TX/RX va ghi
+ * TX_AF = GPIO_AF_USART1 - van chay vi hai chan duoc cau hinh giong het nhau va
+ * tren L1 AF_USART1 == AF_USART2 == 7, nhung sai ten. Xem docs/known-bugs.md #7.
 *****************************************************************************/
-#define USART2_TX_PIN					GPIO_Pin_3
+#define USART2_TX_PIN					GPIO_Pin_2
 #define USART2_TX_GPIO_PORT				GPIOA
 #define USART2_TX_GPIO_CLK				RCC_AHBPeriph_GPIOA
-#define USART2_TX_SOURCE				GPIO_PinSource3
-#define USART2_TX_AF					GPIO_AF_USART1
+#define USART2_TX_SOURCE				GPIO_PinSource2
+#define USART2_TX_AF					GPIO_AF_USART2
 
-#define USART2_RX_PIN					GPIO_Pin_2
+#define USART2_RX_PIN					GPIO_Pin_3
 #define USART2_RX_GPIO_PORT				GPIOA
 #define USART2_RX_GPIO_CLK				RCC_AHBPeriph_GPIOA
-#define USART2_RX_SOURCE				GPIO_PinSource2
+#define USART2_RX_SOURCE				GPIO_PinSource3
 #define USART2_RX_AF					GPIO_AF_USART2
 
 #define USART2_CLK						RCC_APB1Periph_USART2
+
+/* Baud cua Serial2. begin() khong nhan tham so, nen dat o day - vi du
+ * -DSERIAL2_BAUDRATE=9600 cho Modbus. Ban cu co dinh 115200 trong
+ * io_uart2_cfg(). */
+#ifndef SERIAL2_BAUDRATE
+#define SERIAL2_BAUDRATE				115200
+#endif
 
 /****************************************************************************
  *UART RS485 - RS485 dir io config
@@ -136,15 +148,17 @@ extern "C"
 #define USART_RS485_CLK					(RCC_APB1Periph_USART2)
 #define USART_RS485_IRQn				(USART2_IRQn)
 
-#define USART_RS485_TX_PIN				(GPIO_Pin_3)
+/* PA2 = TX, PA3 = RX - cung loi dat nguoc nhu khoi UART2 o tren. */
+
+#define USART_RS485_TX_PIN				(GPIO_Pin_2)
 #define USART_RS485_TX_GPIO_PORT		(GPIOA)
 #define USART_RS485_TX_GPIO_CLK			(RCC_AHBPeriph_GPIOA)
-#define USART_RS485_TX_SOURCE			(GPIO_PinSource3)
+#define USART_RS485_TX_SOURCE			(GPIO_PinSource2)
 
-#define USART_RS485_RX_PIN				(GPIO_Pin_2)
+#define USART_RS485_RX_PIN				(GPIO_Pin_3)
 #define USART_RS485_RX_GPIO_PORT		(GPIOA)
 #define USART_RS485_RX_GPIO_CLK			(RCC_AHBPeriph_GPIOA)
-#define USART_RS485_RX_SOURCE			(GPIO_PinSource2)
+#define USART_RS485_RX_SOURCE			(GPIO_PinSource3)
 
 #define RS485_TIM						(TIM4)
 #define RS485_TIM_PERIPH				(RCC_APB1Periph_TIM4)

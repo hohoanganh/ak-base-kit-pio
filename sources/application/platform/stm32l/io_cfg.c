@@ -660,7 +660,7 @@ void io_uart2_cfg() {
 	GPIO_Init(USART2_RX_GPIO_PORT, &GPIO_InitStructure);
 
 	/* USART2 configuration */
-	USART_InitStructure.USART_BaudRate = 115200;
+	USART_InitStructure.USART_BaudRate = SERIAL2_BAUDRATE;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
