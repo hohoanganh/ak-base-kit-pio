@@ -103,6 +103,7 @@ Chi tiết từng bước + code mẫu task + nguyên tắc kernel AK + port MCU
 
 ## Ghi chú quan trọng
 
+- **Lỗi đã biết trong base — đọc trước khi dựng dự án mới:** [docs/known-bugs.md](docs/known-bugs.md). Có hai lỗi nghiêm trọng: `HardwareSerial::write()` kẹt ring TX (giết RS485 bán song công) và `sys_boot_set()` reset giữa chừng thì board không vào app.
 - **build_dir nằm ở %TEMP%** (xem `platformio.ini`): project trong OneDrive, build tại chỗ dễ bị khóa file `.o` gây lỗi "Permission denied" ngẫu nhiên.
 - **`-Wl,-z,max-page-size=4 -Wl,--nmagic` trong `pio_build_flags.py` là bắt buộc.** `-t upload` nạp bằng openocd `program firmware.elf`, mà openocd đọc *program header* chứ không đọc section. Mặc định `ld` căn segment theo trang 64K nên segment của app (đặt tại 0x08003000) bị kéo `p_paddr` về 0x08000000 và nuốt thêm 12K rác ở đầu — nạp app sẽ ghi đè header ELF lên bootloader và xoá BSF, board chết ngay. Hai cờ này ép segment bắt đầu đúng 0x08003000.
 - `task_zigbee.cpp` bị loại khỏi build (như bản gốc); muốn bật thêm `-DTASK_ZIGBEE_EN` và bỏ dòng loại trừ trong `build_src_filter`.
