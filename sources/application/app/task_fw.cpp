@@ -39,6 +39,38 @@ static uint8_t host_firmware_if_type;
 
 static uint8_t flash_read_buffer[FLASH_PAGE_SIZE];
 
+void fw_ext_erase(void) {
+	for (int i = 0; i < APP_FLASH_FIRMWARE_BLOCK_64K_SIZE; i++) {
+		sys_ctrl_independent_watchdog_reset();
+		sys_ctrl_soft_watchdog_reset();
+		flash_erase_block_64k(APP_FLASH_FIRMWARE_START_ADDR + (FLASH_BLOCK_64K_SIZE * i));
+	}
+}
+
+void fw_ext_write(uint32_t offset, const uint8_t* data, uint16_t len) {
+	flash_write(APP_FLASH_FIRMWARE_START_ADDR + offset, (uint8_t*)data, len);
+}
+
+uint16_t fw_ext_checksum(uint32_t len) {
+	uint32_t checksum_buffer = 0;
+	uint32_t word = 0;
+
+	for (uint32_t index = 0; index < len; index += sizeof(uint32_t)) {
+		sys_ctrl_independent_watchdog_reset();
+		sys_ctrl_soft_watchdog_reset();
+
+		word = 0;
+		flash_read(APP_FLASH_FIRMWARE_START_ADDR + index, (uint8_t*)&word, sizeof(uint32_t));
+		checksum_buffer += word;
+	}
+	return (uint16_t)(checksum_buffer & 0xFFFF);
+}
+
+void fw_commit_app_later(const firmware_header_t* header) {
+	memcpy(&firmware_header_file, header, sizeof(firmware_header_t));
+	timer_set(AC_TASK_FW_ID, FW_MB_OTA_COMMIT, FW_MB_OTA_COMMIT_DELAY_MS, TIMER_ONE_SHOT);
+}
+
 void task_fw(ak_msg_t* msg) {
 	switch (msg->sig) {
 	case FW_CHECKING_REQ: {
@@ -177,9 +209,7 @@ void task_fw(ak_msg_t* msg) {
 
 	case FW_UPDATE_SM_OK: {
 		/* clear flash loader */
-		for (int i = 0; i < APP_FLASH_FIRMWARE_BLOCK_64K_SIZE; i++) {
-			flash_erase_block_64k(APP_FLASH_FIRMWARE_START_ADDR + (FLASH_BLOCK_64K_SIZE * i));
-		}
+		fw_ext_erase();
 		APP_DBG("erase temp OK\n");
 
 		ak_msg_t* s_msg = get_pure_msg();
@@ -219,7 +249,7 @@ void task_fw(ak_msg_t* msg) {
 		/* write firmware packet to external flash */
 		uint8_t* firmware_packet = get_data_common_msg(msg);
 		uint8_t firmware_packet_len = get_data_len_common_msg(msg);
-		flash_write(APP_FLASH_FIRMWARE_START_ADDR + bin_file_cursor, firmware_packet, firmware_packet_len);
+		fw_ext_write(bin_file_cursor, firmware_packet, firmware_packet_len);
 
 		/* increase transfer binary file cursor */
 		bin_file_cursor += firmware_packet_len;
@@ -232,20 +262,8 @@ void task_fw(ak_msg_t* msg) {
 			timer_remove_attr(AC_TASK_FW_ID, FW_PACKED_TIMEOUT);
 
 			/* start calculate chechsum */
-			uint32_t checksum_buffer = 0;
-			uint32_t word = 0;
-
 			APP_DBG("start calculate checksum\n");
-			for (uint32_t index = 0; index < firmware_header_file.bin_len; index += sizeof(uint32_t)) {
-				sys_ctrl_independent_watchdog_reset();
-				sys_ctrl_soft_watchdog_reset();
-
-				word = 0;
-				flash_read(APP_FLASH_FIRMWARE_START_ADDR + index, (uint8_t*)&word, sizeof(uint32_t));
-				checksum_buffer += word;
-			}
-
-			uint16_t checksum_calculated = (uint16_t)(checksum_buffer & 0xFFFF);
+			uint16_t checksum_calculated = fw_ext_checksum(firmware_header_file.bin_len);
 			APP_DBG("checksum_calculated:%04X\n", checksum_calculated);
 			APP_DBG("checksum_transfer:%04X\n", firmware_header_file.checksum);
 
@@ -288,6 +306,15 @@ void task_fw(ak_msg_t* msg) {
 		fw_update_app_req_c_external_flash_io_none(&firmware_header_file);
 
 		/* system reset */
+		sys_ctrl_delay_ms(100);
+		sys_ctrl_reset();
+	}
+		break;
+
+	case FW_MB_OTA_COMMIT: {
+		APP_DBG_SIG("FW_MB_OTA_COMMIT\n");
+		/* anh da nhan du qua Modbus va dung checksum (mb_ota.c) */
+		fw_update_app_req_c_external_flash_io_none(&firmware_header_file);
 		sys_ctrl_delay_ms(100);
 		sys_ctrl_reset();
 	}

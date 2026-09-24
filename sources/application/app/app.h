@@ -64,6 +64,7 @@ enum {
 /* define timer */
 #define FW_PACKED_TIMEOUT_INTERVAL			(5000)
 #define FW_UPDATE_REQ_INTERVAL				(5000)
+#define FW_MB_OTA_COMMIT_DELAY_MS			(200)
 
 /* define signal */
 enum {
@@ -77,7 +78,8 @@ enum {
 	FW_SAFE_MODE_RES_OK,
 	FW_UPDATE_SM_BUSY,
 	FW_PACKED_TIMEOUT,
-	FW_CHECKING_REQ
+	FW_CHECKING_REQ,
+	FW_MB_OTA_COMMIT
 };
 
 /*****************************************************************************/
