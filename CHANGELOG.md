@@ -4,6 +4,14 @@ Dự án mới luôn clone theo **tag mới nhất** và ghi version base vào R
 nhất biết sau này dự án đang thiếu bản sửa nào. Bootloader có số version riêng (`BOOT_VER`, in ra
 console lúc khởi động).
 
+## Chưa phát hành
+
+- **Repo:** thôi đưa file `.elf` trong `release/` vào git (~1,1 MB mỗi bản, repo phình theo từng
+  bản). Git chỉ giữ `.bin`; ELF các bản đến v1.1.2 vẫn lấy được từ tag, bản sau đính kèm GitHub
+  Releases.
+- **Tài liệu:** hai guide EPCB trong repo MCP (`epcb-platformio-build`, `epcb-start-project`) cập
+  nhật theo v1.1.2.
+
 ## v1.1.2 — 24/09/2026
 
 Bootloader **không đổi** (vẫn 0.0.3).

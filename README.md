@@ -92,7 +92,15 @@ pio run -e app  -t bsf         # 3. nạp BSF mẫu — chỉ cần với bootlo
 pio device monitor             # console UART1 115200
 ```
 
-Thành phẩm tự copy về `release/app/` và `release/boot/`, tên kèm version từ `-DAPP_VERSION`.
+Thành phẩm tự copy về `release/app/` và `release/boot/`, tên kèm version từ `-DAPP_VERSION`. Git chỉ
+giữ file **`.bin`**; file `.elf` (~1,1 MB mỗi bản, cần khi debug firmware đã phát hành) không đưa vào git
+để repo khỏi phình theo từng bản. ELF của các bản **đến v1.1.2** vẫn nằm trong tag:
+
+```bash
+git show v1.1.2:release/app/ak_base_kit_app_v1.1.2.elf > ak_base_kit_app_v1.1.2.elf
+```
+
+Từ bản sau, ELF đính kèm ở trang [Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
 Mỗi env có giới hạn flash riêng (`board_upload.maximum_size`: app 116K, boot 8K) — vượt là build báo
 lỗi ngay, không để bootloader lấn sang BSF.
 

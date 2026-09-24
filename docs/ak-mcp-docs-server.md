@@ -17,14 +17,14 @@ file đó không tồn tại ở đây. Nhánh `epcb` thêm 2 guide riêng:
 
 | Guide | Nội dung |
 |---|---|
-| `epcb-platformio-build` | build/nạp bằng `pio`, RELEASE ở `platformio.ini`, seed BSF sau khi nạp SWD, cảnh báo không được bỏ cờ linker `max-page-size=4` |
+| `epcb-platformio-build` | build/nạp bằng `pio`, RELEASE ở `platformio.ini`, khi nào còn cần seed BSF, version một nguồn, cảnh báo không được bỏ cờ linker `max-page-size=4` |
 | `epcb-start-project` | khởi tạo sản phẩm mới từ source base theo tag, ghi lại version base |
 
 Phần kernel AK không đổi nên toàn bộ guide còn lại của upstream vẫn dùng nguyên.
 
-> Guide `epcb-platformio-build` viết trước base v1.1.0 nên còn ghi **bắt buộc** seed BSF sau khi nạp
-> SWD. Từ bootloader 0.0.2 bước đó không còn cần — bootloader tự vá BSF
-> ([known-bugs.md](known-bugs.md) #3). Chỉ board còn bootloader cũ mới cần `pio run -e app -t bsf`.
+> Hai guide đã cập nhật theo base v1.1.2 (24/09/2026): seed BSF chỉ còn cần với bootloader 0.0.1
+> ([known-bugs.md](known-bugs.md) #3), clone tag mới nhất, `APP_VERSION` là nguồn version duy nhất,
+> thứ tự `app_task_table` theo enum, cờ biên dịch trong POST script phải áp cả `projenv`.
 
 ## Tool được cung cấp
 
