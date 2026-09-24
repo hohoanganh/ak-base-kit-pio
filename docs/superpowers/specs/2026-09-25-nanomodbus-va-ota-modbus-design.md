@@ -30,9 +30,9 @@ nanoMODBUS (github.com/debevv/nanoMODBUS, MIT, 1 cặp `.c/.h`, không cấp ph�
 
 ### Chế độ
 - `TASK_MBMASTER_EN` (mặc định bật): client nanoMODBUS. API `appMBMasterRead/Write`
-  trong `app_modbus_pull.cpp` **giữ nguyên chữ ký**, chỉ đổi thân hàm sang `nmbs_*`.
-  Kiểu `eMBErrorCode` thay bằng enum riêng `mb_err_t` (MB_OK=0, MB_ERR_TIMEOUT,
-  MB_ERR_CRC, MB_ERR_EXCEPTION, MB_ERR_ARG) — gọi nơi so sánh `== MB_ENOERR` sửa theo.
+  trong `app_modbus_pull.cpp` giữ tên và tham số, thân hàm đổi sang `nmbs_*`, kiểu trả về
+  đổi từ `eMBErrorCode` sang `nmbs_error` của nanoMODBUS (so với `NMBS_ERROR_NONE`).
+  `appMBMasterWrite` vốn nằm trong `#if 0` (code chết, gọi API cũ) → xóa.
   Lời gọi vẫn chặn như cũ (≈100 ms/lần ở 9600 baud).
 - `TASK_MBSLAVE_EN` (mới, mặc định tắt): server nanoMODBUS, địa chỉ slave mặc định 1.
   `nmbs_server_poll()` gọi từ `task_polling_run` với read timeout 0 → không chặn khi
@@ -42,19 +42,20 @@ nanoMODBUS (github.com/debevv/nanoMODBUS, MIT, 1 cặp `.c/.h`, không cấp ph�
   giữ `#error` cũ với `SERIAL2_EN`.
 - Xóa `networks/mbmaster-v2.9.6`, include path và filter tương ứng trong `platformio.ini`
   (+ `Makefile.mk` nếu còn tham chiếu), xóa `vMBPUSART2ISR` khỏi bảng vector; ISR USART2
-  mới nằm trong `rs485_port.c`.
+  mới là `rs485_port_irq()` trong `rs485_port.c`, gọi qua vỏ `rs485_irq()` ở `system.c` (bọc task_entry/exit_interrupt như `uart2_irq`).
 
 ### Kiểm tra
 - `pio run -e app` và `pio run -e boot` build sạch; ghi lại kích thước flash trước/sau.
 - Build thêm biến thể `TASK_MBSLAVE_EN` (env `app_mbslave`) để chắc chế độ slave biên dịch.
-- Test host (gcc trên PC, `test/host_modbus/`): client + server nanoMODBUS nối qua
+- Test host (gcc trên PC, `tests_host/modbus/` — không đặt trong `test/` để `pio test` không nhặt nhầm): client + server nanoMODBUS nối qua
   UART giả (hai ring buffer chéo nhau) — đọc/ghi thanh ghi, timeout, CRC sai.
 - Trên board AK thật: `modbus r` đọc ES35-SW ra nhiệt độ/độ ẩm hợp lý (cần anh chạy).
 
 ## Phần 1B — OTA qua Modbus (cần `TASK_MBSLAVE_EN`)
 
 Tận dụng nguyên cơ chế hiện có: ảnh mới ghi vào external flash `APP_FLASH_FIRMWARE_START_ADDR`
-(0x80000, 2 block 64K), kiểm checksum (tổng word 32-bit little-endian, lấy 16 bit thấp),
+(0x80000, 2 block 64K), kiểm checksum (tổng word 32-bit little-endian, lấy 16 bit thấp;
+PC đệm ảnh bằng 0xFF cho đủ bội 4 byte trước khi gửi — giống flash đã xóa),
 đặt BSF `fw_app_cmd = UPDATE_REQ / EXTERNAL_FLASH`, reset → bootloader chép.
 **Bootloader không sửa.**
 
