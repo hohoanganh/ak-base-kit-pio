@@ -11,3 +11,5 @@ compile_commands.json
 # ELF ~1,1 MB moi ban - khong dua vao git. Ban <= v1.1.2 van nam trong tag,
 # ban sau dinh kem GitHub Releases. Xem README muc Build & nap.
 release/**/*.elf
+tests_host/modbus/build/
+.superpowers/
