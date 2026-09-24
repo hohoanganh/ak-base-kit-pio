@@ -78,14 +78,29 @@ PC đệm ảnh bằng 0xFF cho đủ bội 4 byte trước khi gửi — giốn
 
 Luồng (PC là master):
 1. FC16 ghi header 0xF002..0xF006, rồi FC06 CMD=BEGIN. Slave kiểm psk = `FIRMWARE_PSK`,
-   bin_len ≤ 116K, xóa 2 block external flash (chặn ~1–2 s → PC dùng timeout 5 s cho lệnh này).
+   bin_len ≤ 116K **và bin_len phải là bội số của 4** (PC luôn đệm ảnh bằng 0xFF cho đủ bội 4
+   byte rồi mới tính checksum và gửi bin_len đã đệm — bin_len không phải bội 4 bị từ chối
+   ngay bằng STATUS 0x8001, exception 0x03, không xóa flash); nếu qua hết thì xóa 2 block
+   external flash (chặn ~1–2 s → PC dùng timeout 5 s cho lệnh này).
 2. Mỗi khối: một FC16 bắt đầu 0xF010 gồm offset + dữ liệu. Offset phải bằng số byte đã nhận;
    nếu bằng offset khối trước (PC gửi lại vì mất phản hồi) thì trả OK mà không ghi lại;
-   khác nữa → exception 0x04 và STATUS 0x8002. Khối cuối có thể lẻ byte: PC đệm 0xFF
-   cho đủ thanh ghi, slave chỉ ghi tới bin_len.
-3. FC06 CMD=COMMIT: tính checksum. Đúng → STATUS 2, trả phản hồi, hẹn AK timer 200 ms rồi
-   `fw_commit_app()`. Sai → STATUS 0x8003, app cũ chạy tiếp.
-4. Mất điện/đứt giữa chừng: internal flash chưa bị đụng → board vẫn chạy app cũ.
+   khác nữa (kể cả offset ≥ bin_len — coi là sai offset, không phải quá cỡ) → exception 0x04
+   và STATUS 0x8002. Sau 0x8002, phiên coi như hỏng: phải bắt đầu lại từ FC06 CMD=BEGIN.
+   Khối cuối có thể ngắn hơn 128 byte.
+3. FC06 CMD=COMMIT: tính checksum trên đúng bin_len (bin_len luôn là bội 4 — xem điều kiện
+   BEGIN ở trên, nên không cần làm tròn). Đúng → STATUS 2, trả phản hồi, hẹn AK timer 200 ms
+   rồi `fw_commit_app()`. Sai → STATUS 0x8003, app cũ chạy tiếp.
+   Sau khi đã COMMIT (STATUS 2), thiết bị đang chờ AK timer 200 ms rồi tự reset để bootloader
+   chép ảnh — tại đây bootloader sẽ xoá internal flash và chép từ external flash TRƯỚC KHI
+   kiểm checksum, nên state machine phải khoá lại: BEGIN, ABORT và mọi ghi header
+   (0xF002..0xF006) đều bị từ chối bằng exception 0x03, STATUS giữ nguyên 2 — chỉ có COMMIT
+   gửi lại (PC mất phản hồi lần đầu) là được chấp nhận, trả OK mà không gọi lại thao tác
+   commit vật lý lần hai.
+4. Modbus broadcast (unit_id 0, FC06/FC16 gửi tới địa chỉ 0): các thanh ghi OTA hoàn toàn bỏ
+   qua broadcast — trả exception 0x01 (ILLEGAL_FUNCTION) nội bộ và KHÔNG chạm tới state
+   machine OTA (không BEGIN/COMMIT/ghi khối/ghi header). Vì broadcast không có phản hồi nên
+   phía PC sẽ không nhận ra lỗi này — OTA không bao giờ được gửi qua địa chỉ broadcast.
+5. Mất điện/đứt giữa chừng trước COMMIT: internal flash chưa bị đụng → board vẫn chạy app cũ.
 
 ### Phía PC
 `epcb_applib.ota` (xem spec epcb-applib cùng ngày): đọc .bin, tính checksum như firmware,

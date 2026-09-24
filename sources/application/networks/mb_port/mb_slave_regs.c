@@ -24,8 +24,12 @@ static nmbs_error cb_read_holding(uint16_t address, uint16_t quantity, uint16_t*
 }
 
 static nmbs_error cb_write_single(uint16_t address, uint16_t value, uint8_t unit_id, void* arg) {
-	(void)unit_id; (void)arg;
+	(void)arg;
 	if (mb_ota_owns(address, 1)) {
+		/* broadcast (unit_id 0) khong duoc phep kich hoat OTA - khong co phan hoi de bao loi nen chan hoan toan */
+		if (unit_id == 0) {
+			return NMBS_EXCEPTION_ILLEGAL_FUNCTION;
+		}
 		return mb_ota_write(address, 1, &value);
 	}
 	return NMBS_EXCEPTION_ILLEGAL_DATA_ADDRESS;	/* thanh ghi demo chi doc */
@@ -33,8 +37,11 @@ static nmbs_error cb_write_single(uint16_t address, uint16_t value, uint8_t unit
 
 static nmbs_error cb_write_multi(uint16_t address, uint16_t quantity, const uint16_t* registers,
 								 uint8_t unit_id, void* arg) {
-	(void)unit_id; (void)arg;
+	(void)arg;
 	if (mb_ota_owns(address, quantity)) {
+		if (unit_id == 0) {
+			return NMBS_EXCEPTION_ILLEGAL_FUNCTION;
+		}
 		return mb_ota_write(address, quantity, registers);
 	}
 	return NMBS_EXCEPTION_ILLEGAL_DATA_ADDRESS;

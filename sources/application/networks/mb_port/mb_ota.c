@@ -47,7 +47,11 @@ nmbs_error mb_ota_read(uint16_t address, uint16_t quantity, uint16_t* out) {
 }
 
 static nmbs_error cmd_begin(void) {
-	if (ota_psk != MB_OTA_PSK || ota_len == 0) {
+	if (!ota_ops) {
+		return NMBS_EXCEPTION_SERVER_DEVICE_FAILURE;
+	}
+	/* PC luon dem anh bang 0xFF cho du boi 4 byte truoc khi gui bin_len */
+	if (ota_psk != MB_OTA_PSK || ota_len == 0 || (ota_len % 4u) != 0) {
 		ota_status = MB_OTA_ST_ERR_HEADER;
 		return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;
 	}
@@ -64,12 +68,17 @@ static nmbs_error cmd_begin(void) {
 }
 
 static nmbs_error cmd_commit(void) {
+	if (ota_status == MB_OTA_ST_COMMITTED) {
+		return NMBS_ERROR_NONE;	/* PC gui lai COMMIT vi mat phan hoi - da commit roi, khong goi ops->commit lan nua */
+	}
+	if (!ota_ops) {
+		return NMBS_EXCEPTION_SERVER_DEVICE_FAILURE;
+	}
 	if (ota_status != MB_OTA_ST_RECEIVING || ota_received < ota_len) {
 		return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;
 	}
-	/* flash sau bin_len da la 0xFF (vua xoa) -> tinh tron boi 4 giong PC dem 0xFF */
-	uint32_t len4 = (ota_len + 3u) & ~3u;
-	if (ota_ops->checksum(len4) != ota_checksum) {
+	/* ota_len luon la boi 4 (BEGIN da kiem) nen tinh checksum truc tiep tren ota_len */
+	if (ota_ops->checksum(ota_len) != ota_checksum) {
 		ota_status = MB_OTA_ST_ERR_CHECKSUM;
 		return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;
 	}
@@ -79,6 +88,9 @@ static nmbs_error cmd_commit(void) {
 }
 
 static nmbs_error write_chunk(uint16_t quantity, const uint16_t* regs) {
+	if (!ota_ops) {
+		return NMBS_EXCEPTION_SERVER_DEVICE_FAILURE;
+	}
 	if (ota_status != MB_OTA_ST_RECEIVING) {
 		return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;
 	}
@@ -89,11 +101,12 @@ static nmbs_error write_chunk(uint16_t quantity, const uint16_t* regs) {
 	uint32_t n = (uint32_t)(quantity - 2) * 2;
 
 	if (offset >= ota_len) {
-		ota_status = MB_OTA_ST_ERR_SIZE;
-		return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;
+		/* sai offset: theo quy tac chung, khong phai loi qua co */
+		ota_status = MB_OTA_ST_ERR_OFFSET;
+		return NMBS_EXCEPTION_SERVER_DEVICE_FAILURE;
 	}
 	if (n > ota_len - offset) {
-		n = ota_len - offset;	/* khoi cuoi: bo byte dem */
+		n = ota_len - offset;	/* khoi cuoi co the ngan hon 128 byte (ota_len la boi 4) */
 	}
 	if (offset == ota_last_offset && offset + n == ota_received && n == ota_last_len) {
 		return NMBS_ERROR_NONE;	/* PC gui lai vi mat phan hoi - da ghi roi */
@@ -118,15 +131,23 @@ static nmbs_error write_chunk(uint16_t quantity, const uint16_t* regs) {
 nmbs_error mb_ota_write(uint16_t address, uint16_t quantity, const uint16_t* regs) {
 	if (address == MB_OTA_REG_CMD && quantity == 1) {
 		switch (regs[0]) {
-		case MB_OTA_CMD_BEGIN:	return cmd_begin();
+		case MB_OTA_CMD_BEGIN:
+			if (ota_status == MB_OTA_ST_COMMITTED) {
+				return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;	/* da commit, cho reset - khong nhan phien moi */
+			}
+			return cmd_begin();
 		case MB_OTA_CMD_COMMIT:	return cmd_commit();
-		case MB_OTA_CMD_ABORT:	mb_ota_init(ota_ops); return NMBS_ERROR_NONE;
+		case MB_OTA_CMD_ABORT:
+			if (ota_status == MB_OTA_ST_COMMITTED) {
+				return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;	/* da commit, cho reset - khong huy duoc nua */
+			}
+			mb_ota_init(ota_ops); return NMBS_ERROR_NONE;
 		default:				return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;
 		}
 	}
 	if (address >= MB_OTA_REG_LEN_HI && (uint32_t)address + quantity - 1 <= MB_OTA_REG_PSK_LO) {
-		if (ota_status == MB_OTA_ST_RECEIVING) {
-			return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;	/* khong doi header giua chung */
+		if (ota_status == MB_OTA_ST_RECEIVING || ota_status == MB_OTA_ST_COMMITTED) {
+			return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;	/* khong doi header giua chung hoac sau khi da commit */
 		}
 		for (uint16_t i = 0; i < quantity; i++) {
 			uint16_t a = (uint16_t)(address + i), v = regs[i];
