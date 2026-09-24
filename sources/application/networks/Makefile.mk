@@ -10,6 +10,5 @@ ifeq ($(TASK_ZIGBEE_OPTION),-DTASK_ZIGBEE_EN)
 include sources/networks/ArduinoZigBee/Makefile.mk
 endif
 
-ifeq ($(TASK_MBMASTER_OPTION),-DTASK_MBMASTER_EN)
-include sources/networks/mbmaster-v2.9.6/Makefile.mk
-endif
+# mbmaster-v2.9.6 (thu vien thuong mai) da go, thay bang nanoMODBUS + mb_port
+# (build bang PlatformIO, khong con Makefile.mk rieng cho module nay).

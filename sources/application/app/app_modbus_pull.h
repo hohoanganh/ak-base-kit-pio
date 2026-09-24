@@ -3,12 +3,7 @@
 
 #include <stdint.h>
 
-#include "port.h"
-
-#include "mbport.h"
-#include "mbm.h"
-#include "mbtypes.h"
-#include "mbportlayer.h"
+#include "nanomodbus.h"
 
 /*----------------------------------------------------------------------------*
  *  DECLARE: Common definitions
@@ -67,8 +62,8 @@ enum eMB_DataType {
 
 /* Typedef -------------------------------------------------------------------*/
 typedef struct RegisterDeviceStructure {
-	USHORT regAddress;
-	ULONG regValue;
+	uint16_t regAddress;
+	uint32_t regValue;
 	uint8_t funcCode;
 	double ratio;
 	const int8_t* unit;
@@ -79,7 +74,7 @@ typedef struct RegisterDeviceStructure {
 
 typedef struct ModbusDeviceStructure {
 	uint8_t tId;
-	ULONG tBaud;
+	uint32_t tBaud;
 	MB_DevRegStruct_t *listRegDevice;
 	uint16_t listRegAmount;
 } __AK_PACKETED MB_DeviceStruct_t;

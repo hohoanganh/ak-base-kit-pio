@@ -58,6 +58,7 @@ enum {
 	/* APP TASKS */
 	AC_TASK_POLLING_ZIGBEE_ID,
 	AC_TASK_POLLING_CONSOLE_ID,
+	AC_TASK_POLLING_MBSLAVE_ID,
 
 	/* EOT polling task ID */
 	AK_TASK_POLLING_EOT_ID,
@@ -98,5 +99,6 @@ extern void task_rf24_demo(ak_msg_t*);
 /*****************************************************************************/
 extern void task_polling_zigbee();
 extern void task_polling_console();
+extern void task_polling_mbslave();
 
 #endif //__TASK_LIST_H__

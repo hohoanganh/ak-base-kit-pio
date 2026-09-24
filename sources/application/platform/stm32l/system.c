@@ -29,8 +29,8 @@
 
 #include "sys_cfg.h"
 
-#if defined (TASK_MBMASTER_EN)
-#include "mbport.h"
+#if defined (TASK_MBMASTER_EN) || defined (TASK_MBSLAVE_EN)
+#include "rs485_port.h"
 #endif
 
 //#pragma GCC optimize ("O3")
@@ -74,9 +74,8 @@ void uart1_irq();
 void uart2_irq();
 void buzzer_irq( void );
 
-#if defined (TASK_MBMASTER_EN)
-void vMBPTimerISR( void );
-void vMBPUSART2ISR( void );
+#if defined (TASK_MBMASTER_EN) || defined (TASK_MBSLAVE_EN)
+void rs485_irq();
 #endif
 
 /* cortex-M processor fault exceptions */
@@ -155,11 +154,7 @@ void (* const isr_vector[])() = {
 		
 		buzzer_irq,								//	TIM3
 		
-		#if defined (TASK_MBMASTER_EN)
-		vMBPTimerISR,							//	TIM4
-		#else
 		default_handler,						//	TIM4
-		#endif
 
 		default_handler,						//	I2C1 Event
 		default_handler,						//	I2C1 Error
@@ -172,8 +167,8 @@ void (* const isr_vector[])() = {
 		/* Chu cua USART2 quyet dinh o app.h. Phai la uart2_irq chu khong phai
 		 * sys_irq_uart2: uart2_irq boc task_entry/exit_interrupt() ma kernel
 		 * AK dung de dem do sau ngat. */
-		#if defined (TASK_MBMASTER_EN)
-		vMBPUSART2ISR,							//	USART2
+		#if defined (TASK_MBMASTER_EN) || defined (TASK_MBSLAVE_EN)
+		rs485_irq,								//	USART2
 		#elif defined (SERIAL2_EN)
 		uart2_irq,								//	USART2
 		#else
@@ -426,6 +421,14 @@ void uart2_irq() {
 	sys_irq_uart2();
 	task_exit_interrupt();
 }
+
+#if defined (TASK_MBMASTER_EN) || defined (TASK_MBSLAVE_EN)
+void rs485_irq() {
+	task_entry_interrupt();
+	rs485_port_irq();
+	task_exit_interrupt();
+}
+#endif
 
 void exti_line1_irq() {
 	task_entry_interrupt();

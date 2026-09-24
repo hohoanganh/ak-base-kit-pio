@@ -8,12 +8,6 @@
 #include "app.h"
 #include "buzzer.h"
 
-#if defined (TASK_MBMASTER_EN)
-#include "mbport.h"
-#include "mbm.h"
-#include "common/mbportlayer.h"
-#endif
-
 /******************************************************************************
 * IF Type
 *******************************************************************************/
@@ -47,12 +41,5 @@
 typedef struct {
 	uint8_t is_power_on_reset;
 } boot_app_share_data_t;
-
-/******************************************************************************
-* RS485-MODBUS
-*******************************************************************************/
-#if defined (TASK_MBMASTER_EN)
-extern xMBHandle xMBMMaster;
-#endif
 
 #endif //__APP_DATA_H__

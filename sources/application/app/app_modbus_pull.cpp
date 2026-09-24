@@ -1,5 +1,5 @@
-/* Client cua mbmaster - chi co nghia khi TASK_MBMASTER_EN bat. Boc ca file de
- * tat duoc co do: ban cu luon bien dich file nay va hong o xMBMMaster.
+/* Client doc thiet bi Modbus qua nanoMODBUS (app_mb) - chi co nghia khi
+ * TASK_MBMASTER_EN bat. Boc ca file de tat duoc co do.
  * Xem docs/known-bugs.md #6. */
 #if defined (TASK_MBMASTER_EN)
 
@@ -22,6 +22,7 @@
 #include "app_data.h"
 #include "app_non_clear_ram.h"
 #include "app_modbus_pull.h"
+#include "app_modbus.h"
 
 /* sys include */
 #include "sys_io.h"
@@ -69,16 +70,13 @@ MB_DeviceStruct_t MB_LHIO404_IO_Device = {
 };
 
 /* Private functions prototypes -----------------------------------------------*/
-static eMBErrorCode appMBMasterRead(UCHAR slAddr, uint8_t funCode, USHORT addReg, USHORT *buf);
-#if 0
-static eMBErrorCode appMBMasterWrite(UCHAR slAddr, uint8_t funCode, USHORT addReg, USHORT val);
-#endif
+static nmbs_error appMBMasterRead(uint8_t slAddr, uint8_t funCode, uint16_t addReg, uint16_t *buf);
 
 /* Function implementation ---------------------------------------------------*/
 void updateDataModbusDevice(MB_DeviceStruct_t *mbDevice) {
 	uint8_t retryCount = 0;
-	USHORT regVal;
-	USHORT regAddr;
+	uint16_t regVal;
+	uint16_t regAddr;
 	uint8_t funCode;
 
 	for (uint16_t regIndex = 0; regIndex < mbDevice->listRegAmount; ++regIndex) {
@@ -86,9 +84,9 @@ void updateDataModbusDevice(MB_DeviceStruct_t *mbDevice) {
 		regAddr = mbDevice->listRegDevice[regIndex].regAddress;
 		regVal = 0;
 
-		eMBErrorCode errCode = appMBMasterRead(mbDevice->tId, funCode, regAddr, &regVal);
+		nmbs_error errCode = appMBMasterRead(mbDevice->tId, funCode, regAddr, &regVal);
 
-		if (errCode != MB_ENOERR) {
+		if (errCode != NMBS_ERROR_NONE) {
 			mbDevice->listRegDevice[regIndex].regValue = REG_VAL_DEFAULT;
 			++retryCount;
 		}
@@ -102,69 +100,31 @@ void updateDataModbusDevice(MB_DeviceStruct_t *mbDevice) {
 	}
 }
 
-eMBErrorCode appMBMasterRead(UCHAR slAddr, uint8_t funCode, USHORT addReg, USHORT *buf) {
-	eMBErrorCode errCodeRet = MB_ENOERR;
+nmbs_error appMBMasterRead(uint8_t slAddr, uint8_t funCode, uint16_t addReg, uint16_t *buf) {
+	nmbs_set_destination_rtu_address(&app_mb, slAddr);
 
 	switch (funCode) {
-	case MODBUS_FUNCTION_READ_COILS: {
-		errCodeRet = eMBMReadCoils(xMBMMaster, slAddr, addReg, 1, (UBYTE*)buf);
-	}
-		break;
-
+	case MODBUS_FUNCTION_READ_COILS:
 	case MODBUS_FUNCTION_READ_DISCRETE_INPUT: {
-		errCodeRet = eMBMReadDiscreteInputs(xMBMMaster, slAddr, addReg, 1, (UBYTE*)buf);
+		nmbs_bitfield bits;
+		nmbs_error err = (funCode == MODBUS_FUNCTION_READ_COILS)
+				? nmbs_read_coils(&app_mb, addReg, 1, bits)
+				: nmbs_read_discrete_inputs(&app_mb, addReg, 1, bits);
+		if (err == NMBS_ERROR_NONE) {
+			*buf = nmbs_bitfield_read(bits, 0) ? 1 : 0;
+		}
+		return err;
 	}
-		break;
 
-	case MODBUS_FUNCTION_READ_REGISTERS: {
-		errCodeRet = eMBMReadHoldingRegisters(xMBMMaster, slAddr, addReg, 1, buf);
-	}
-		break;
+	case MODBUS_FUNCTION_READ_REGISTERS:
+		return nmbs_read_holding_registers(&app_mb, addReg, 1, buf);
 
-	case MODBUS_FUNCTION_READ_INPUT_REGISTER: {
-		errCodeRet = eMBMReadInputRegisters(xMBMMaster, slAddr, addReg, 1, buf);
-	}
-		break;
+	case MODBUS_FUNCTION_READ_INPUT_REGISTER:
+		return nmbs_read_input_registers(&app_mb, addReg, 1, buf);
 
 	default:
-		errCodeRet = MB_EINVAL;
-		break;
+		return NMBS_ERROR_INVALID_ARGUMENT;
 	}
-
-	return errCodeRet;
 }
-
-#if 0
-eMBErrorCode appMBMasterWrite(UCHAR slAddr, uint8_t funCode, USHORT addReg, USHORT val) {
-	eMBErrorCode errCodeRet = MB_ENOERR;
-
-	switch (funCode) {
-	case MODBUS_FUNCTION_WRITE_REGISTER: {
-		errCodeRet = eMBMWriteSingleRegister(xMBMMaster, slAddr, addReg, val);
-	}
-		break;
-
-	case MODBUS_FUNCTION_WRITE_COIL: {
-		errCodeRet = eMBMWriteSingleCoil(xMBMMaster, slAddr, addReg, val);
-	}
-
-	case MODBUS_FUNCTION_WRITE_MULTIPLE_COILS: {
-		
-	}
-		break;
-
-	case MODBUS_FUNCTION_WRITE_MULTIPLE_REGISTERS: {
-		
-	}
-		break;
-
-	default:
-		errCodeRet = MB_EINVAL;
-		break;
-	}
-
-	return errCodeRet;
-}
-#endif
 
 #endif /* TASK_MBMASTER_EN */

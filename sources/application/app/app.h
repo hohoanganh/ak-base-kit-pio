@@ -25,7 +25,8 @@ extern "C"
 /*****************************************************************************/
 /* USART2 - chi co MOT chu
  *
- *   TASK_MBMASTER_EN   mbmaster giu USART2 (vector vMBPUSART2ISR, TIM4)
+ *   TASK_MBMASTER_EN   nanoMODBUS master giu USART2 (vector rs485_irq)
+ *   TASK_MBSLAVE_EN    nanoMODBUS slave giu USART2 (vector rs485_irq)
  *   SERIAL2_EN         Arduino Serial2 giu USART2 (vector uart2_irq)
  *
  * Ban cu gan cung Serial2 vao TASK_ZIGBEE_EN: du an dung Serial2 cho viec
@@ -38,8 +39,12 @@ extern "C"
 #define SERIAL2_EN      /* Zigbee noi chuyen qua Serial2 */
 #endif
 
-#if defined (TASK_MBMASTER_EN) && defined (SERIAL2_EN)
-#error "USART2 chi co mot chu: TASK_MBMASTER_EN va SERIAL2_EN (hoac TASK_ZIGBEE_EN) khong bat cung luc duoc"
+#if (defined (TASK_MBMASTER_EN) || defined (TASK_MBSLAVE_EN)) && defined (SERIAL2_EN)
+#error "USART2 chi co mot chu: TASK_MBMASTER_EN/TASK_MBSLAVE_EN va SERIAL2_EN (hoac TASK_ZIGBEE_EN) khong bat cung luc duoc"
+#endif
+
+#if defined (TASK_MBMASTER_EN) && defined (TASK_MBSLAVE_EN)
+#error "TASK_MBMASTER_EN va TASK_MBSLAVE_EN cung dung USART2 - chi bat mot"
 #endif
 
 /*****************************************************************************/
