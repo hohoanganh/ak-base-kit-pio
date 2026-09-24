@@ -7,8 +7,8 @@ console lúc khởi động).
 ## Chưa phát hành
 
 - **Repo:** thôi đưa file `.elf` trong `release/` vào git (~1,1 MB mỗi bản, repo phình theo từng
-  bản). Git chỉ giữ `.bin`; ELF các bản đến v1.1.2 vẫn lấy được từ tag, bản sau đính kèm GitHub
-  Releases.
+  bản). Git chỉ giữ `.bin`; `.bin` + `.elf` của mọi bản (v1.0.0 → v1.1.2) đính kèm ở
+  [GitHub Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
 - **Tài liệu:** hai guide EPCB trong repo MCP (`epcb-platformio-build`, `epcb-start-project`) cập
   nhật theo v1.1.2.
 
