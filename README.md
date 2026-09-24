@@ -10,7 +10,7 @@ qua message, run-to-completion); bootloader + cập nhật firmware qua UART/ext
 bật/tắt bằng cờ biên dịch; kiến trúc phân lớp dễ port; build 1 lệnh, release tự động có version.
 Chi tiết: [docs/huong-dan-su-dung-source-base.md](docs/huong-dan-su-dung-source-base.md).
 
-**Phiên bản mới nhất: `v1.1.2`** — lịch sử thay đổi: [CHANGELOG.md](CHANGELOG.md) · lỗi đã biết và
+**Phiên bản mới nhất: `v1.2.0`** — lịch sử thay đổi: [CHANGELOG.md](CHANGELOG.md) · lỗi đã biết và
 bản sửa: [docs/known-bugs.md](docs/known-bugs.md).
 
 ## Kiến trúc & bộ nhớ
@@ -32,7 +32,7 @@ flowchart TD
 │ APP TASKS   task_system · task_fw · task_shell · task_life ·     │
 │             task_if · task_uart_if · task_dbg · task_display     │
 ├───────────────────────────────┬──────────────────────────────────┤
-│ AK KERNEL   scheduler ·       │ NETWORKS/LIBS  mbmaster (Modbus) │
+│ AK KERNEL   scheduler ·       │ NETWORKS/LIBS  nanoMODBUS        │
 │ message · timer · fsm/tsm     │ net/link UART · ArduinoJson · QR │
 ├───────────────────────────────┼──────────────────────────────────┤
 │ DRIVERS     button · buzzer · │ COMMON   xprintf · cmd_line ·    │
@@ -75,7 +75,7 @@ ak-base-kit-pio/
     │   ├── common/           # utils, xprintf, cmd_line, container, view
     │   ├── driver/           # button, buzzer, eeprom, flash, gpio, led, OLED
     │   ├── libraries/        # ArduinoJson, nlohmann, QRCode
-    │   ├── networks/         # net/link (UART link), mbmaster v2.9.6
+    │   ├── networks/         # net/link (UART link), nanoMODBUS (master/slave RTU)
     │   ├── platform/stm32l/  # io_cfg, sys_cfg, startup, SPL + CMSIS, ak.ld
     │   └── sys/
     └── boot/                 # bootloader 8K (cấu trúc tương tự, rút gọn)
@@ -84,7 +84,8 @@ ak-base-kit-pio/
 ## Build & nạp
 
 ```bash
-pio run -e app                 # build firmware ứng dụng
+pio run -e app                 # build firmware ứng dụng (Modbus master, mặc định)
+pio run -e app_mbslave         # build biến thể Modbus SLAVE (OTA qua RS485)
 pio run -e boot                # build bootloader
 pio run -e boot -t upload      # 1. nạp boot (board trắng phải nạp cả 2)
 pio run -e app  -t upload      # 2. nạp app (ST-Link)
@@ -112,15 +113,16 @@ bootloader cũ thì vẫn phải chạy `-t bsf` — thiếu bước này boot r
 
 ## Dùng cho dự án mới — 7 bước
 
-1. **Clone theo tag mới nhất** (`git clone --depth 1 --branch v1.1.2 ...`), xoá `.git`, `git init`,
-   ghi "Khởi tạo từ ak-base-kit-pio v1.1.2" vào README dự án, commit mốc "clean base". **Không** chép
+1. **Clone theo tag mới nhất** (`git clone --depth 1 --branch v1.2.0 ...`), xoá `.git`, `git init`,
+   ghi "Khởi tạo từ ak-base-kit-pio v1.2.0" vào README dự án, commit mốc "clean base". **Không** chép
    thư mục tay hay chép nền từ một dự án khác — mất dấu bản base là mất dấu các bản sửa.
 2. **Đổi định danh** trong `platformio.ini`: `-DAPP_TITLE`, `-DAPP_VERSION` (cả `[env:app]` lẫn
    `[env:boot]`), đổi tên `build_dir`; đổi prefix tên file trong `pio_copy_release.py`.
-3. **Chọn module** bằng define trong `[env:app]`: `TASK_MBMASTER_EN`, `SERIAL2_EN`, `IF_LINK_UART_EN`,
-   `SSD1309_DRIVER_EN`/`SH1106_DRIVER_EN`, `TASK_ZIGBEE_EN` (tắt), `IF_NETWORK_NRF24_EN` (tắt)... kèm
-   `build_src_filter` tương ứng. USART2 chỉ có **một chủ**: `TASK_MBMASTER_EN` hoặc `SERIAL2_EN`, bật
-   cả hai là lỗi biên dịch.
+3. **Chọn module** bằng define trong `[env:app]`: `TASK_MBMASTER_EN` (Modbus master, mặc định),
+   `TASK_MBSLAVE_EN` (Modbus slave — dùng env `[env:app_mbslave]` có sẵn, hoặc tự đảo cờ), `SERIAL2_EN`,
+   `IF_LINK_UART_EN`, `SSD1309_DRIVER_EN`/`SH1106_DRIVER_EN`, `TASK_ZIGBEE_EN` (tắt),
+   `IF_NETWORK_NRF24_EN` (tắt)... kèm `build_src_filter` tương ứng. USART2 chỉ có **một chủ**:
+   `TASK_MBMASTER_EN`, `TASK_MBSLAVE_EN` hoặc `SERIAL2_EN` — bật từ hai cờ trở lên là lỗi biên dịch.
 4. **Sửa phần cứng** theo schematic board mới: `sources/application/platform/stm32l/io_cfg.h/.c` (chân
    GPIO — chỗ sửa nhiều nhất), `sys_cfg.c` (clock, console). Struct cấu hình SPL luôn qua
    `XXX_StructInit()` trước khi gán.
@@ -153,8 +155,11 @@ Chi tiết từng bước + code mẫu task + nguyên tắc kernel AK + port MCU
   `git checkout -- release` sau khi build, đừng commit nhầm bản build thử.
 - `task_zigbee.cpp` bị loại khỏi build (như bản gốc); muốn bật thêm `-DTASK_ZIGBEE_EN` và bỏ dòng loại
   trừ trong `build_src_filter`. Zigbee tự bật `SERIAL2_EN`, nên phải tắt `TASK_MBMASTER_EN`.
-- Thư mục `doc/` nặng (~95MB PDF) và demo/tests/tools của mbmaster **không copy theo** — xem ở
-  [repo gốc](https://github.com/the-ak-foundation/ak-base-kit-stm32l151).
+- Thư mục `doc/` nặng (~95MB PDF) của bản gốc **không copy theo** — xem ở
+  [repo gốc](https://github.com/the-ak-foundation/ak-base-kit-stm32l151). Thư viện nanoMODBUS chạy cả
+  vai master (`env:app`, mặc định) lẫn slave (`env:app_mbslave`) — loại trừ lẫn nhau qua
+  `TASK_MBMASTER_EN` / `TASK_MBSLAVE_EN`.
+- Test host cho lớp Modbus (không cần board): `bash tests_host/modbus/run_tests.sh`.
 - Các file `Makefile.mk` còn trong `sources/` chỉ để tham khảo, PlatformIO không dùng.
 
 ## AI assistant — tài liệu kernel AK qua MCP

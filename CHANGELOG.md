@@ -12,6 +12,33 @@ console lúc khởi động).
 - **Tài liệu:** hai guide EPCB trong repo MCP (`epcb-platformio-build`, `epcb-start-project`) cập
   nhật theo v1.1.2.
 
+## v1.2.0 — 25/09/2026
+
+Bootloader **không đổi mã** (vẫn 0.0.3), chỉ nâng `-DAPP_VERSION` cho khớp base (base đánh số chung
+app + boot).
+
+- **Modbus master:** bỏ hẳn thư viện thương mại `mbmaster-v2.9.6`, chuyển sang
+  [**nanoMODBUS v1.23.0**](https://github.com/debevv/nanoMODBUS) (MIT) — port RTU trên USART2 tự viết
+  (`rs485_port.c`, ring buffer + DIR RS485), **không còn dùng TIM4** (trước phải chiếm timer cho
+  timeout; xem commit `feat(modbus): master chuyen sang nanoMODBUS`).
+- **Thêm chế độ Modbus SLAVE:** cờ `-DTASK_MBSLAVE_EN` (loại trừ lẫn nhau với `TASK_MBMASTER_EN`,
+  `#error` lúc biên dịch nếu bật cả hai) — nanoMODBUS chạy vai server trên USART2, dùng cho OTA firmware
+  qua RS485. Thanh ghi demo trong `mb_slave_regs.c`: reg 0 = `(major<<8)|minor`, reg 1 = patch, reg 2 =
+  uptime (giây). Vòng lặp `app_modbus_poll()` gọi từ `task_polling_mbslave`
+  (`AC_TASK_POLLING_MBSLAVE_ID`).
+- **Env mới `[env:app_mbslave]`** trong `platformio.ini` — kế thừa `env:app`, chỉ đảo cờ
+  master → slave (`build_unflags`/`build_flags`), build ra file riêng
+  `release/app_mbslave/ak_base_kit_app_mbslave_v1.2.0.bin` (không đè lên bản `env:app`).
+- **Test host:** `tests_host/modbus/run_tests.sh` biên dịch `mb_slave_regs.c` + `nanomodbus.c` bằng
+  gcc thường (không cần board), kiểm giá trị 3 thanh ghi demo — chạy được trên máy dev/CI.
+- **Số flash (env:app, không tính env:app_mbslave):**
+
+  | Env | Trước (v1.1.2, còn mbmaster-v2.9.6) | Sau (v1.2.0, nanoMODBUS master) |
+  |---|---|---|
+  | `app` | 58220 B | 53668 B |
+  | `app_mbslave` (mới) | — | 56960 B |
+  | `boot` | 6820 B | 6820 B (không đổi) |
+
 ## v1.1.2 — 24/09/2026
 
 Bootloader **không đổi** (vẫn 0.0.3).

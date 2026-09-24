@@ -32,14 +32,14 @@ STM32L151CBT6 · PlatformIO
 3. Lấy source base **theo tag**, đừng copy thư mục tay:
 
 ```bash
-git clone --depth 1 --branch v1.1.2 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
+git clone --depth 1 --branch v1.2.0 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
 cd my-project-fw
 rm -rf .git && git init
 ```
 
 Rồi ghi ngay vào README của dự án mới:
 
-> Khởi tạo từ ak-base-kit-pio **v1.1.2**
+> Khởi tạo từ ak-base-kit-pio **v1.2.0**
 
 Một dòng thôi nhưng là thứ **duy nhất** giúp sau này biết dự án nào đang thiếu
 fix nào của source base. Copy thư mục tay thì mất hẳn thông tin này, vài tháng
@@ -72,17 +72,46 @@ Làm tương tự với `[env:boot]`. Sửa luôn prefix tên file release trong
 
 | Cờ | Module | Mặc định |
 |----|--------|----------|
-| `-DTASK_MBMASTER_EN` | Modbus master RTU — giữ USART2 | Bật |
-| `-DSERIAL2_EN` | Arduino `Serial2` giữ USART2 (Modbus slave, cầu UART…). Baud: `-DSERIAL2_BAUDRATE=9600`, mặc định 115200 | Tắt |
+| `-DTASK_MBMASTER_EN` | nanoMODBUS master RTU — giữ USART2, poll thiết bị tớ (ES35-SW, LHIO404) | Bật |
+| `-DTASK_MBSLAVE_EN` | nanoMODBUS **slave** RTU — giữ USART2, board đóng vai tớ (dùng cho OTA qua RS485). Loại trừ với `TASK_MBMASTER_EN`. Có sẵn env `[env:app_mbslave]` trong `platformio.ini` | Tắt |
+| `-DSERIAL2_EN` | Arduino `Serial2` giữ USART2 (cầu UART…). Baud: `-DSERIAL2_BAUDRATE=9600`, mặc định 115200 | Tắt |
 | `-DIF_LINK_UART_EN` | Giao thức link UART (3 task link) | Bật |
 | `-DSSD1309_DRIVER_EN` / `-DSH1106_DRIVER_EN` | OLED 1.54"/1.3" | SSD1309 |
 | `-DTASK_ZIGBEE_EN` | Zigbee | Tắt |
 | `-DIF_NETWORK_NRF24_EN` | Mạng nRF24 | Tắt |
 | `-DUSE_EXTERNAL_FLASH` | External SPI flash | Bật |
 
-**USART2 chỉ có một chủ:** `TASK_MBMASTER_EN` **hoặc** `SERIAL2_EN` — bật cả hai là `#error` lúc biên dịch. `TASK_ZIGBEE_EN` tự bật `SERIAL2_EN`. Tắt `TASK_MBMASTER_EN` trả lại ~7,8 KB flash.
+**USART2 chỉ có một chủ:** `TASK_MBMASTER_EN`, `TASK_MBSLAVE_EN` hoặc `SERIAL2_EN` — bật từ hai cờ trở
+lên là `#error` lúc biên dịch (`app.h`). `TASK_ZIGBEE_EN` tự bật `SERIAL2_EN`. Tắt `TASK_MBMASTER_EN`
+trả lại vài KB flash.
 
 Tắt module = xóa dòng define; nhớ bỏ/thêm dòng tương ứng trong `build_src_filter` nếu module có nhóm file riêng (xem comment trong `platformio.ini`).
+
+### 3.2.1. Modbus slave — build sẵn `env:app_mbslave`
+
+`platformio.ini` có sẵn env `[env:app_mbslave]` kế thừa `[env:app]` (`extends = env:app`), chỉ đảo cờ
+master → slave:
+
+```bash
+pio run -e app_mbslave
+```
+
+Board chạy vai **server** Modbus RTU trên USART2 (`app_modbus.cpp`: tạo server nanoMODBUS +
+`app_modbus_poll()` gọi từ task `task_polling_mbslave` / `AC_TASK_POLLING_MBSLAVE_ID`). Bảng thanh ghi
+demo (`sources/application/networks/mb_port/mb_slave_regs.c`):
+
+| Địa chỉ | Nội dung |
+|---|---|
+| 0 | `(major << 8) \| minor` — ví dụ v1.2.0 → `0x0102` |
+| 1 | `patch` — ví dụ v1.2.0 → `0` |
+| 2 | Uptime tính bằng giây kể từ lúc board khởi động |
+
+Test lớp Modbus **không cần board** (biên dịch host bằng gcc, gọi thẳng `mb_slave_regs.c` +
+`nanomodbus.c`):
+
+```bash
+bash tests_host/modbus/run_tests.sh
+```
 
 ### 3.3. Cấu hình phần cứng — `sources/application/platform/stm32l/`
 
@@ -247,8 +276,8 @@ Bố cục hiện tại (boot 8K → BSF 4K @ `0x08002000` → app 116K) tính c
 
 ## 7. Checklist bắt đầu dự án mới
 
-- [ ] Clone **theo tag** (`--branch v1.1.2`), `rm -rf .git`, `git init`
-- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.1.2")
+- [ ] Clone **theo tag** (`--branch v1.2.0`), `rm -rf .git`, `git init`
+- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.2.0")
 - [ ] Đổi `APP_TITLE` / `APP_VERSION` (app + boot)
 - [ ] Đổi tên `build_dir` và prefix file release
 - [ ] Chọn module (define) + `build_src_filter` tương ứng
