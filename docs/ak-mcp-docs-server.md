@@ -6,7 +6,7 @@ Copilot. Khi làm việc trong repo này, AI assistant tự có các tool tra AP
 kernel, guide viết task/driver, và phân tích log UART — trả lời dựa trên tài
 liệu chính thức thay vì đoán.
 
-Dùng **fork của EPCB**, nhánh `epcb`:
+Dùng **bản fork riêng**, nhánh `epcb`:
 [hohoanganh/mcp-docs-server](https://github.com/hohoanganh/mcp-docs-server/tree/epcb)
 (upstream: [the-ak-foundation/mcp-docs-server](https://github.com/the-ak-foundation/mcp-docs-server)).
 
@@ -17,10 +17,14 @@ file đó không tồn tại ở đây. Nhánh `epcb` thêm 2 guide riêng:
 
 | Guide | Nội dung |
 |---|---|
-| `epcb-platformio-build` | build/nạp bằng `pio`, RELEASE ở `platformio.ini`, **bắt buộc seed BSF sau khi nạp SWD**, cảnh báo không được bỏ cờ linker `max-page-size=4` |
+| `epcb-platformio-build` | build/nạp bằng `pio`, RELEASE ở `platformio.ini`, seed BSF sau khi nạp SWD, cảnh báo không được bỏ cờ linker `max-page-size=4` |
 | `epcb-start-project` | khởi tạo sản phẩm mới từ source base theo tag, ghi lại version base |
 
 Phần kernel AK không đổi nên toàn bộ guide còn lại của upstream vẫn dùng nguyên.
+
+> Guide `epcb-platformio-build` viết trước base v1.1.0 nên còn ghi **bắt buộc** seed BSF sau khi nạp
+> SWD. Từ bootloader 0.0.2 bước đó không còn cần — bootloader tự vá BSF
+> ([known-bugs.md](known-bugs.md) #3). Chỉ board còn bootloader cũ mới cần `pio run -e app -t bsf`.
 
 ## Tool được cung cấp
 
@@ -48,7 +52,7 @@ Prompt mẫu: `ak-new-project`, `ak-new-task`, `ak-new-driver`, `ak-debug`.
 Cần Node.js ≥ 22.6 (theo `engines` trong `package.json`).
 
 ```powershell
-# Clone NGOAI OneDrive (node_modules hang nghin file nho, de OneDrive sync la hong)
+# Clone NGOÀI OneDrive (node_modules hàng nghìn file nhỏ, để OneDrive sync là hỏng)
 cd D:\dev
 git clone -b epcb https://github.com/hohoanganh/mcp-docs-server.git
 cd mcp-docs-server
@@ -78,12 +82,12 @@ hard-code: `.mcp.json` dùng cú pháp biến môi trường của Claude Code
 luôn không cần làm gì; máy cài chỗ khác chỉ cần đặt biến `AK_MCP_HOME`:
 
 ```powershell
-# Windows - dat vinh vien cho user (mo terminal moi de co hieu luc)
+# Windows - đặt vĩnh viễn cho user (mở terminal mới để có hiệu lực)
 setx AK_MCP_HOME "E:\tools\mcp-docs-server"
 ```
 
 ```bash
-# Linux/macOS - them vao ~/.bashrc hoac ~/.zshrc
+# Linux/macOS - thêm vào ~/.bashrc hoặc ~/.zshrc
 export AK_MCP_HOME="$HOME/dev/mcp-docs-server"
 ```
 
@@ -107,11 +111,11 @@ cd D:\dev\mcp-docs-server
 git fetch upstream
 git checkout main; git merge --ff-only upstream/main; git push origin main
 git checkout epcb; git merge main
-npm run build        # bat buoc: corpus.json bi gitignore, khong tu sinh lai
+npm run build        # bắt buộc: corpus.json bị gitignore, không tự sinh lại
 npm test             # 45 test
 ```
 
-## Thêm guide EPCB mới
+## Thêm guide riêng
 
 Guide chỉ là markdown + frontmatter trong `corpus/guides/`, thêm file rồi
 `npm run build` là xong (`id` tự lấy từ tên file nếu không khai báo):
@@ -119,10 +123,10 @@ Guide chỉ là markdown + frontmatter trong `corpus/guides/`, thêm file rồi
 ```markdown
 ---
 id: epcb-ten-guide
-title: "EPCB: tieu de"
+title: "EPCB: tiêu đề"
 section: guide
-tags: epcb, tu, khoa, tim, kiem
-summary: Mot dong tom tat - hien trong ket qua search.
+tags: epcb, từ, khoá, tìm, kiếm
+summary: Một dòng tóm tắt - hiện trong kết quả search.
 ---
 
 # Nội dung...
@@ -131,6 +135,6 @@ summary: Mot dong tom tat - hien trong ket qua search.
 Sau khi build, kiểm tra bằng `npm run drift` (kiểm tra tham chiếu chéo) và
 `npm test`. Guide mới tự động vào enum của tool `get_ak_guide(topic=...)`.
 
-Nội dung nào **không riêng EPCB** (ví dụ bổ sung ngữ nghĩa cho API kernel —
+Nội dung nào **không riêng cho repo này** (ví dụ bổ sung ngữ nghĩa cho API kernel —
 hiện mới phủ 15/54 hàm) thì nên làm trên nhánh `main` và gửi PR lên upstream,
 đừng để lẫn trong nhánh `epcb`.

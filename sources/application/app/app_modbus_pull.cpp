@@ -30,7 +30,6 @@
 
 /*----------------------------------------------------------------------------*
  *  Device name: Cảm biến nhiệt độ, độ ẩm RS485 Modbus RTU ES35-SW (SHT35)
- *  Product link: https://epcb.vn/products/cam-bien-nhiet-do-do-am-rs485-modbus-rtu-es35-sw
  *  Note:
  *----------------------------------------------------------------------------*/
 static MB_DevRegStruct_t Es35SW_Registers[] = {
@@ -49,7 +48,6 @@ MB_DeviceStruct_t MB_ES35SW_TH_Sensor = {
 
 /*----------------------------------------------------------------------------*
  *  Device name: Relay 4 kênh IO giao tiếp RS485/RS232 công nghiệp LH-IO-01
- *  Product link: https://epcb.vn/products/relay-4-kenh-dau-ra-io-giao-tiep-rs485-rs232-cong-nghiep-lh-io-01
  *  Note:
  *----------------------------------------------------------------------------*/
 static MB_DevRegStruct_t MB_LHIO404_IO_Device_Registers[] = {

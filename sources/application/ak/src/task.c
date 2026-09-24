@@ -72,6 +72,15 @@ void task_create(task_t* task_tbl) {
 	if (task_tbl) {
 		task_table = task_tbl;
 		while (task_tbl[idx].id != AK_TASK_EOT_ID) {
+			/* task_post() va task_sheduler() tra task bang CHI SO
+			 * task_table[des_task_id], khong tim theo ID - nen dong thu idx
+			 * phai mang dung id == idx. Them task sai cho trong
+			 * app_task_table, hoac khoi #if trong enum va trong bang khong
+			 * khop, thi message di nham task ma khong bao gi. Dung ngay luc
+			 * khoi dong thay vi de no chay sai. */
+			if (task_tbl[idx].id != idx) {
+				FATAL("TK", 0x08);
+			}
 			idx++;
 		}
 		task_table_size = idx;

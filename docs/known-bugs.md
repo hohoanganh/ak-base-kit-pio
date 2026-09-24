@@ -1,8 +1,8 @@
 # Lỗi đã biết trong source base
 
 Các lỗi phát hiện khi dựng sản phẩm từ base này. **Tất cả đã sửa** — #1–#7 trong `v1.1.0`,
-#8–#11 trong `v1.1.1`. Dự án mới clone từ tag `v1.1.1` trở đi không còn mang chúng. Dự án tạo từ
-bản cũ hơn thì phải tự chép bản sửa sang (xem dòng *File* của từng mục).
+#8–#11 trong `v1.1.1`, #12–#13 trong `v1.1.2`. Dự án mới clone từ tag `v1.1.2` trở đi không còn mang
+chúng. Dự án tạo từ bản cũ hơn thì phải tự chép bản sửa sang (xem dòng *File* của từng mục).
 
 | # | Lỗi | Mức | Trạng thái | Kiểm chứng |
 |---|---|---|---|---|
@@ -17,6 +17,8 @@ bản cũ hơn thì phải tự chép bản sửa sang (xem dòng *File* của t
 | 9 | `io_rs485_dir_mode_output()` thiếu `GPIO_PuPd` → rác vào PUPDR, lan sang chân RX RS485 | Cao | ✅ Đã sửa v1.1.1 | Phần cứng, đọc PUPDR |
 | 10 | `SPI.cpp` của bootloader: `setDataMode()` / `setClockDivider()` nạp struct rác vào SPI | Thấp (chưa ai gọi) | ✅ Đã sửa v1.1.1 (boot 0.0.3) | Build + boot chạy |
 | 11 | `buzzer.c`: `NVIC_IRQChannelSubPriority` không gán | Thấp (đang vô hại) | ✅ Đã sửa v1.1.1 | Build |
+| 12 | Cờ biên dịch trong `pio_build_flags.py` (`-std=gnu99`, `-std=gnu++11`, `-fno-use-cxa-atexit`) không tới file nguồn nào | Trung bình | ✅ Đã sửa v1.1.2 | Build `-v` |
+| 13 | Version app gõ cứng `{0, 0, 0, 3}` — đổi `APP_VERSION` chỉ đổi tên file, board vẫn báo 0.0.0.3 | Trung bình | ✅ Đã sửa v1.1.2 | Phần cứng |
 
 Cộng thêm các [bẫy không phải lỗi](#bẫy--không-phải-lỗi-nhưng-đã-làm-mất-thời-gian) ở cuối.
 
@@ -24,8 +26,8 @@ Cộng thêm các [bẫy không phải lỗi](#bẫy--không-phải-lỗi-nhưng
 
 | Lỗi | Cần nạp lại |
 |---|---|
-| #1, #2, #4–#9, #11 | **app** — là code của app |
-| #3, #10 | **bootloader** — nạp `release/boot/ak_base_kit_boot_v1.1.1.bin` tại `0x08000000`. Console in `[BOOT] version: 0.0.3` là đã lên bản mới |
+| #1, #2, #4–#9, #11–#13 | **app** — là code của app (#12 build lại cả boot) |
+| #3, #10 | **bootloader** — nạp `release/boot/ak_base_kit_boot_v<x.y.z>.bin` của bản mới nhất (từ v1.1.1) tại `0x08000000`. Console in `[BOOT] version: 0.0.3` là đã lên bản mới |
 
 ---
 
@@ -92,7 +94,7 @@ EXIT_CRITICAL();
 | 2.000 khung Modbus liên tục @9600 | ~4 % hỏng, theo cụm 6 | **0 %** |
 | Thời gian đáp | 64,5 ms | 64,9 ms trung vị, 66,5 ms tối đa |
 
-Đo trên AK MCU KIT 3I0 trong dự án `14_EPCB AC Controller RS485`, 22/09/2026.
+Đo trên AK MCU KIT 3I0 trong một dự án Modbus RTU slave dựng từ base này, 22/09/2026.
 
 ---
 
@@ -381,6 +383,39 @@ của ngắt TIM buzzer — ngắt đang ở preemption 0, cao hơn cả SysTick
 
 ---
 
+## 12. Cờ biên dịch trong `pio_build_flags.py` không có tác dụng
+
+**File:** `pio_build_flags.py`
+
+Script thêm `-std=gnu99` (C), `-std=gnu++11 -fno-rtti -fno-exceptions -fno-use-cxa-atexit` (C++) —
+khớp Makefile gốc — bằng `env.Append(...)`. Nhưng đây là POST script: lúc nó chạy PlatformIO đã tách
+`projenv` (môi trường biên dịch code trong `src_dir`) ra khỏi `env`. Cờ **link** vẫn có tác dụng (bước
+link dùng `env`), còn cờ **biên dịch** không tới được file nguồn nào. Kiểm bằng `pio run -v`: không
+dòng lệnh nào có `-std=gnu99` hay `-std=gnu++11`; `-fno-rtti` có mặt chỉ vì platform tự thêm.
+
+Hệ quả: tới v1.1.1 code được biên dịch bằng chuẩn mặc định của GCC 9.2 (gnu11 / gnu++14) chứ không
+phải chuẩn chú thích mô tả, và `-fno-use-cxa-atexit` chưa từng bật. Code vẫn chạy — nhưng ai tin vào
+chú thích (ví dụ viết code C++14 "vì đang là gnu++11 thì không được") sẽ bị dắt sai.
+
+**Đã sửa:** `Import("env", "projenv")` và áp cờ biên dịch cho cả hai. Build sạch với đúng
+gnu99/gnu++11: **0 cảnh báo, 0 lỗi** ở cả app lẫn boot; app nhỏ đi 72 byte flash, 8 byte RAM.
+
+## 13. Version app gõ cứng
+
+**File:** `sources/application/app/app.h`, `pio_build_flags.py`
+
+`#define APP_VER {0, 0, 0, 3}` là thứ app in lúc khởi động và lệnh shell `ver` trả về. Nó không liên
+quan gì tới `-DAPP_VERSION="x.y.z"` trong `platformio.ini` — biến đó chỉ dùng đặt tên file release.
+Tài liệu dặn "đổi version thì sửa `-DAPP_VERSION`": làm đúng như vậy thì tên file đổi, còn board vẫn
+báo `0.0.0.3` — không có cách nào biết board đang chạy bản nào.
+
+**Đã sửa:** `APP_VERSION` là **nguồn duy nhất**. `pio_build_flags.py` tách nó ra
+`APP_VER_MAJOR/MINOR/PATCH`, `app.h` dựng `APP_VER {major, minor, patch, 0}`. Trên AK MCU KIT 3I0,
+app v1.1.2 in `App version: 1.1.2.0` lúc khởi động và ở lệnh `ver`. (Bootloader giữ version riêng
+`BOOT_VER`, hiện 0.0.3.)
+
+---
+
 ## Bẫy — không phải lỗi, nhưng đã làm mất thời gian
 
 | Bẫy | Chi tiết |
@@ -390,6 +425,3 @@ của ngắt TIM buzzer — ngắt đang ở preemption 0, cao hơn cả SysTick
 | **SWD `mode=HOTPLUG` trên board đang chạy** | Treo lõi trong khi IWDG vẫn đếm → có thể reset giữa lúc ghi BSF (#3). Để board tự báo thanh ghi qua console; nếu bắt buộc đọc SWD thì gộp vào **một** lần gọi CLI |
 | **`TIM_ClearITPendingBit(TIMx, TIM_IT_CC1)` không xoá `CC1OF`** | Của thư viện SPL, không phải của base. Dùng input capture thì xoá bằng `TIMx->SR = ~(TIM_SR_CC1IF \| TIM_SR_CC1OF \| TIM_SR_UIF)` trước khi bật — cờ sót làm lệch pha cả lần bắt sau |
 
----
-
-*EPCB Vietnam · contact@epcb.vn · www.epcb.vn*

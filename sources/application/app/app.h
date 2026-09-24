@@ -211,7 +211,14 @@ enum {
  */
 /*****************************************************************************/
 #define APP_MAGIC_NUMBER	0xAABBCCDD
-#define APP_VER				{0, 0, 0, 3}
+/* Lay tu -DAPP_VERSION="x.y.z" (platformio.ini) - pio_build_flags.py tach ra
+ * APP_VER_MAJOR/MINOR/PATCH. So thu 4 de 0. Ban cu go cung {0, 0, 0, 3}: doi
+ * APP_VERSION chi doi ten file release, board van bao 0.0.0.3. */
+#if defined(APP_VER_MAJOR) && defined(APP_VER_MINOR) && defined(APP_VER_PATCH)
+#define APP_VER				{APP_VER_MAJOR, APP_VER_MINOR, APP_VER_PATCH, 0}
+#else
+#define APP_VER				{0, 0, 0, 0}	/* build khong qua pio_build_flags.py */
+#endif
 
 typedef struct {
 	uint32_t magic_number;

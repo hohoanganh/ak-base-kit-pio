@@ -1,5 +1,4 @@
 # ArduinoZigBee
-# contact: epcbtech@gmail.com
 
 Example Note: 
 

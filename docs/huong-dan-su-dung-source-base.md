@@ -1,12 +1,13 @@
-# Hướng Dẫn Sử Dụng Source Base `ak-base-kit-pio` Cho Dự Án Mới
+# Hướng dẫn dùng source base `ak-base-kit-pio` cho dự án mới
 
-**EPCB® IOT SERVICES** · STM32L151CBT6 · PlatformIO
+STM32L151CBT6 · PlatformIO
 
-> Đọc kèm: `docs/ak-base-kit-pio-luong-hoat-dong.md` (kiến trúc & luồng hoạt động) · `README.md` (quy ước build)
+> Đọc kèm: [ak-base-kit-pio-luong-hoat-dong.md](ak-base-kit-pio-luong-hoat-dong.md) (kiến trúc & luồng
+> hoạt động) · [README.md](../README.md) (quy ước build) · [known-bugs.md](known-bugs.md) (lỗi đã biết)
 
 ---
 
-## 1. Điểm Hay Của Source Base Này
+## 1. Điểm hay của source base này
 
 | # | Điểm mạnh | Ý nghĩa thực tế |
 |---|-----------|-----------------|
@@ -18,27 +19,27 @@
 | 6 | **Kiến trúc phân lớp rõ ràng** | `app / kernel / driver / common / platform` tách biệt. Đổi phần cứng chỉ sửa `platform + driver`; logic nghiệp vụ ở `app/` không đụng. Nhiều người làm chung ít giẫm chân nhau. |
 | 7 | **Hạ tầng debug sẵn có** | Shell console qua UART (115200) với `cmd_line`, log `xprintf`, watchdog kép (IWDG 32s + soft watchdog 20s), log queue message của kernel, `.non_clear_ram` giữ dữ liệu qua soft-reboot để phân tích lỗi. |
 | 8 | **Release tự động có version** | Build xong tự copy `release/<env>/ak_base_kit_<env>_v<x.y.z>.bin` — không nhầm bản khi bàn giao sản xuất. Build dir đặt ngoài OneDrive nên không dính lỗi khóa file. |
-| 9 | **Đã kiểm chứng** | Toàn bộ 143 file được compile-check chéo + build thật thành công (app 58KB / boot 6.8KB). Mô hình PlatformIO copy từ dự án Smart-PDU đã chạy ổn định thực tế. |
+| 9 | **Đã kiểm chứng** | Build sạch 0 cảnh báo với `-Wall` (app ~58 KB / boot ~6,8 KB), bootloader và driver nền đã chạy trên AK MCU KIT 3I0 — xem [known-bugs.md](known-bugs.md). Mô hình PlatformIO lấy từ dự án Smart-PDU đã chạy ổn định thực tế. |
 
 **Khi nào KHÔNG nên dùng:** cần preemptive real-time cứng (deadline µs) → cân nhắc RTOS; MCU khác dòng STM32L1 → phải port lại `platform/` (xem mục 6).
 
 ---
 
-## 2. Chuẩn Bị
+## 2. Chuẩn bị
 
 1. **VS Code** + extension **PlatformIO IDE** (tự kéo toolchain ARM khi build lần đầu — cần mạng lần đầu).
 2. **ST-Link** (nạp + debug). Sản phẩm đã có boot thì nạp app qua UART cũng được.
 3. Lấy source base **theo tag**, đừng copy thư mục tay:
 
 ```bash
-git clone --depth 1 --branch v1.1.1 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
+git clone --depth 1 --branch v1.1.2 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
 cd my-project-fw
 rm -rf .git && git init
 ```
 
 Rồi ghi ngay vào README của dự án mới:
 
-> Khởi tạo từ ak-base-kit-pio **v1.1.1**
+> Khởi tạo từ ak-base-kit-pio **v1.1.2**
 
 Một dòng thôi nhưng là thứ **duy nhất** giúp sau này biết dự án nào đang thiếu
 fix nào của source base. Copy thư mục tay thì mất hẳn thông tin này, vài tháng
@@ -50,17 +51,22 @@ sau không ai nhớ bản gốc là bản nào.
 > OneDrive thì giữ dòng `build_dir = ${sysenv.TEMP}/...` trong `platformio.ini`
 > (sửa tên cho khỏi đụng dự án khác).
 
-## 3. Việc Đầu Tiên Khi Tạo Dự Án Mới
+## 3. Việc đầu tiên khi tạo dự án mới
 
 ### 3.1. Đặt tên & version — `platformio.ini`
 
 ```ini
 [env:app]
+build_flags =
+    ${env.build_flags}
+    -Os
     -DAPP_TITLE=\"my-project-app\"
     -DAPP_VERSION=\"0.1.0\"
+    ; ... giữ nguyên các dòng còn lại
 ```
 
-Sửa luôn prefix tên file release trong `pio_copy_release.py` (chuỗi `ak_base_kit_`).
+Làm tương tự với `[env:boot]`. Sửa luôn prefix tên file release trong `pio_copy_release.py` (chuỗi
+`ak_base_kit_`).
 
 ### 3.2. Chọn module — `platformio.ini` `[env:app]`
 
@@ -88,11 +94,11 @@ Tắt module = xóa dòng define; nhớ bỏ/thêm dòng tương ứng trong `bu
 
 Bootloader có bộ file `platform/` riêng trong `sources/boot/` — thường không cần đụng.
 
-## 4. Viết Chức Năng Mới (Task Mới)
+## 4. Viết chức năng mới (task mới)
 
 Quy trình thêm 1 task theo đúng mô hình AK (ví dụ `task_sensor`):
 
-**Bước 1 — Khai báo ID** — `sources/application/app/task_list.h` (ID phải tăng dần, thêm trước `AK_TASK_EOT_ID`):
+**Bước 1 — Khai báo ID** — `sources/application/app/task_list.h`, thêm ngay trước `AK_TASK_EOT_ID`:
 
 ```c
 enum {
@@ -104,11 +110,17 @@ enum {
 extern void task_sensor(ak_msg_t*);
 ```
 
-**Bước 2 — Đăng ký vào bảng task** — `task_list.cpp`:
+**Bước 2 — Đăng ký vào bảng task** — `app_task_table` trong `task_list.cpp`, **ngay trước dòng
+`AK_TASK_EOT_ID`**:
 
 ```c
 {AC_TASK_SENSOR_ID,  TASK_PRI_LEVEL_4,  task_sensor},
 ```
+
+> **Thứ tự dòng phải khớp thứ tự enum ở bước 1.** Kernel tra task bằng chỉ số
+> `task_table[task_id]`, không tìm theo ID — dòng lệch chỗ là message đi nhầm task, không báo gì.
+> Các khối `#if defined(...)` trong enum và trong bảng cũng phải bọc giống hệt nhau. Từ v1.1.2
+> `task_create()` kiểm điều này lúc khởi động và dừng bằng `FATAL("TK", 0x08)` nếu lệch.
 
 **Bước 3 — Tạo handler** — `app/task_sensor.cpp` + `.h`, định nghĩa signal trong `app.h` (hoặc header riêng):
 
@@ -126,11 +138,14 @@ void task_sensor(ak_msg_t* msg) {
         /* khởi tạo, đặt timer đọc chu kỳ 1s */
         timer_set(AC_TASK_SENSOR_ID, SENSOR_READ_TIMER, 1000, TIMER_PERIODIC);
         break;
-    case SENSOR_READ_TIMER:
-        /* đọc sensor, gửi kết quả cho task khác */
+    case SENSOR_READ_TIMER: {
+        /* đọc sensor, gửi kết quả cho task khác (DISPLAY_SENSOR_UPDATE: signal
+         * tự định nghĩa cho task_display) */
+        uint16_t value = sensor_read();
         task_post_common_msg(AC_TASK_DISPLAY_ID, DISPLAY_SENSOR_UPDATE,
                              (uint8_t*)&value, sizeof(value));
         break;
+    }
     default:
         break;
     }
@@ -152,7 +167,7 @@ task_post_pure_msg(AC_TASK_SENSOR_ID, SENSOR_INIT);
 - Từ ISR muốn báo task: dùng `task_post` trong cặp `task_entry_interrupt()` / `task_exit_interrupt()` (xem mẫu trong `platform/stm32l/`).
 - Ưu tiên: PRI_2 cho nghiệp vụ thường, PRI_4-5 cho giao tiếp, PRI_6-7 dành cho hệ thống (life/timer) — đừng đặt task nghiệp vụ ưu tiên cao hơn timer.
 
-## 5. Build — Nạp — Debug
+## 5. Build — nạp — debug
 
 ```bash
 pio run -e app                 # build firmware ứng dụng
@@ -171,7 +186,8 @@ pio device monitor             # console UART1 115200
   *boot share flash* (`0x08002000`) cả hai điều kiện `fw_app_cmd.cmd ==
   SYS_BOOT_CMD_NONE` và `current_fw_app_header.psk == FIRMWARE_PSK`. Vùng này
   bình thường do luồng update UART/OTA ghi; nạp thẳng bằng ST-Link **không hề
-  đụng tới nó**, nên trên chip mới BSF vẫn trắng (`0xFF`) và bootloader rơi vào
+  đụng tới nó**, nên trên chip mới BSF vẫn trắng (trên STM32L1 flash đã xoá đọc ra `0x00`, không
+  phải `0xFF`) và bootloader rơi vào
   nhánh "unexpected status" — `while(1)` nháy LED, **nhìn từ ngoài y hệt board
   hỏng**. Chạy `-t bsf` một lần là xong, chỉ cần làm lại sau khi xóa toàn chip.
 - **Không được bỏ cờ linker `-Wl,-z,max-page-size=4`** trong
@@ -184,7 +200,7 @@ pio device monitor             # console UART1 115200
 - Console có shell: gõ lệnh qua UART (xem `shell.cpp` để thêm lệnh mới — bảng `lgn_cmd_table`).
 - Log bật/tắt bằng các define `SYS_PRINT_EN`, `APP_DBG_EN`... trong `platformio.ini`.
 
-## 6. Port Sang MCU Khác (Nâng Cao)
+## 6. Port sang MCU khác (nâng cao)
 
 ### 6.1. Phải thay bao nhiêu?
 
@@ -204,8 +220,8 @@ Nói cách khác: đổi chip **không phải viết lại từ đầu**, gần 
 ### 6.2. Ba tình huống
 
 **a. Cùng STM32L1, khác dung lượng flash/RAM** — nhẹ nhất. Sửa
-`boards/*.json` (`maximum_size`), 2 file `ak.ld` (độ dài FLASH/RAM), và
-`APP_START_ADDR` nếu đổi layout.
+`boards/*.json` (`maximum_size`), `board_upload.maximum_size` của từng env trong
+`platformio.ini`, 2 file `ak.ld` (độ dài FLASH/RAM), và `APP_START_ADDR` nếu đổi layout.
 
 **b. Khác dòng nhưng vẫn có SPL** (F1, F4, L1 khác) — ST có Standard
 Peripheral Library cho các họ này. Thay `platform/stm32l/Libraries` bằng SPL
@@ -229,20 +245,17 @@ Bố cục hiện tại (boot 8K → BSF 4K @ `0x08002000` → app 116K) tính c
    bootloader đọc BSF ở sai địa chỉ, không thấy cờ hợp lệ, và board nháy LED
    nhìn y hệt bị treo dù app đã nạp đúng.
 
-## 7. Checklist Bắt Đầu Dự Án Mới
+## 7. Checklist bắt đầu dự án mới
 
-- [ ] Clone **theo tag** (`--branch v1.1.1`), `rm -rf .git`, `git init`
-- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.1.1")
+- [ ] Clone **theo tag** (`--branch v1.1.2`), `rm -rf .git`, `git init`
+- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.1.2")
 - [ ] Đổi `APP_TITLE` / `APP_VERSION` (app + boot)
 - [ ] Đổi tên `build_dir` và prefix file release
 - [ ] Chọn module (define) + `build_src_filter` tương ứng
 - [ ] Sửa `io_cfg.h/.c` theo schematic board
-- [ ] Build thử `pio run -e app` và `-e boot` — phải 0 lỗi trước khi viết code mới
+- [ ] Build thử `pio run -e app` và `-e boot` — phải 0 lỗi, 0 cảnh báo trước khi viết code mới
 - [ ] Nạp `boot` → nạp `app` (bootloader cũ < 0.0.2 thì thêm **`pio run -e app -t bsf`**, thiếu là board nháy LED như treo)
 - [ ] Xác nhận console lên log và LED life nhấp nháy
 - [ ] Xóa task mẫu không dùng (display/zigbee/rf24...) hoặc để lại tham khảo
 - [ ] Commit mốc "clean base" trước khi phát triển
 
----
-
-*EPCB Vietnam · contact@epcb.vn · (+84) 367 939 867 · www.epcb.vn*
