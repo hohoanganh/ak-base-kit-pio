@@ -139,7 +139,12 @@ Ghi chú khi dùng:
   reset sau ~200 ms để bootloader nạp bản mới.
 - Phải gọi đích danh **địa chỉ slave** (unit_id) của từng board — **broadcast (unit_id 0) bị chặn
   hoàn toàn**, không có phản hồi nên không dùng để OTA được.
-- Công cụ PC:
+- 🔴 **Chỉ được gửi ảnh build `app_mbslave`**, đúng mẫu tên file
+  `release/app_mbslave/ak_base_kit_app_mbslave_v<x.y.z>.bin`. Gửi nhầm ảnh `env:app` (master) vẫn
+  qua được kiểm tra vector bảng (cả hai env dùng chung layout app) nhưng ảnh đó **không có task
+  Modbus slave** — nạp xong board mất luôn đường OTA qua RS485, phải quay lại nạp bằng ST-Link.
+- Công cụ PC (`epcb_applib.ota`) tự kiểm anh là vector bảng app hợp lệ trước khi gửi (từ chối
+  `.elf`/`.hex`/ảnh bootloader) và tự xác nhận phiên bản qua Modbus sau khi thiết bị khởi động lại:
 
   ```bash
   python -m epcb_applib.ota COMx release/app_mbslave/ak_base_kit_app_mbslave_v1.3.0.bin --slave 1 --baud 9600
@@ -147,8 +152,8 @@ Ghi chú khi dùng:
 
 ## Dùng cho dự án mới — 7 bước
 
-1. **Clone theo tag mới nhất** (`git clone --depth 1 --branch v1.2.0 ...`), xoá `.git`, `git init`,
-   ghi "Khởi tạo từ ak-base-kit-pio v1.2.0" vào README dự án, commit mốc "clean base". **Không** chép
+1. **Clone theo tag mới nhất** (`git clone --depth 1 --branch v1.3.0 ...`), xoá `.git`, `git init`,
+   ghi "Khởi tạo từ ak-base-kit-pio v1.3.0" vào README dự án, commit mốc "clean base". **Không** chép
    thư mục tay hay chép nền từ một dự án khác — mất dấu bản base là mất dấu các bản sửa.
 2. **Đổi định danh** trong `platformio.ini`: `-DAPP_TITLE`, `-DAPP_VERSION` (cả `[env:app]` lẫn
    `[env:boot]`), đổi tên `build_dir`; đổi prefix tên file trong `pio_copy_release.py`.

@@ -32,14 +32,14 @@ STM32L151CBT6 · PlatformIO
 3. Lấy source base **theo tag**, đừng copy thư mục tay:
 
 ```bash
-git clone --depth 1 --branch v1.2.0 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
+git clone --depth 1 --branch v1.3.0 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
 cd my-project-fw
 rm -rf .git && git init
 ```
 
 Rồi ghi ngay vào README của dự án mới:
 
-> Khởi tạo từ ak-base-kit-pio **v1.2.0**
+> Khởi tạo từ ak-base-kit-pio **v1.3.0**
 
 Một dòng thôi nhưng là thứ **duy nhất** giúp sau này biết dự án nào đang thiếu
 fix nào của source base. Copy thư mục tay thì mất hẳn thông tin này, vài tháng
@@ -83,7 +83,7 @@ Làm tương tự với `[env:boot]`. Sửa luôn prefix tên file release trong
 
 **USART2 chỉ có một chủ:** `TASK_MBMASTER_EN`, `TASK_MBSLAVE_EN` hoặc `SERIAL2_EN` — bật từ hai cờ trở
 lên là `#error` lúc biên dịch (`app.h`). `TASK_ZIGBEE_EN` tự bật `SERIAL2_EN`. Tắt `TASK_MBMASTER_EN`
-trả lại vài KB flash.
+trả lại khoảng 4,5 KB flash (env `app`: 58220 → 53668 B tại v1.2.0, xem `CHANGELOG.md`).
 
 Tắt module = xóa dòng define; nhớ bỏ/thêm dòng tương ứng trong `build_src_filter` nếu module có nhóm file riêng (xem comment trong `platformio.ini`).
 
@@ -276,8 +276,8 @@ Bố cục hiện tại (boot 8K → BSF 4K @ `0x08002000` → app 116K) tính c
 
 ## 7. Checklist bắt đầu dự án mới
 
-- [ ] Clone **theo tag** (`--branch v1.2.0`), `rm -rf .git`, `git init`
-- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.2.0")
+- [ ] Clone **theo tag** (`--branch v1.3.0`), `rm -rf .git`, `git init`
+- [ ] **Ghi version base vào README** dự án mới ("Khởi tạo từ ak-base-kit-pio v1.3.0")
 - [ ] Đổi `APP_TITLE` / `APP_VERSION` (app + boot)
 - [ ] Đổi tên `build_dir` và prefix file release
 - [ ] Chọn module (define) + `build_src_filter` tương ứng

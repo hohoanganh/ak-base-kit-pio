@@ -38,8 +38,7 @@ Bootloader **không đổi mã** (vẫn 0.0.3), chỉ nâng `-DAPP_VERSION` cho 
   | `boot` | 6820 B | 6820 B (không đổi) |
 
 - **Chưa kiểm trên phần cứng thật:** OTA qua RS485 mới chạy qua test host (giả lập
-  read/write/checksum bằng gcc thường), chưa nạp board thật để kéo file `.bin` qua RS485 —
-  xem `.superpowers/sdd/task-8-report.md`.
+  read/write/checksum bằng gcc thường), chưa nạp board thật để kéo file `.bin` qua RS485.
 
 ## v1.2.0 — 25/09/2026
 
@@ -60,6 +59,9 @@ app + boot).
   `release/app_mbslave/ak_base_kit_app_mbslave_v1.2.0.bin` (không đè lên bản `env:app`).
 - **Test host:** `tests_host/modbus/run_tests.sh` biên dịch `mb_slave_regs.c` + `nanomodbus.c` bằng
   gcc thường (không cần board), kiểm giá trị 3 thanh ghi demo — chạy được trên máy dev/CI.
+- **Timeout master đổi:** nanoMODBUS master chờ phản hồi tối đa `APP_MB_READ_TIMEOUT_MS` = 500 ms
+  (`app_modbus.h`), thay vì 100 ms của `mbmaster` cũ. Hệ quả: lệnh `modbus r` khi rút mất một thiết
+  bị giờ đợi ~2 s cho thiết bị đó (thay vì ~0,4 s trước đây) trước khi báo lỗi và sang thiết bị kế.
 - **Số flash (env:app, không tính env:app_mbslave):**
 
   | Env | Trước (v1.1.2, còn mbmaster-v2.9.6) | Sau (v1.2.0, nanoMODBUS master) |
