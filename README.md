@@ -13,6 +13,10 @@ Chi tiết: [docs/huong-dan-su-dung-source-base.md](docs/huong-dan-su-dung-sourc
 **Phiên bản mới nhất: `v1.3.0`** — lịch sử thay đổi: [CHANGELOG.md](CHANGELOG.md) · lỗi đã biết và
 bản sửa: [docs/known-bugs.md](docs/known-bugs.md).
 
+**Mới từ v1.2.0 – v1.3.0:** Modbus chuyển sang nanoMODBUS (MIT, có cả master lẫn slave) và
+**cập nhật firmware qua RS485** không cần ST-Link — tổng hợp tính năng, cách dùng và kết quả kiểm
+trên board: [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
+
 ## Kiến trúc & bộ nhớ
 
 ```mermaid

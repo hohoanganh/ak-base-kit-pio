@@ -4,13 +4,8 @@ Dự án mới luôn clone theo **tag mới nhất** và ghi version base vào R
 nhất biết sau này dự án đang thiếu bản sửa nào. Bootloader có số version riêng (`BOOT_VER`, in ra
 console lúc khởi động).
 
-## Chưa phát hành
-
-- **Repo:** thôi đưa file `.elf` trong `release/` vào git (~1,1 MB mỗi bản, repo phình theo từng
-  bản). Git chỉ giữ `.bin`; `.bin` + `.elf` của mọi bản (v1.0.0 → v1.1.2) đính kèm ở
-  [GitHub Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
-- **Tài liệu:** hai guide EPCB trong repo MCP (`epcb-platformio-build`, `epcb-start-project`) cập
-  nhật theo v1.1.2.
+Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
+[docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
 ## v1.3.0 — 25/09/2026
 
@@ -37,8 +32,14 @@ Bootloader **không đổi mã** (vẫn 0.0.3), chỉ nâng `-DAPP_VERSION` cho 
   | `app_mbslave` | 56960 B | 58120 B |
   | `boot` | 6820 B | 6820 B (không đổi) |
 
-- **Chưa kiểm trên phần cứng thật:** OTA qua RS485 mới chạy qua test host (giả lập
-  read/write/checksum bằng gcc thường), chưa nạp board thật để kéo file `.bin` qua RS485.
+- **Đã kiểm trên board thật (25/09/2026):** OTA 1.3.0 → 1.3.1 → 1.3.0 qua USB-RS485 @9600
+  ≈ 78 s/lượt, bootloader xóa 0,8 s + chép 2,7 s; cắt ngang giữa chừng board vẫn chạy app cũ và
+  chạy lại được; 200/200 lần đọc FC03 đúng. Chi tiết + các ca thử âm:
+  [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md) mục 5.
+- **Công cụ PC:** `python -m epcb_applib.ota` (epcb-applib ≥ 1.4.0) — kiểm bảng vector ảnh, tự
+  ABORT phiên dở, xác nhận phiên bản sau khi board khởi động lại.
+- **Nạp bằng ST-Link:** nếu `pio run -t upload` báo lỗi `hla_swd` (OpenOCD mới + ST-Link V2), dùng
+  `ST-LINK_CLI.exe` — lệnh ở tài liệu trên, mục 4.
 
 ## v1.2.0 — 25/09/2026
 
@@ -62,6 +63,11 @@ app + boot).
 - **Timeout master đổi:** nanoMODBUS master chờ phản hồi tối đa `APP_MB_READ_TIMEOUT_MS` = 500 ms
   (`app_modbus.h`), thay vì 100 ms của `mbmaster` cũ. Hệ quả: lệnh `modbus r` khi rút mất một thiết
   bị giờ đợi ~2 s cho thiết bị đó (thay vì ~0,4 s trước đây) trước khi báo lỗi và sang thiết bị kế.
+- **Repo:** thôi đưa file `.elf` trong `release/` vào git (~1,1 MB mỗi bản, repo phình theo từng
+  bản). Git chỉ giữ `.bin`; `.bin` + `.elf` của các bản đính kèm ở
+  [GitHub Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
+- **Tài liệu:** hai guide EPCB trong repo MCP (`epcb-platformio-build`, `epcb-start-project`) cập
+  nhật theo v1.1.2.
 - **Số flash (env:app, không tính env:app_mbslave):**
 
   | Env | Trước (v1.1.2, còn mbmaster-v2.9.6) | Sau (v1.2.0, nanoMODBUS master) |
