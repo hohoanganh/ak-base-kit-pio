@@ -2,7 +2,7 @@
 
 Source base phát triển firmware STM32L151, dựng lại từ
 [**ak-base-kit-stm32l151**](https://github.com/the-ak-foundation/ak-base-kit-stm32l151) (bản gốc build
-bằng Makefile) theo mô hình PlatformIO đã chạy ổn định của dự án Smart-PDU. Bare-metal, không dùng
+bằng Makefile) theo mô hình PlatformIO đã chạy ổn định trong sản phẩm thực tế. Bare-metal, không dùng
 framework PlatformIO — SPL + CMSIS + startup + linker script nằm sẵn trong `sources/`.
 
 **Vì sao dùng base này:** kernel AK Active Object không cần RTOS (RAM footprint nhỏ, task giao tiếp
@@ -232,5 +232,5 @@ task/driver, phân tích log UART. Cài đặt server trên máy mới + lưu ý
 
 - Base: [the-ak-foundation/ak-base-kit-stm32l151](https://github.com/the-ak-foundation/ak-base-kit-stm32l151)
   (AK Embedded Base Kit, GaoKong) — bản build Makefile.
-- Mô hình PlatformIO (build_dir ngoài repo, script cờ biên dịch, tự copy release): dự án Smart-PDU
-  (không công khai).
+- Mô hình PlatformIO (build_dir ngoài repo, script cờ biên dịch, tự copy release): rút từ một dự án
+  sản phẩm trước đó (không công khai).

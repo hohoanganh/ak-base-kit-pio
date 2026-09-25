@@ -952,11 +952,11 @@ int32_t shell_modbus(uint8_t* argv) {
 	switch (*(argv + 7)) {
 	case 'r':
 		LOGIN_PRINT("Modbus polling all register: \n");
-		updateDataModbusDevice(&MB_ES35SW_TH_Sensor);
-		LOGIN_PRINT("--ES35-SW--\n");
-		for (uint16_t i = 0; i < MB_ES35SW_TH_Sensor.listRegAmount; i++) {
-			LOGIN_PRINT("regAddr[%d]: %d\t", i+1, MB_ES35SW_TH_Sensor.listRegDevice[i].regAddress);
-			LOGIN_PRINT("\trawValue: %d \n", MB_ES35SW_TH_Sensor.listRegDevice[i].regValue);
+		updateDataModbusDevice(&MB_TH_Sensor);
+		LOGIN_PRINT("--TH-SENSOR--\n");
+		for (uint16_t i = 0; i < MB_TH_Sensor.listRegAmount; i++) {
+			LOGIN_PRINT("regAddr[%d]: %d\t", i+1, MB_TH_Sensor.listRegDevice[i].regAddress);
+			LOGIN_PRINT("\trawValue: %d \n", MB_TH_Sensor.listRegDevice[i].regValue);
 		}
 
 		LOGIN_PRINT("\n--LHIO404--\n");

@@ -30,21 +30,21 @@
 
 
 /*----------------------------------------------------------------------------*
- *  Device name: Cảm biến nhiệt độ, độ ẩm RS485 Modbus RTU ES35-SW (SHT35)
+ *  Device name: Cảm biến nhiệt độ, độ ẩm RS485 Modbus RTU (SHT35)
  *  Note:
  *----------------------------------------------------------------------------*/
-static MB_DevRegStruct_t Es35SW_Registers[] = {
+static MB_DevRegStruct_t ThSensor_Registers[] = {
 	{ 0  , REG_VAL_DEFAULT, MODBUS_FUNCTION_READ_REGISTERS, 0.1, (const int8_t*)"*C", INT16U10, true , (const int8_t*)"Temperature value"},
 	{ 1  , REG_VAL_DEFAULT, MODBUS_FUNCTION_READ_REGISTERS, 0.1, (const int8_t*)"RH", INT16U10, true , (const int8_t*)"Humidity value"   },
 	{ 100, REG_VAL_DEFAULT, MODBUS_FUNCTION_READ_REGISTERS,   1, (const int8_t*)"NA", INT16U10, false, (const int8_t*)"Device address"   },
 	{ 101, REG_VAL_DEFAULT, MODBUS_FUNCTION_READ_REGISTERS,   1, (const int8_t*)"NA", INT16U10, false, (const int8_t*)"Device baudrate"  },
 };
 
-MB_DeviceStruct_t MB_ES35SW_TH_Sensor = {
+MB_DeviceStruct_t MB_TH_Sensor = {
 	.tId = 2,
 	.tBaud = 9600,
-	.listRegDevice = Es35SW_Registers,
-	.listRegAmount = sizeof(Es35SW_Registers) / sizeof(Es35SW_Registers[0])
+	.listRegDevice = ThSensor_Registers,
+	.listRegAmount = sizeof(ThSensor_Registers) / sizeof(ThSensor_Registers[0])
 };
 
 /*----------------------------------------------------------------------------*

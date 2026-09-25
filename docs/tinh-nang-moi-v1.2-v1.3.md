@@ -124,7 +124,8 @@ sau đi đúng đường cập nhật firmware đã có từ trước.
 
 ### Dùng từ máy tính
 
-Cần `epcb-applib` ≥ 1.4.0 (`pip install -e "D:/OneDrive/05_Shared_Libraries/epcb-applib[serial]"`).
+Cách dễ nhất: dùng tool giao diện [`tools/EPCB_Modbus_Flash_v1.0.0.exe`](../tools/EPCB_Modbus_Flash_v1.0.0.exe)
+(xem README mục "Tool nạp bằng giao diện"). Bản dòng lệnh dưới đây cần thư viện Python `epcb-applib` ≥ 1.4.0.
 
 ```bash
 python -m epcb_applib.ota COM16 release/app_mbslave/ak_base_kit_app_mbslave_v1.3.0.bin --slave 1 --baud 9600
@@ -171,12 +172,11 @@ Board AK Base Kit, console qua ST-Link VCP (115200), RS485 qua USB-RS485 FTDI, s
 Test tự động: `bash tests_host/modbus/run_tests.sh` (gcc trên PC: bảng thanh ghi slave + toàn bộ
 máy trạng thái OTA qua đường truyền giả) và `pytest tests/test_ota.py` trong epcb-applib (75 test).
 
-**Chưa kiểm:** chế độ master (`modbus r`) với cảm biến ES35-SW thật; đo chân DIR RS485 bằng máy
+**Chưa kiểm:** chế độ master (`modbus r`) với cảm biến Modbus thật; đo chân DIR RS485 bằng máy
 hiện sóng; rút điện đúng lúc bootloader đang chép.
 
 ## 6. Tài liệu liên quan
 
 - Thiết kế chi tiết: [docs/superpowers/specs/2026-09-25-nanomodbus-va-ota-modbus-design.md](superpowers/specs/2026-09-25-nanomodbus-va-ota-modbus-design.md)
-- Kế hoạch triển khai: [docs/superpowers/plans/2026-09-25-nanomodbus-ota-va-gop-modbus-python.md](superpowers/plans/2026-09-25-nanomodbus-ota-va-gop-modbus-python.md)
 - Hướng dẫn dùng base: [docs/huong-dan-su-dung-source-base.md](huong-dan-su-dung-source-base.md)
 - Lịch sử thay đổi: [CHANGELOG.md](../CHANGELOG.md)

@@ -49,7 +49,7 @@ nanoMODBUS (github.com/debevv/nanoMODBUS, MIT, 1 cặp `.c/.h`, không cấp ph�
 - Build thêm biến thể `TASK_MBSLAVE_EN` (env `app_mbslave`) để chắc chế độ slave biên dịch.
 - Test host (gcc trên PC, `tests_host/modbus/` — không đặt trong `test/` để `pio test` không nhặt nhầm): client + server nanoMODBUS nối qua
   UART giả (hai ring buffer chéo nhau) — đọc/ghi thanh ghi, timeout, CRC sai.
-- Trên board AK thật: `modbus r` đọc ES35-SW ra nhiệt độ/độ ẩm hợp lý (cần anh chạy).
+- Trên board AK thật: `modbus r` đọc cảm biến nhiệt độ/độ ẩm RS485 ra giá trị hợp lý (cần anh chạy).
 
 ## Phần 1B — OTA qua Modbus (cần `TASK_MBSLAVE_EN`)
 
@@ -115,4 +115,4 @@ gửi theo luồng trên, báo tiến độ qua callback.
 ## Ngoài phạm vi
 - Modbus không chặn (state machine) cho master.
 - Cập nhật bootloader qua Modbus.
-- Áp vào các dự án đã sinh từ base (IPMS, OPMS, EACC…) — làm riêng sau khi base ổn.
+- Áp vào các dự án đã sinh từ base — làm riêng sau khi base ổn.

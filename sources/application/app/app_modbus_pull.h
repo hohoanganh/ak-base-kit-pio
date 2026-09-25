@@ -80,7 +80,7 @@ typedef struct ModbusDeviceStructure {
 } __AK_PACKETED MB_DeviceStruct_t;
 
 /* Extern variables ----------------------------------------------------------*/
-extern MB_DeviceStruct_t MB_ES35SW_TH_Sensor; /* cam bien nhiet do, do am RS485 ES35-SW */
+extern MB_DeviceStruct_t MB_TH_Sensor; /* cam bien nhiet do, do am RS485 (SHT35) */
 extern MB_DeviceStruct_t MB_LHIO404_IO_Device; /* relay 4 kenh IO RS485/RS232 LH-IO-01 */
 
 /* Function prototypes -------------------------------------------------------*/

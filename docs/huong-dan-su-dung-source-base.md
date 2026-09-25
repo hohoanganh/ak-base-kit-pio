@@ -19,7 +19,7 @@ STM32L151CBT6 · PlatformIO
 | 6 | **Kiến trúc phân lớp rõ ràng** | `app / kernel / driver / common / platform` tách biệt. Đổi phần cứng chỉ sửa `platform + driver`; logic nghiệp vụ ở `app/` không đụng. Nhiều người làm chung ít giẫm chân nhau. |
 | 7 | **Hạ tầng debug sẵn có** | Shell console qua UART (115200) với `cmd_line`, log `xprintf`, watchdog kép (IWDG 32s + soft watchdog 20s), log queue message của kernel, `.non_clear_ram` giữ dữ liệu qua soft-reboot để phân tích lỗi. |
 | 8 | **Release tự động có version** | Build xong tự copy `release/<env>/ak_base_kit_<env>_v<x.y.z>.bin` — không nhầm bản khi bàn giao sản xuất. Build dir đặt ngoài OneDrive nên không dính lỗi khóa file. |
-| 9 | **Đã kiểm chứng** | Build sạch 0 cảnh báo với `-Wall` (app ~58 KB / boot ~6,8 KB), bootloader và driver nền đã chạy trên AK MCU KIT 3I0 — xem [known-bugs.md](known-bugs.md). Mô hình PlatformIO lấy từ dự án Smart-PDU đã chạy ổn định thực tế. |
+| 9 | **Đã kiểm chứng** | Build sạch 0 cảnh báo với `-Wall` (app ~58 KB / boot ~6,8 KB), bootloader và driver nền đã chạy trên AK MCU KIT 3I0 — xem [known-bugs.md](known-bugs.md). Mô hình PlatformIO lấy từ một dự án sản phẩm đã chạy ổn định thực tế. |
 
 **Khi nào KHÔNG nên dùng:** cần preemptive real-time cứng (deadline µs) → cân nhắc RTOS; MCU khác dòng STM32L1 → phải port lại `platform/` (xem mục 6).
 
@@ -72,7 +72,7 @@ Làm tương tự với `[env:boot]`. Sửa luôn prefix tên file release trong
 
 | Cờ | Module | Mặc định |
 |----|--------|----------|
-| `-DTASK_MBMASTER_EN` | nanoMODBUS master RTU — giữ USART2, poll thiết bị tớ (ES35-SW, LHIO404) | Bật |
+| `-DTASK_MBMASTER_EN` | nanoMODBUS master RTU — giữ USART2, poll thiết bị tớ (cảm biến nhiệt độ/độ ẩm SHT35, relay LH-IO-01) | Bật |
 | `-DTASK_MBSLAVE_EN` | nanoMODBUS **slave** RTU — giữ USART2, board đóng vai tớ (dùng cho OTA qua RS485). Loại trừ với `TASK_MBMASTER_EN`. Có sẵn env `[env:app_mbslave]` trong `platformio.ini` | Tắt |
 | `-DSERIAL2_EN` | Arduino `Serial2` giữ USART2 (cầu UART…). Baud: `-DSERIAL2_BAUDRATE=9600`, mặc định 115200 | Tắt |
 | `-DIF_LINK_UART_EN` | Giao thức link UART (3 task link) | Bật |

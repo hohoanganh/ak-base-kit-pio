@@ -1,7 +1,7 @@
 ﻿# pio_build_flags.py
 # Co bien dich RIENG TUNG NGON NGU + co cho buoc LINK. Khong the dat trong
 # build_flags cua platformio.ini vi build_flags chi vao CCFLAGS (ap cho ca C
-# lan C++), con LINKCOM khong doc CCFLAGS (kinh nghiem tu Smart-PDU-firmware:
+# lan C++), con LINKCOM khong doc CCFLAGS (kinh nghiem tu du an truoc:
 # crtbegin.o van bi link du build_flags co -nostartfiles -> "multiple
 # definition of __dso_handle").
 #

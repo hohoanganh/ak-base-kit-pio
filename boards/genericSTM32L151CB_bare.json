@@ -2,7 +2,7 @@
   "//": "Board bare-metal cho AK Base Kit (khong dung framework Arduino/SPL",
   "//_2": "cua PlatformIO). CMSIS/SPL/startup/linker script da vendor trong",
   "//_3": "sources/*/platform/stm32l/ - xem platformio.ini. Copy tu mo hinh",
-  "//_4": "da chay on dinh cua Smart-PDU-firmware.",
+  "//_4": "da chay on dinh trong san pham thuc te.",
   "build": {
     "core": "stm32",
     "cpu": "cortex-m3",
