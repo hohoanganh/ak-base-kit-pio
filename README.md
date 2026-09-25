@@ -154,6 +154,22 @@ Ghi chú khi dùng:
   python -m epcb_applib.ota COMx release/app_mbslave/ak_base_kit_app_mbslave_v1.3.0.bin --slave 1 --baud 9600
   ```
 
+### Tool nạp bằng giao diện: EPCB Modbus Flash
+
+Không cần cài Python — tải một file exe chạy thẳng trên Windows 10/11:
+[**tools/EPCB_Modbus_Flash_v1.0.0.exe**](tools/EPCB_Modbus_Flash_v1.0.0.exe) (≈ 13 MB).
+
+1. Cắm bộ chuyển USB-RS485 vào board, mở exe.
+2. Chọn cổng COM của bộ chuyển, baud `9600`, slave `1` → bấm **Kiểm tra board** (hiện phiên bản
+   firmware đang chạy).
+3. **Chọn file .bin** — lấy file `release/app_mbslave/ak_base_kit_app_mbslave_v<x.y.z>.bin`. Tool
+   kiểm file ngay khi chọn và khóa nút nạp nếu file sai loại.
+4. Bấm **⚡ NẠP FIRMWARE** (≈ 80 s cho ảnh 58 KB ở 9600 baud). Xong sẽ hiện **PASS / FAIL**, tool tự
+   đọc lại phiên bản sau khi board khởi động lại. Bấm **Hủy** giữa chừng thì board vẫn chạy app cũ.
+
+Mỗi lần nạp ghi một dòng vào log Excel trong thư mục `logs\` cạnh exe. Lần đầu mở, Windows có thể
+cảnh báo "Windows protected your PC" (exe chưa ký số) → **More info** → **Run anyway**.
+
 ## Dùng cho dự án mới — 7 bước
 
 1. **Clone theo tag mới nhất** (`git clone --depth 1 --branch v1.3.0 ...`), xoá `.git`, `git init`,
