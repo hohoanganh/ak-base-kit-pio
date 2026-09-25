@@ -12,6 +12,35 @@ console lúc khởi động).
 - **Tài liệu:** hai guide EPCB trong repo MCP (`epcb-platformio-build`, `epcb-start-project`) cập
   nhật theo v1.1.2.
 
+## v1.3.0 — 25/09/2026
+
+Bootloader **không đổi mã** (vẫn 0.0.3), chỉ nâng `-DAPP_VERSION` cho khớp base.
+
+- **Nối OTA vào firmware slave:** `app_modbus.cpp` (nhánh `TASK_MBSLAVE_EN`) gọi
+  `mb_ota_init(&ota_ops)` trước `nmbs_server_create` — `ota_ops` trỏ thẳng `fw_ext_erase`,
+  `fw_ext_write`, `fw_ext_checksum` (external flash, `task_fw.cpp`) và `ota_commit` (dựng
+  `firmware_header_t` rồi gọi `fw_commit_app_later`, hẹn `FW_MB_OTA_COMMIT` sau 200 ms để phản
+  hồi Modbus kịp ra đường truyền trước khi ghi BSF + reset). `static_assert(MB_OTA_PSK ==
+  FIRMWARE_PSK)` chặn lệch magic number ngay lúc biên dịch.
+- **OTA qua Modbus RS485** dùng được thật trên env `app_mbslave`: state machine bảng thanh ghi
+  holding `0xF000` (BEGIN/COMMIT/ABORT, ghi khối, đọc STATUS) — chi tiết bảng thanh ghi + luật
+  (bin_len bội 4, khoá state sau COMMIT, chặn broadcast unit_id 0, ops NULL thì BEGIN/COMMIT/ghi
+  khối lỗi an toàn) ở [docs/superpowers/specs/2026-09-25-nanomodbus-va-ota-modbus-design.md](docs/superpowers/specs/2026-09-25-nanomodbus-va-ota-modbus-design.md).
+  README có mục "Cập nhật firmware qua RS485" hướng dẫn dùng từ PC.
+- **Review nhỏ:** thêm chú thích "chi dung cho RTU: unit_id 0 la broadcast" cạnh hai chỗ chặn
+  `unit_id == 0` trong `mb_slave_regs.c` (không đổi hành vi).
+- **Số flash:**
+
+  | Env | v1.2.0 | v1.3.0 |
+  |---|---|---|
+  | `app` | 53668 B | 53772 B |
+  | `app_mbslave` | 56960 B | 58120 B |
+  | `boot` | 6820 B | 6820 B (không đổi) |
+
+- **Chưa kiểm trên phần cứng thật:** OTA qua RS485 mới chạy qua test host (giả lập
+  read/write/checksum bằng gcc thường), chưa nạp board thật để kéo file `.bin` qua RS485 —
+  xem `.superpowers/sdd/task-8-report.md`.
+
 ## v1.2.0 — 25/09/2026
 
 Bootloader **không đổi mã** (vẫn 0.0.3), chỉ nâng `-DAPP_VERSION` cho khớp base (base đánh số chung

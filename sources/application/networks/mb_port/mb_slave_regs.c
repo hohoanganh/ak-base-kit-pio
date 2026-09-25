@@ -27,6 +27,7 @@ static nmbs_error cb_write_single(uint16_t address, uint16_t value, uint8_t unit
 	(void)arg;
 	if (mb_ota_owns(address, 1)) {
 		/* broadcast (unit_id 0) khong duoc phep kich hoat OTA - khong co phan hoi de bao loi nen chan hoan toan */
+		/* chi dung cho RTU: unit_id 0 la broadcast */
 		if (unit_id == 0) {
 			return NMBS_EXCEPTION_ILLEGAL_FUNCTION;
 		}
@@ -39,6 +40,7 @@ static nmbs_error cb_write_multi(uint16_t address, uint16_t quantity, const uint
 								 uint8_t unit_id, void* arg) {
 	(void)arg;
 	if (mb_ota_owns(address, quantity)) {
+		/* chi dung cho RTU: unit_id 0 la broadcast */
 		if (unit_id == 0) {
 			return NMBS_EXCEPTION_ILLEGAL_FUNCTION;
 		}
