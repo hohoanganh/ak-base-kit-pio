@@ -178,8 +178,21 @@ python tools/ak_video.py upload --port COMx clip.akv               # kit đang c
   cái nào ngắn hơn. Định dạng ghi trong `demo/video.h`.
 - Số đo: clip thử 20 giây, 15 khung/giây chiếm 57 KB (189 byte mỗi khung), nạp mất 8 giây. `convert` báo lỗi nếu clip
   vượt 512 KB; khi đó giảm `--fps` hoặc cắt bằng `--start`, `--duration`.
-- Repo **không kèm clip nào**. Muốn phát Bad Apple hay phim khác thì tự chuẩn bị file video; lưu ý bản quyền của video đó
-  nếu định đăng lại.
+- Clip mẫu `port/web/clip.akv` là logo AK Foundation xoay 3D (logo thuộc về AK Foundation); bản chạy trên trình duyệt
+  phát sẵn clip này. Muốn phát Bad Apple hay phim khác thì tự chuẩn bị file video; lưu ý bản quyền của video đó nếu định
+  đăng lại.
+
+![Clip mẫu: logo AK Foundation xoay 3D](demo-logo.gif)
+
+Tự làm clip logo xoay từ một ảnh bất kỳ trên nền trơn:
+
+```bash
+python tools/spin_clip.py logo.png -o clip.akv --preview xem-truoc.gif
+python tools/ak_video.py upload --port COMx clip.akv
+```
+
+`spin_clip.py` dựng ảnh thành một tấm có bề dày quay quanh trục đứng: mặt trước trắng, cạnh bên tô dither để thấy chiều sâu
+trên màn hình 1 bit. Các tham số `--turn`, `--hold`, `--tilt`, `--thickness`, `--size` chỉnh tốc độ và dáng quay.
 
 ## Điều khiển qua shell
 
