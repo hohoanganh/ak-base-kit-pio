@@ -7,7 +7,9 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
-## Tài liệu — sau v1.3.4
+## ak-mcu-base v1.3.5 — 06/10/2026
+
+App **1.3.5**, bootloader không đổi (1.2.0). Mã firmware không đổi so với v1.3.4 ngoài số phiên bản; bản này thêm ảnh và sơ đồ chân vào tài liệu.
 
 - **Ảnh kit và sơ đồ mặt trên của bo** trong `docs/kit/`, lấy từ repo của AK Foundation (giấy phép MIT), cùng bản dựng
   3D của bo mạch; đưa vào README, README tiếng Anh, tài liệu demo và trang chạy thử.

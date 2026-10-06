@@ -50,7 +50,7 @@ What each pin of the microcontroller does in the firmware (labels in Vietnamese:
 ## Two bases in this repository
 
 - [`ak-mcu-base/`](ak-mcu-base/README.md) — **start new projects here.** Portable (the code above the HAL never includes
-  a chip header), unit-tested, builds with PlatformIO or CMake. Current version: v1.3.4.
+  a chip header), unit-tested, builds with PlatformIO or CMake. Current version: v1.3.5.
 - [`sources/`](sources/) — the older base, kept for projects already running on it.
 
 ## Try it
