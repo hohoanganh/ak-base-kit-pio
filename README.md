@@ -34,13 +34,21 @@ cập nhật firmware qua UART và RS485. Dựng lại từ
 ## Phần cứng: AK Base Kit
 
 <p align="center">
-  <img src="docs/kit/kit-top-running.jpg" alt="AK Base Kit nhìn từ trên, đang cấp nguồn: màn hình OLED, ba nút bấm, nút reset, các hàng chân RS485, UART, I2C" width="49%">
-  <img src="docs/kit/kit-angle.jpg" alt="AK Base Kit nhìn nghiêng: tấm mica phía trên, bo mạch ở giữa, cổng USB Type-C và ba cổng nối ở cạnh" width="49%">
+  <img src="docs/kit/ak-base-kit-v3.jpg" alt="AK Base Kit bản 3: tấm mica màu hổ phách phía trên, màn hình OLED, ba nút bấm tròn, nút reset xanh, ba cổng nối ở cạnh" width="49%">
+  <img src="docs/kit/board-view-top.png" alt="Sơ đồ mặt trên của bo: màn hình ở giữa, ba nút S1 S2 S3 phía dưới, các hàng chân RS485, UART3, I2C bên phải, SWD và console bên trái" width="49%">
 </p>
 
-Ảnh chụp kit thật: STM32L151CBT6, màn hình OLED 1,54 inch 128×64, ba nút bấm, còi, RTC có pin, cảm biến nhiệt độ và độ ẩm,
-flash SPI, RS485, UART, I2C, USB Type-C. Trong ảnh bên trái, kit đang chạy firmware kiểm tra của khâu sản xuất
-(màn hình "RTC TEST"), chưa phải bộ demo ở đầu trang. Thêm ảnh: [demo-kit.md](ak-mcu-base/docs/demo-kit.md#phần-cứng-ak-base-kit-3i0).
+STM32L151CBT6, màn hình OLED 1,54 inch 128×64, ba nút bấm, còi, RTC có pin, cảm biến nhiệt độ và độ ẩm, flash SPI,
+RS485, UART, I2C, USB Type-C. Ảnh và sơ đồ bo: [AK Foundation](https://github.com/the-ak-foundation/ak-base-kit-stm32l151/tree/main/hardware/images) (giấy phép MIT).
+
+### Chân nào làm việc gì
+
+<p align="center">
+  <img src="docs/kit/stm32l151-pinout.svg" alt="Sơ đồ chân STM32L151CBT6 trên AK Base Kit: console UART1 ở PA9 PA10, RS485 ở PA1 PA2 PA3, flash SPI ở PA5 PA6 PA7 PB14, OLED ở PB12 PB13 PA15, I2C ở PB6 PB7, ba nút ở PB3 PC13 PB4, còi PB0, LED PB8, SWD ở PA13 PA14" width="860">
+</p>
+
+Sơ đồ vẽ theo đúng cấu hình chân trong firmware (`ak-mcu-base/port/stm32l151`), sinh bởi
+[`tools/pinout_svg.py`](ak-mcu-base/tools/pinout_svg.py). Bảng chân dạng chữ: [demo-kit.md](ak-mcu-base/docs/demo-kit.md#phần-cứng-ak-base-kit-3i0).
 
 ## Repo có hai base — chọn cái nào
 

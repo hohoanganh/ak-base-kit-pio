@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1250" width="1280" height="1250" role="img" aria-labelledby="t d">
+<title id="t">Sơ đồ chân STM32L151CBT6 trên AK Base Kit</title>
+<desc id="d">Vi điều khiển LQFP-48 nhìn từ trên, mỗi chân ghi tên và việc nó làm trên kit: console UART1, RS485, flash SPI, màn hình OLED, I2C, ba nút bấm, còi, LED, SWD.</desc>
+<rect width="1280" height="1250" fill="#0b0f14"/>
+<text x="48" y="64" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="30" font-weight="700">STM32L151CBT6 trên AK Base Kit</text>
+<text x="48" y="96" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Chân nào làm việc gì trong firmware ak-mcu-base</text>
+<rect x="444" y="404" width="392" height="392" rx="14" fill="#111821" stroke="#3a4b5e" stroke-width="2"/>
+<circle cx="474" cy="434" r="9" fill="none" stroke="#8d9bab" stroke-width="2"/>
+<text x="640" y="578" text-anchor="middle" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="27" font-weight="700">STM32L151CBT6</text>
+<text x="640" y="608" text-anchor="middle" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">LQFP-48 · nhìn từ trên</text>
+<text x="640" y="636" text-anchor="middle" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Cortex-M3 · 32 MHz</text>
+<text x="640" y="662" text-anchor="middle" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">flash 128K · RAM 16K · EEPROM 4K</text>
+<rect x="422" y="440.0" width="22" height="12" rx="2" fill="#7c8a9a"/>
+<text x="452" y="447.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">1</text>
+<text x="412" y="447.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VLCD</tspan><tspan fill="#7c8a9a" dx="10">nguồn</tspan></text>
+<rect x="422" y="468.0" width="22" height="12" rx="2" fill="#facc15"/>
+<text x="452" y="475.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">2</text>
+<text x="412" y="475.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PC13</tspan><tspan fill="#facc15" dx="10">nút B2</tspan></text>
+<rect x="422" y="496.0" width="22" height="12" rx="2" fill="#9fb3c8"/>
+<text x="452" y="503.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">3</text>
+<text x="412" y="503.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PC14</tspan><tspan fill="#9fb3c8" dx="10">chân cắm J13</tspan></text>
+<rect x="422" y="524.0" width="22" height="12" rx="2" fill="#9fb3c8"/>
+<text x="452" y="531.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">4</text>
+<text x="412" y="531.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PC15</tspan><tspan fill="#9fb3c8" dx="10">chân cắm J13</tspan></text>
+<rect x="422" y="552.0" width="22" height="12" rx="2" fill="#b9a36b"/>
+<text x="452" y="559.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">5</text>
+<text x="412" y="559.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PH0</tspan><tspan fill="#b9a36b" dx="10">OSC_IN</tspan></text>
+<rect x="422" y="580.0" width="22" height="12" rx="2" fill="#b9a36b"/>
+<text x="452" y="587.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">6</text>
+<text x="412" y="587.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PH1</tspan><tspan fill="#b9a36b" dx="10">OSC_OUT</tspan></text>
+<rect x="422" y="608.0" width="22" height="12" rx="2" fill="#7c8a9a"/>
+<text x="452" y="615.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">7</text>
+<text x="412" y="615.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">NRST</tspan><tspan fill="#7c8a9a" dx="10">nút RESET</tspan></text>
+<rect x="422" y="636.0" width="22" height="12" rx="2" fill="#7c8a9a"/>
+<text x="452" y="643.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">8</text>
+<text x="412" y="643.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VSSA</tspan><tspan fill="#7c8a9a" dx="10">GND</tspan></text>
+<rect x="422" y="664.0" width="22" height="12" rx="2" fill="#7c8a9a"/>
+<text x="452" y="671.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">9</text>
+<text x="412" y="671.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VDDA</tspan><tspan fill="#7c8a9a" dx="10">3V3</tspan></text>
+<rect x="422" y="692.0" width="22" height="12" rx="2" fill="#9fb3c8"/>
+<text x="452" y="699.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">10</text>
+<text x="412" y="699.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA0</tspan><tspan fill="#9fb3c8" dx="10">chân cắm J13</tspan></text>
+<rect x="422" y="720.0" width="22" height="12" rx="2" fill="#6aa6ff"/>
+<text x="452" y="727.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">11</text>
+<text x="412" y="727.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA1</tspan><tspan fill="#6aa6ff" dx="10">RS485 DIR</tspan></text>
+<rect x="422" y="748.0" width="22" height="12" rx="2" fill="#6aa6ff"/>
+<text x="452" y="755.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">12</text>
+<text x="412" y="755.0" text-anchor="end" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA2</tspan><tspan fill="#6aa6ff" dx="10">RS485 TX (USART2)</tspan></text>
+<rect x="480.0" y="796" width="12" height="22" rx="2" fill="#6aa6ff"/>
+<text x="486.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">13</text>
+<text transform="translate(485.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA3</tspan><tspan fill="#6aa6ff" dx="10">RS485 RX</tspan></text>
+<rect x="508.0" y="796" width="12" height="22" rx="2" fill="#4b5a6b"/>
+<text x="514.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">14</text>
+<text transform="translate(513.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#8d9bab" font-weight="700">PA4</tspan></text>
+<rect x="536.0" y="796" width="12" height="22" rx="2" fill="#c792ea"/>
+<text x="542.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">15</text>
+<text transform="translate(541.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA5</tspan><tspan fill="#c792ea" dx="10">flash SCK</tspan></text>
+<rect x="564.0" y="796" width="12" height="22" rx="2" fill="#c792ea"/>
+<text x="570.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">16</text>
+<text transform="translate(569.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA6</tspan><tspan fill="#c792ea" dx="10">flash MISO</tspan></text>
+<rect x="592.0" y="796" width="12" height="22" rx="2" fill="#c792ea"/>
+<text x="598.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">17</text>
+<text transform="translate(597.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA7</tspan><tspan fill="#c792ea" dx="10">flash MOSI</tspan></text>
+<rect x="620.0" y="796" width="12" height="22" rx="2" fill="#fb7185"/>
+<text x="626.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">18</text>
+<text transform="translate(625.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB0</tspan><tspan fill="#fb7185" dx="10">còi (PWM)</tspan></text>
+<rect x="648.0" y="796" width="12" height="22" rx="2" fill="#4b5a6b"/>
+<text x="654.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">19</text>
+<text transform="translate(653.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#8d9bab" font-weight="700">PB1</tspan></text>
+<rect x="676.0" y="796" width="12" height="22" rx="2" fill="#7c8a9a"/>
+<text x="682.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">20</text>
+<text transform="translate(681.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB2</tspan><tspan fill="#7c8a9a" dx="10">BOOT1</tspan></text>
+<rect x="704.0" y="796" width="12" height="22" rx="2" fill="#9fb3c8"/>
+<text x="710.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">21</text>
+<text transform="translate(709.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB10</tspan><tspan fill="#9fb3c8" dx="10">UART3 TX (J5)</tspan></text>
+<rect x="732.0" y="796" width="12" height="22" rx="2" fill="#9fb3c8"/>
+<text x="738.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">22</text>
+<text transform="translate(737.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB11</tspan><tspan fill="#9fb3c8" dx="10">UART3 RX (J5)</tspan></text>
+<rect x="760.0" y="796" width="12" height="22" rx="2" fill="#7c8a9a"/>
+<text x="766.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">23</text>
+<text transform="translate(765.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VSS</tspan><tspan fill="#7c8a9a" dx="10">GND</tspan></text>
+<rect x="788.0" y="796" width="12" height="22" rx="2" fill="#7c8a9a"/>
+<text x="794.0" y="788" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">24</text>
+<text transform="translate(793.0 828) rotate(90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VDD</tspan><tspan fill="#7c8a9a" dx="10">3V3</tspan></text>
+<rect x="836" y="748.0" width="22" height="12" rx="2" fill="#22d3ee"/>
+<text x="828" y="755.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">25</text>
+<text x="868" y="755.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB12</tspan><tspan fill="#22d3ee" dx="10">OLED SDA</tspan></text>
+<rect x="836" y="720.0" width="22" height="12" rx="2" fill="#22d3ee"/>
+<text x="828" y="727.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">26</text>
+<text x="868" y="727.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB13</tspan><tspan fill="#22d3ee" dx="10">OLED SCL</tspan></text>
+<rect x="836" y="692.0" width="22" height="12" rx="2" fill="#c792ea"/>
+<text x="828" y="699.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">27</text>
+<text x="868" y="699.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB14</tspan><tspan fill="#c792ea" dx="10">flash CS</tspan></text>
+<rect x="836" y="664.0" width="22" height="12" rx="2" fill="#9fb3c8"/>
+<text x="828" y="671.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">28</text>
+<text x="868" y="671.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB15</tspan><tspan fill="#9fb3c8" dx="10">chân cắm J13</tspan></text>
+<rect x="836" y="636.0" width="22" height="12" rx="2" fill="#4b5a6b"/>
+<text x="828" y="643.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">29</text>
+<text x="868" y="643.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#8d9bab" font-weight="700">PA8</tspan></text>
+<rect x="836" y="608.0" width="22" height="12" rx="2" fill="#a8ff3e"/>
+<text x="828" y="615.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">30</text>
+<text x="868" y="615.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA9</tspan><tspan fill="#a8ff3e" dx="10">console TX (USART1)</tspan></text>
+<rect x="836" y="580.0" width="22" height="12" rx="2" fill="#a8ff3e"/>
+<text x="828" y="587.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">31</text>
+<text x="868" y="587.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA10</tspan><tspan fill="#a8ff3e" dx="10">console RX (USART1)</tspan></text>
+<rect x="836" y="552.0" width="22" height="12" rx="2" fill="#9fb3c8"/>
+<text x="828" y="559.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">32</text>
+<text x="868" y="559.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA11</tspan><tspan fill="#9fb3c8" dx="10">chân cắm J13</tspan></text>
+<rect x="836" y="524.0" width="22" height="12" rx="2" fill="#9fb3c8"/>
+<text x="828" y="531.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">33</text>
+<text x="868" y="531.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA12</tspan><tspan fill="#9fb3c8" dx="10">chân cắm J13</tspan></text>
+<rect x="836" y="496.0" width="22" height="12" rx="2" fill="#f5a623"/>
+<text x="828" y="503.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">34</text>
+<text x="868" y="503.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA13</tspan><tspan fill="#f5a623" dx="10">SWDIO</tspan></text>
+<rect x="836" y="468.0" width="22" height="12" rx="2" fill="#7c8a9a"/>
+<text x="828" y="475.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">35</text>
+<text x="868" y="475.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VSS</tspan><tspan fill="#7c8a9a" dx="10">GND</tspan></text>
+<rect x="836" y="440.0" width="22" height="12" rx="2" fill="#7c8a9a"/>
+<text x="828" y="447.0" text-anchor="end" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" dominant-baseline="middle">36</text>
+<text x="868" y="447.0" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VDD</tspan><tspan fill="#7c8a9a" dx="10">3V3</tspan></text>
+<rect x="788.0" y="382" width="12" height="22" rx="2" fill="#f5a623"/>
+<text x="794.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">37</text>
+<text transform="translate(795.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA14</tspan><tspan fill="#f5a623" dx="10">SWCLK</tspan></text>
+<rect x="760.0" y="382" width="12" height="22" rx="2" fill="#22d3ee"/>
+<text x="766.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">38</text>
+<text transform="translate(767.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PA15</tspan><tspan fill="#22d3ee" dx="10">OLED RES</tspan></text>
+<rect x="732.0" y="382" width="12" height="22" rx="2" fill="#facc15"/>
+<text x="738.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">39</text>
+<text transform="translate(739.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB3</tspan><tspan fill="#facc15" dx="10">nút B1</tspan></text>
+<rect x="704.0" y="382" width="12" height="22" rx="2" fill="#facc15"/>
+<text x="710.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">40</text>
+<text transform="translate(711.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB4</tspan><tspan fill="#facc15" dx="10">nút B3</tspan></text>
+<rect x="676.0" y="382" width="12" height="22" rx="2" fill="#9fb3c8"/>
+<text x="682.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">41</text>
+<text transform="translate(683.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB5</tspan><tspan fill="#9fb3c8" dx="10">chân cắm J13</tspan></text>
+<rect x="648.0" y="382" width="12" height="22" rx="2" fill="#f472b6"/>
+<text x="654.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">42</text>
+<text transform="translate(655.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB6</tspan><tspan fill="#f472b6" dx="10">I2C SCL</tspan></text>
+<rect x="620.0" y="382" width="12" height="22" rx="2" fill="#f472b6"/>
+<text x="626.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">43</text>
+<text transform="translate(627.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB7</tspan><tspan fill="#f472b6" dx="10">I2C SDA</tspan></text>
+<rect x="592.0" y="382" width="12" height="22" rx="2" fill="#7c8a9a"/>
+<text x="598.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">44</text>
+<text transform="translate(599.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">BOOT0</tspan></text>
+<rect x="564.0" y="382" width="12" height="22" rx="2" fill="#fb7185"/>
+<text x="570.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">45</text>
+<text transform="translate(571.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB8</tspan><tspan fill="#fb7185" dx="10">LED nhịp tim</tspan></text>
+<rect x="536.0" y="382" width="12" height="22" rx="2" fill="#9fb3c8"/>
+<text x="542.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">46</text>
+<text transform="translate(543.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">PB9</tspan><tspan fill="#9fb3c8" dx="10">chân cắm J13</tspan></text>
+<rect x="508.0" y="382" width="12" height="22" rx="2" fill="#7c8a9a"/>
+<text x="514.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">47</text>
+<text transform="translate(515.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VSS</tspan><tspan fill="#7c8a9a" dx="10">GND</tspan></text>
+<rect x="480.0" y="382" width="12" height="22" rx="2" fill="#7c8a9a"/>
+<text x="486.0" y="422" text-anchor="middle" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11">48</text>
+<text transform="translate(487.0 372) rotate(-90)" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" dominant-baseline="middle"><tspan fill="#e6edf3" font-weight="700">VDD</tspan><tspan fill="#7c8a9a" dx="10">3V3</tspan></text>
+<rect x="60" y="1052" width="22" height="12" rx="2" fill="#7c8a9a"/>
+<text x="94" y="1063" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Nguồn, reset, boot</text>
+<rect x="60" y="1081" width="22" height="12" rx="2" fill="#b9a36b"/>
+<text x="94" y="1092" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Thạch anh 8 MHz</text>
+<rect x="60" y="1110" width="22" height="12" rx="2" fill="#f5a623"/>
+<text x="94" y="1121" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Nạp và debug (SWD)</text>
+<rect x="60" y="1139" width="22" height="12" rx="2" fill="#a8ff3e"/>
+<text x="94" y="1150" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Console UART1: shell, OTA</text>
+<rect x="60" y="1168" width="22" height="12" rx="2" fill="#6aa6ff"/>
+<text x="94" y="1179" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">RS485 trên UART2: Modbus, OTA, Pong</text>
+<rect x="60" y="1197" width="22" height="12" rx="2" fill="#c792ea"/>
+<text x="94" y="1208" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Flash SPI: vùng chờ OTA, clip video</text>
+<rect x="680" y="1052" width="22" height="12" rx="2" fill="#22d3ee"/>
+<text x="714" y="1063" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Màn hình OLED 128×64 (I2C mềm)</text>
+<rect x="680" y="1081" width="22" height="12" rx="2" fill="#f472b6"/>
+<text x="714" y="1092" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">I2C: RTC, cảm biến SHT45, cổng nối</text>
+<rect x="680" y="1110" width="22" height="12" rx="2" fill="#facc15"/>
+<text x="714" y="1121" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Ba nút bấm</text>
+<rect x="680" y="1139" width="22" height="12" rx="2" fill="#fb7185"/>
+<text x="714" y="1150" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Còi, LED</text>
+<rect x="680" y="1168" width="22" height="12" rx="2" fill="#9fb3c8"/>
+<text x="714" y="1179" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Ra chân cắm, firmware chưa dùng</text>
+<rect x="680" y="1197" width="22" height="12" rx="2" fill="#4b5a6b"/>
+<text x="714" y="1208" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Firmware không dùng</text>
+<line x1="48" y1="1024" x2="1232" y2="1024" stroke="#223041"/>
+</svg>

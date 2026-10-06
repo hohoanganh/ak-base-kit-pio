@@ -250,14 +250,22 @@ Mã màn hình không đụng tới chip (`demo/kit.h` là ranh giới), nên th
 
 ## Phần cứng (AK Base Kit 3I0)
 
-| Nhìn từ trên, đang cấp nguồn | Nhìn nghiêng |
+| Kit bản 3 | Sơ đồ mặt trên của bo |
 |---|---|
-| ![Kit nhìn từ trên](../../docs/kit/kit-top-running.jpg) | ![Kit nhìn nghiêng](../../docs/kit/kit-angle.jpg) |
-| **Nhìn ngang: mica, bo mạch, đế** | **Bản dựng 3D của bo mạch (không phải ảnh chụp)** |
-| ![Kit nhìn ngang](../../docs/kit/kit-side.jpg) | ![Bản dựng 3D của PCB](../../docs/kit/pcb-3d-render.jpg) |
+| ![AK Base Kit bản 3](../../docs/kit/ak-base-kit-v3.jpg) | ![Sơ đồ mặt trên](../../docs/kit/board-view-top.png) |
 
-Ba ảnh đầu là ảnh chụp kit thật. Ở ảnh thứ nhất, kit đang chạy firmware kiểm tra của khâu sản xuất (màn hình "RTC TEST"),
-chưa phải bộ demo của tài liệu này.
+Ảnh và sơ đồ bo: [AK Foundation](https://github.com/the-ak-foundation/ak-base-kit-stm32l151/tree/main/hardware/images) (giấy phép MIT).
+
+![Sơ đồ chân STM32L151CBT6 trên AK Base Kit](../../docs/kit/stm32l151-pinout.svg)
+
+Sơ đồ chân sinh bởi `tools/pinout_svg.py` từ đúng cấu hình trong `port/stm32l151`. Các chân ghi "chân cắm J13" và UART3
+được đưa ra chân cắm trên bo nhưng firmware này chưa dùng.
+
+<details><summary>Bản dựng 3D của bo mạch (không phải ảnh chụp)</summary>
+
+![Bản dựng 3D của PCB](../../docs/kit/pcb-3d-render.jpg)
+
+</details>
 
 | Thứ | Chân | Ghi chú |
 |---|---|---|

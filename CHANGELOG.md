@@ -9,8 +9,10 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 
 ## Tài liệu — sau v1.3.4
 
-- **Ảnh chụp kit thật** trong `docs/kit/` (nhìn từ trên đang cấp nguồn, nhìn nghiêng, nhìn ngang) và bản dựng 3D của
-  bo mạch; đưa vào README, README tiếng Anh, tài liệu demo và trang chạy thử.
+- **Ảnh kit và sơ đồ mặt trên của bo** trong `docs/kit/`, lấy từ repo của AK Foundation (giấy phép MIT), cùng bản dựng
+  3D của bo mạch; đưa vào README, README tiếng Anh, tài liệu demo và trang chạy thử.
+- **Sơ đồ chân STM32L151CBT6 trên kit** (`docs/kit/stm32l151-pinout.svg`): 48 chân, mỗi chân ghi tên và việc nó làm
+  trong firmware, tô màu theo nhóm. Sinh bởi `tools/pinout_svg.py`.
 
 ## ak-mcu-base v1.3.4 — 06/10/2026
 
