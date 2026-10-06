@@ -64,6 +64,8 @@ extern uint8_t gfx_flush(uint8_t force);
 
 /* Frame buffer as the display takes it: [page][column], bit 0 = top pixel. */
 extern const uint8_t* gfx_page(uint8_t page);
+/* The whole frame buffer, writable, for code that patches it in place (video). */
+extern uint8_t* gfx_fb(void);
 
 #ifdef __cplusplus
 }

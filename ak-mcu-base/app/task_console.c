@@ -213,6 +213,7 @@ static const shell_cmd_t shell_cmds[] = {
 #endif
 #if defined(APP_KIT_DEMO)
 	{ "ui",		"demo status, ui 1|2|3|back",	cmd_ui		},
+	{ "th",		"temperature, humidity (th csv)",	cmd_th		},
 #endif
 	{ "reboot",	"software reset",				cmd_reboot	},
 	{ "loader",	"reset into bootloader loader",	cmd_loader	},
@@ -264,6 +265,9 @@ void task_console(ak_msg_t* msg) {
 		proto_cfg.role = FW_ROLE_APP;
 		proto_cfg.version = app_version();
 		proto_cfg.tx = console_tx;
+#if defined(APP_KIT_DEMO)
+		proto_cfg.ext = ui_proto_ext;		/* loads files into the media store */
+#endif
 		fw_update_abort();
 		fw_proto_init(&proto_cfg);
 		xprintf("type 'help'\n> ");

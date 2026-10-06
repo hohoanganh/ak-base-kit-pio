@@ -1,18 +1,21 @@
-# Demo trên AK Base Kit: đồng hồ số, ba game, khối 3D, máy hát
+# Demo trên AK Base Kit: đồng hồ, game, 3D, nhạc, video, trạm thời tiết
 
-Bộ demo chạy trên nền `ak-mcu-base`, dùng màn hình OLED 128×64, ba nút bấm và còi của kit.
+Bộ demo chạy trên nền `ak-mcu-base`, dùng màn hình OLED 128×64, ba nút bấm, còi, cảm biến SHT45 và flash SPI của kit.
 Nó vẫn giữ nguyên mọi thứ của app mẫu: shell, OTA qua UART, Modbus slave, nhật ký sự cố.
 
-![Demo trên AK Base Kit: menu, đồng hồ, Snake, Flappy và Dino tự chơi, khối 3D, máy hát, màn hình hệ thống](demo-tour.gif)
+![Demo trên AK Base Kit: một vòng qua tất cả màn hình](demo-tour.gif)
 
 | Snake | Flappy | Đồng hồ qua nửa đêm |
 |---|---|---|
 | ![Snake tự chơi](demo-snake.gif) | ![Flappy tự chơi](demo-flappy.gif) | ![Đồng hồ số](demo-clock.gif) |
 | **Dino runner** | **Khối 3D** | **Máy hát** |
 | ![Dino tự chơi](demo-dino.gif) | ![Khối 3D quay](demo-3d.gif) | ![Máy hát](demo-music.gif) |
+| **Mê cung 3D** | **Trạm thời tiết** | **Video từ flash SPI** |
+| ![Mê cung tự đi](demo-maze.gif) | ![Nhiệt độ, độ ẩm](demo-weather.gif) | ![Clip thử](demo-video.gif) |
 
 Các ảnh động trên **không phải ảnh chụp**: `tests/test_demo.c` chạy đúng mã vẽ và mã game của firmware trên máy tính,
-ghi lại từng khung, rồi `tools/demo_gif.py` dựng thành GIF. Trong ảnh, ba game đang ở chế độ tự chơi. Máy hát phát ra còi của kit nên ảnh động không có tiếng.
+ghi lại từng khung, rồi `tools/demo_gif.py` dựng thành GIF. Trong ảnh, ba game và mê cung đang ở chế độ tự chơi. Máy hát phát ra còi của kit nên ảnh động không có tiếng.
+Số liệu thời tiết và clip trong ảnh là dữ liệu giả lập của bộ test, không phải số đo thật.
 Ảnh tĩnh của mọi màn hình: [demo-screens.png](demo-screens.png).
 
 Dựng lại ảnh sau khi sửa mã:
@@ -47,7 +50,10 @@ Ba nút dưới màn hình, từ trái sang phải: B1, B2, B3. Dòng cuối mà
 | Flappy | Vỗ cánh | Vỗ cánh | — | Về menu |
 | Dino | Nhảy | Cúi (giữ nút) | — | Về menu |
 | Khối 3D | Đổi khối | Tốc độ quay | Khung dây / tô bóng | Về menu |
+| Mê cung 3D | Quay trái | Quay phải | Đi / dừng | Về menu |
 | Máy hát | Bài kế | Phát / dừng | — | Về menu |
+| Video | Tạm dừng / phát | Về đầu clip | — | Về menu |
+| Trạm thời tiết | Đồ thị nhiệt độ / độ ẩm | Đổi nhịp lấy mẫu | — | Về menu |
 | Hệ thống | Bíp | — | — | Về menu |
 
 - **Đồng hồ** lấy giờ từ RTC PCF85063 của kit; không thấy RTC thì tự đếm từ tick 1 ms (góc phải ghi `RTC` hoặc `soft`).
@@ -57,7 +63,32 @@ Ba nút dưới màn hình, từ trái sang phải: B1, B2, B3. Dòng cuối mà
   màn hình 1 bit nên độ sáng từng mặt được giả bằng dither 4×4.
 - **Máy hát** có 6 bài, đều là nhạc dân gian hoặc đã hết bản quyền từ lâu, viết bằng chuỗi RTTTL trong `demo/scr_music.c`.
   Rời màn hình là nhạc dừng.
+- **Mê cung 3D** vẽ bằng ray casting: mỗi cột màn hình bắn một tia qua lưới bản đồ, khoảng cách tới tường cho ra chiều cao
+  lát tường. Bấm hoặc giữ B1/B2 để quay, B3 để đi; tới cửa có sọc là xong, màn hình báo số giây.
+- **Video** phát clip nằm trong flash SPI, lặp lại khi hết. Chưa nạp clip thì màn hình nhắc cách nạp (xem mục dưới).
+- **Trạm thời tiết** đọc SHT45 mỗi giây, kể cả khi đang mở màn hình khác. Đồ thị có 96 điểm; B2 chọn mỗi điểm cách nhau
+  1 giây, 1 phút hoặc 15 phút (96 điểm × 15 phút = 24 giờ). Đổi nhịp là xoá đồ thị. Số liệu nằm trong RAM, mất khi reset.
 - **Hệ thống** hiện uptime, mức dùng pool message, RAM chưa từng dùng, số bản ghi sự cố, thời gian vẽ khung trước.
+
+## Nạp video vào kit
+
+Clip nằm ở 512 KB đầu của flash SPI (phần còn lại dành cho OTA). Tool `tools/ak_video.py` chuyển và nạp:
+
+```bash
+python tools/ak_video.py convert clip.mp4 -o clip.akv --fps 15     # video; cần opencv-python
+python tools/ak_video.py convert anim.gif -o clip.akv              # GIF hoặc thư mục ảnh
+python tools/ak_video.py preview clip.akv xem-truoc.gif            # kit sẽ hiện đúng như GIF này
+python tools/ak_video.py upload --port COMx clip.akv               # kit đang chạy bản demo
+```
+
+- Ảnh được co về 128×64 rồi chuyển đen trắng theo ngưỡng (`--threshold`), hoặc `--dither`. Video dạng bóng đen trắng
+  nén tốt nhất; `--dither` cho file lớn hơn nhiều.
+- Mỗi khung chỉ lưu những trang màn hình đã đổi, nén PackBits, và chọn lưu nguyên trang hoặc phần khác với khung trước,
+  cái nào ngắn hơn. Định dạng ghi trong `demo/video.h`.
+- Số đo: clip thử 20 giây, 15 khung/giây chiếm 57 KB (189 byte mỗi khung), nạp mất 8 giây. `convert` báo lỗi nếu clip
+  vượt 512 KB; khi đó giảm `--fps` hoặc cắt bằng `--start`, `--duration`.
+- Repo **không kèm clip nào**. Muốn phát Bad Apple hay phim khác thì tự chuẩn bị file video; lưu ý bản quyền của video đó
+  nếu định đăng lại.
 
 ## Điều khiển qua shell
 
@@ -69,6 +100,8 @@ display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 > ui 1        (bấm B1; ui 2, ui 3 tương tự)
 > ui back     (giữ B3: về menu)
 > ui auto     (bật/tắt tự chơi: mở một game thì game tự chạy, mở máy hát thì phát lần lượt; bấm nút để giành lại quyền điều khiển)
+> th          (nhiệt độ, độ ẩm hiện tại; th csv in thêm cả đồ thị dạng CSV)
+29.3 C, 65.1 %RH, 37 samples, one every 1 s
 ```
 
 ## Demo này cho thấy gì ở base
@@ -78,14 +111,19 @@ display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 | Vẽ 20 khung/giây | Timer chu kỳ 50 ms post `UI_SIG_FRAME` cho `task_ui`; không có vòng lặp chờ |
 | Nút bấm | Polling task chống dội rồi post `UI_SIG_KEY_x`; game nhận phím như nhận message |
 | Tiếng bíp | Bật còi, đặt timer một lần post `UI_SIG_BEEP_OFF`; không `delay` |
+| Đọc cảm biến | Khung này gửi lệnh đo, khung sau mới lấy kết quả: SHT45 cần 8 ms để đo và không ai phải đứng chờ nó |
+| Phát video | Tính theo đồng hồ xem lúc này phải tới khung nào rồi giải mã tới đó; đọc flash từng 64 byte, không cần bộ đệm cỡ một khung |
+| Nạp file qua UART | Lệnh `0x40`–`0x42` của giao thức nạp firmware được chuyển cho demo qua hàm `ext` của `fw_proto`; ghi xong đọc lại để so |
 | Phát nhạc | `music_step()` bật nốt kế và trả về độ dài; timer một lần post `UI_SIG_NOTE` đúng lúc nốt hết. Không có vòng lặp chờ nên game và shell vẫn chạy |
 | Màn hình I2C chậm | Chỉ gửi những trang đã đổi (8 trang × 128 byte): đồng hồ thường gửi 0–2 trang mỗi khung |
 | Vẫn phản hồi | Shell, Modbus và OTA chạy song song; `task_ui` ưu tiên thấp hơn chúng |
 
 Số đo trên kit: dựng một khung mất 4–6 ms, mỗi trang gửi ra màn hình mất khoảng 5 ms (I2C bit-bang).
-Khối 3D đổi 5 trên 8 trang mỗi khung nên tốn 34–37 ms, vẫn kịp nhịp 50 ms; Dino tối đa 24 ms.
+Khối 3D đổi 5 trên 8 trang mỗi khung nên tốn 34–37 ms, vẫn kịp nhịp 50 ms; Dino tối đa 24 ms; mê cung 37 ms (6 trang).
+Video đổi cả 8 trang thì mất 41–47 ms, tức sát ngân sách: clip 20 khung/giây có cảnh đổi toàn màn hình sẽ bị chậm lại
+một chút thay vì bỏ khung. 15 khung/giây là mức an toàn.
 
-Ý tưởng cho các demo tiếp theo (Game of Life, Bad Apple, trạm thời tiết, raycaster…), kèm nguồn tham khảo:
+Ý tưởng cho các demo tiếp theo (Game of Life, Tetris, Pong qua RS485…), kèm nguồn tham khảo:
 [y-tuong-demo.md](y-tuong-demo.md).
 
 ## Thêm một màn hình
@@ -105,6 +143,8 @@ Mã màn hình không đụng tới chip (`demo/kit.h` là ranh giới), nên th
 | Nút B1, B2, B3 | PB3, PC13, PB4 | Nối GND, kéo lên trong chip |
 | Còi | PB0 (TIM3_CH3) | PWM |
 | RTC PCF85063 | SCL PB6, SDA PB7 | I2C `0x51`, bit-bang |
+| SHT45 | SCL PB6, SDA PB7 | I2C `0x44`, chung bus với RTC |
+| Flash SPI (W25Q) | SPI1 PA5/PA6/PA7, CS PB14 | 0–512 KB: kho clip của demo; từ 512 KB: vùng chờ của OTA |
 
 PA15, PB3, PB4 là chân JTAG; demo dùng chúng làm GPIO nên JTAG mất, SWD vẫn dùng được.
 Driver nằm ở `port/stm32l151/kit.c`. Board khác chỉ cần viết lại file này theo `demo/kit.h`.

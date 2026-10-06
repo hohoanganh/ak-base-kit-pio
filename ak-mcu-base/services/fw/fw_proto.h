@@ -21,6 +21,7 @@
  *  06   LOADER   -                     -   (app: reset into bootloader)
  *  07   RESET    -                     -
  *  08   RUN      -                     -   (boot: leave loader, run app)
+ *  40.. application commands, handled by cfg->ext if set (else "unknown cmd")
  ******************************************************************************
 **/
 
@@ -50,6 +51,8 @@ extern "C"
 #define FW_PROTO_CMD_LOADER		(0x06)
 #define FW_PROTO_CMD_RESET		(0x07)
 #define FW_PROTO_CMD_RUN		(0x08)
+#define FW_PROTO_CMD_EXT		(0x40)	/* first command passed to cfg->ext */
+#define FW_PROTO_EXT_RESP_MAX	(32)	/* response payload after the status byte */
 #define FW_PROTO_RESP			(0x80)
 
 #define FW_ROLE_BOOT			(0)
@@ -67,6 +70,10 @@ typedef struct {
 	uint8_t role;
 	const fw_version_t* version;	/* running firmware version */
 	void (*tx)(const uint8_t* data, uint32_t len);
+	/* Optional: commands >= FW_PROTO_CMD_EXT. Returns the status byte
+	 * (fw_err_t), may put up to FW_PROTO_EXT_RESP_MAX bytes into resp and
+	 * their number into *resp_len (0 on entry). */
+	uint8_t (*ext)(uint8_t cmd, const uint8_t* req, uint16_t len, uint8_t* resp, uint16_t* resp_len);
 } fw_proto_cfg_t;
 
 extern void fw_proto_init(const fw_proto_cfg_t* cfg);

@@ -17,6 +17,8 @@
 #include "hal.h"
 #include "ui.h"
 #include "music.h"
+#include "video.h"
+#include "weather.h"
 #include "port_host.h"
 #include "tiny_test.h"
 
@@ -68,6 +70,56 @@ uint8_t kit_rtc_set(uint8_t hh, uint8_t mm, uint8_t ss) {
 	return 1;
 }
 
+/* SHT45: a slow wave around 26.5 C / 61 %, or no sensor at all */
+static uint8_t sht_present = 1;
+static uint8_t sht_started;
+
+uint8_t kit_sht_start(void) {
+	sht_started = sht_present;
+	return sht_present;
+}
+
+uint8_t kit_sht_read(int16_t* t10, uint16_t* rh10) {
+	if (!sht_present || !sht_started) {
+		return 0;
+	}
+	sht_started = 0;
+	*t10 = (int16_t)(265 + ui_sin((uint8_t)(now_ms / 700)) * 9 / 127 + ui_sin((uint8_t)(now_ms / 130)) / 64);
+	*rh10 = (uint16_t)(610 - ui_sin((uint8_t)(now_ms / 900)) * 40 / 127);
+	return 1;
+}
+
+/* media store: a piece of RAM that behaves like NOR flash (erased = 0xFF) */
+static uint8_t store[48 * 1024];
+
+uint32_t kit_store_size(void) { return sizeof(store); }
+
+uint8_t kit_store_read(uint32_t off, void* buf, uint32_t len) {
+	if (off > sizeof(store) || len > sizeof(store) - off) {
+		return 0;
+	}
+	memcpy(buf, store + off, len);
+	return 1;
+}
+
+uint8_t kit_store_erase(uint32_t off) {
+	if (off % KIT_STORE_SECTOR || off >= sizeof(store)) {
+		return 0;
+	}
+	memset(store + off, 0xFF, KIT_STORE_SECTOR);
+	return 1;
+}
+
+uint8_t kit_store_write(uint32_t off, const void* data, uint32_t len) {
+	if (off > sizeof(store) || len > sizeof(store) - off) {
+		return 0;
+	}
+	for (uint32_t i = 0; i < len; i++) {
+		store[off + i] &= ((const uint8_t*)data)[i];
+	}
+	return 1;
+}
+
 void ui_beep(uint16_t freq_hz, uint16_t ms) {
 	(void)freq_hz;
 	(void)ms;
@@ -109,6 +161,7 @@ static void frames(const ui_screen_t* s, int n) {
 		now_ms += UI_FRAME_MS;
 		host_advance_ms(UI_FRAME_MS);
 		music_run();
+		weather_poll(now_ms);
 		if (s) {
 			s->frame(now_ms);
 		}
@@ -117,6 +170,99 @@ static void frames(const ui_screen_t* s, int n) {
 		}
 		gfx_flush(0);
 	}
+}
+
+/*----------------------------------------------------------------------------
+ * a small clip for the video player, drawn with gfx and packed like
+ * tools/ak_video.py does it
+ *--------------------------------------------------------------------------*/
+#define CLIP_FRAMES		(60)
+
+static uint8_t clip_src[CLIP_FRAMES][KIT_LCD_PAGES][KIT_LCD_W];
+
+static uint32_t packbits(uint8_t* out, const uint8_t* in, int n) {
+	uint32_t o = 0;
+	int i = 0;
+
+	while (i < n) {
+		int run = 1;
+
+		while (i + run < n && in[i + run] == in[i] && run < 129) {
+			run++;
+		}
+		if (run >= 2) {
+			out[o++] = (uint8_t)(run + 126);
+			out[o++] = in[i];
+			i += run;
+		}
+		else {
+			int lit = 1;
+
+			while (i + lit < n && lit < 128 && !(i + lit + 1 < n && in[i + lit] == in[i + lit + 1])) {
+				lit++;
+			}
+			out[o++] = (uint8_t)(lit - 1);
+			memcpy(out + o, in + i, (size_t)lit);
+			o += (uint32_t)lit;
+			i += lit;
+		}
+	}
+	return o;
+}
+
+static void clip_draw(int f) {
+	int bx = 12 + (f * 3) % 104, by = 40 + ui_sin((uint8_t)(f * 9)) * 8 / 127;
+
+	gfx_clear();
+	gfx_text_center(3, "AK VIDEO", 2);
+	gfx_rect(0, 22, GFX_W, 42, 1);
+	gfx_tri(bx - 8, by + 7, bx + 8, by + 7, bx, by - 8, (uint8_t)(4 + (f % 13)));
+	gfx_fill(2, 58, 2 + f * 2, 4, 1);
+}
+
+/* Writes the clip into the store. Returns its size in bytes. */
+static uint32_t clip_make(void) {
+	uint8_t* p = store + VIDEO_HEADER_SIZE;
+	uint8_t x[KIT_LCD_W];
+	uint32_t len;
+
+	for (uint32_t off = 0; off < sizeof(store); off += KIT_STORE_SECTOR) {
+		kit_store_erase(off);
+	}
+	for (int f = 0; f < CLIP_FRAMES; f++) {
+		uint8_t* masks = p;
+
+		clip_draw(f);
+		memcpy(clip_src[f], gfx_page(0), sizeof(clip_src[f]));
+		p += 2;
+		masks[0] = masks[1] = 0;
+		for (int page = 0; page < KIT_LCD_PAGES; page++) {
+			if (f == 0) {
+				masks[0] |= (uint8_t)(1 << page);
+				p += packbits(p, clip_src[f][page], KIT_LCD_W);
+			}
+			else if (memcmp(clip_src[f][page], clip_src[f - 1][page], KIT_LCD_W) != 0) {
+				masks[0] |= (uint8_t)(1 << page);
+				if (page & 1) {					/* odd pages as differences, to test both kinds */
+					masks[1] |= (uint8_t)(1 << page);
+					for (int i = 0; i < KIT_LCD_W; i++) {
+						x[i] = clip_src[f][page][i] ^ clip_src[f - 1][page][i];
+					}
+					p += packbits(p, x, KIT_LCD_W);
+				}
+				else {
+					p += packbits(p, clip_src[f][page], KIT_LCD_W);
+				}
+			}
+		}
+	}
+	len = (uint32_t)(p - store) - VIDEO_HEADER_SIZE;
+	memcpy(store, "AKV1", 4);
+	store[4] = KIT_LCD_W; store[5] = KIT_LCD_H; store[6] = 20; store[7] = 0;
+	store[8] = CLIP_FRAMES; store[9] = 0; store[10] = 0; store[11] = 0;
+	store[12] = (uint8_t)len; store[13] = (uint8_t)(len >> 8); store[14] = (uint8_t)(len >> 16); store[15] = 0;
+	gfx_clear();
+	return len + VIDEO_HEADER_SIZE;
 }
 
 /*----------------------------------------------------------------------------
@@ -156,6 +302,8 @@ static void menu_press(uint8_t btn, int hold_frames) {
 static void record(void) {
 	rtc_present = 1; rtc_h = 10; rtc_m = 9; rtc_s = 52;
 	ui_autoplay = 1;
+	clip_make();
+	frames(0, 20 * 100);					/* the weather graph has something to show */
 
 	/* the tour: menu, clock, both games playing themselves, system monitor */
 	rec_open("tour");
@@ -173,15 +321,15 @@ static void record(void) {
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_snake.enter();
-	play(&scr_snake, 360);
+	play(&scr_snake, 260);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_flappy.enter();
-	play(&scr_flappy, 300);
+	play(&scr_flappy, 220);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_dino.enter();
-	play(&scr_dino, 300);
+	play(&scr_dino, 220);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_cube.enter();
@@ -193,15 +341,45 @@ static void record(void) {
 	scr_cube.key(KIT_BTN_1);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
+	scr_maze.enter();
+	play(&scr_maze, 260);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
 	scr_music.enter();
-	play(&scr_music, 200);
+	play(&scr_music, 160);
 	scr_music.leave();
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_video.enter();
+	play(&scr_video, 2 * CLIP_FRAMES);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_weather.enter();
+	play(&scr_weather, 80);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_system.enter();
 	play(&scr_system, 50);
 	play(0, 6);
 	menu_press(KIT_BTN_1, 10);				/* wraps to the first entry: the GIF loops cleanly */
+	rec_close();
+
+	rec_open("maze");
+	scr_maze.enter();
+	play(&scr_maze, 600);
+	rec_close();
+
+	rec_open("weather");
+	scr_weather.enter();
+	play(&scr_weather, 150);
+	scr_weather.key(KIT_BTN_1);
+	play(&scr_weather, 100);
+	scr_weather.key(KIT_BTN_1);
+	rec_close();
+
+	rec_open("video");
+	scr_video.enter();
+	play(&scr_video, 2 * CLIP_FRAMES);
 	rec_close();
 
 	rec_open("dino");
@@ -585,6 +763,160 @@ static void test_music(void) {
 	}
 }
 
+static void test_video(void) {
+	uint32_t size;
+	uint8_t saved;
+
+	/* empty flash: the screen says so */
+	memset(store, 0xFF, sizeof(store));
+	scr_video.enter();
+	frames(&scr_video, 2);
+	snapshot("23_video_no_clip");
+	CHECK(lit_pixels() > 300);
+	CHECK_EQ(video_open(kit_store_read, kit_store_size()), 0);
+
+	size = clip_make();
+	CHECK(size < CLIP_FRAMES * 300U);			/* far below 1 KB per frame */
+	CHECK_EQ(video_open(kit_store_read, kit_store_size()), 1);
+	CHECK_EQ(video_frames(), CLIP_FRAMES);
+	CHECK_EQ(video_fps(), 20);
+	CHECK_EQ(video_size(), size);
+
+	/* 20 frames per second = one per UI frame: every picture must match its source */
+	scr_video.enter();
+	for (int f = 0; f < CLIP_FRAMES; f++) {
+		frames(&scr_video, 1);
+		if (memcmp(panel, clip_src[f], sizeof(panel)) != 0) {
+			CHECK_EQ(f, -1);
+			break;
+		}
+		if (f == 25) {
+			snapshot("24_video_playing");
+		}
+	}
+	CHECK_EQ(video_pos(), CLIP_FRAMES);
+	frames(&scr_video, 3);						/* loops */
+	CHECK(memcmp(panel, clip_src[2], sizeof(panel)) == 0);
+
+	scr_video.key(KIT_BTN_1);					/* pause: the picture stays */
+	frames(&scr_video, 20);
+	CHECK(memcmp(panel, clip_src[2], sizeof(panel)) == 0);
+	scr_video.key(KIT_BTN_1);					/* play: goes on where it stopped */
+	frames(&scr_video, 1);
+	CHECK(memcmp(panel, clip_src[3], sizeof(panel)) == 0);
+	scr_video.key(KIT_BTN_2);					/* back to the start */
+	frames(&scr_video, 1);
+	CHECK(memcmp(panel, clip_src[0], sizeof(panel)) == 0);
+
+	/* a clip longer than the store says it is, or with damaged data, never
+	 * writes outside the frame buffer (ASan watches) and ends cleanly */
+	saved = store[13];
+	store[13] = 0xFF;
+	CHECK_EQ(video_open(kit_store_read, kit_store_size()), 0);
+	store[13] = saved;
+	for (uint32_t i = VIDEO_HEADER_SIZE; i < size; i += 7) {
+		store[i] ^= 0x5A;
+	}
+	CHECK_EQ(video_open(kit_store_read, kit_store_size()), 1);
+	{
+		int n = 0;
+
+		while (video_next(gfx_fb())) {
+			n++;
+		}
+		CHECK(n < CLIP_FRAMES);
+	}
+	scr_video.enter();
+	frames(&scr_video, 200);
+	clip_make();								/* leave a good clip for later */
+	gfx_clear();
+}
+
+static void test_weather(void) {
+	int16_t t;
+	uint16_t h;
+
+	sht_present = 1;
+	scr_weather.enter();
+	for (int i = 0; i < 3; i++) {
+		scr_weather.key(KIT_BTN_2);				/* once round the rates: an empty graph */
+	}
+	frames(&scr_weather, 30);					/* 1.5 s: at least one reading */
+	CHECK_EQ(weather_now(&t, &h), 1);
+	CHECK(t > 240 && t < 290);
+	CHECK(h > 550 && h < 670);
+	CHECK(weather_count() >= 1);
+	frames(&scr_weather, 20 * 60);				/* a minute at one point per second */
+	CHECK(weather_count() >= 59 && weather_count() <= 63);
+	snapshot("25_weather_temperature");
+	scr_weather.key(KIT_BTN_1);
+	frames(&scr_weather, 20 * 60);				/* the graph is full and scrolls */
+	CHECK_EQ(weather_count(), WEATHER_HIST);
+	snapshot("26_weather_humidity");
+	scr_weather.key(KIT_BTN_1);
+
+	scr_weather.key(KIT_BTN_2);					/* one point per minute: a new graph */
+	CHECK_EQ(weather_period_s(), 60);
+	CHECK_EQ(weather_count(), 0);
+	frames(&scr_weather, 20 * 150);
+	CHECK_EQ(weather_count(), 3);
+	scr_weather.key(KIT_BTN_2);
+	scr_weather.key(KIT_BTN_2);					/* back to seconds */
+	CHECK_EQ(weather_period_s(), 1);
+
+	{
+		char buf[8];
+
+		CHECK(strcmp(weather_fmt(buf, 234), "23.4") == 0);
+		CHECK(strcmp(weather_fmt(buf, -5), "-0.5") == 0);
+		CHECK(strcmp(weather_fmt(buf, 1000), "100.0") == 0);
+	}
+
+	sht_present = 0;							/* sensor gone */
+	frames(&scr_weather, 30);
+	CHECK_EQ(weather_now(&t, &h), 0);
+	snapshot("27_weather_no_sensor");
+	sht_present = 1;
+	frames(&scr_weather, 30);
+	CHECK_EQ(weather_now(&t, &h), 1);
+}
+
+static void test_maze(void) {
+	int a;
+
+	ui_autoplay = 0;
+	scr_maze.enter();
+	frames(&scr_maze, 2);
+	snapshot("28_maze_start");
+	a = lit_pixels();
+	CHECK(a > 600);
+	frames(&scr_maze, 10);
+	CHECK_EQ(lit_pixels(), a);					/* standing still: nothing changes */
+	scr_maze.key(KIT_BTN_2);					/* a tap turns 1/16 of a circle */
+	frames(&scr_maze, 6);
+	snapshot("29_maze_turned");
+	CHECK(lit_pixels() != a);
+	scr_maze.key(KIT_BTN_1);
+	frames(&scr_maze, 6);
+	CHECK_EQ(lit_pixels(), a);					/* and back: the same picture */
+	scr_maze.key(KIT_BTN_3);					/* walk into the wall ahead: stops there, no crash */
+	frames(&scr_maze, 200);
+	snapshot("30_maze_at_wall");
+	held_buttons = KIT_BTN_2;					/* held: keeps turning, sliding along walls */
+	frames(&scr_maze, 300);
+	held_buttons = 0;
+
+	/* the maze walks itself for five minutes: every view it can produce stays
+	 * inside the frame buffer (ASan) */
+	ui_autoplay = 1;
+	scr_maze.enter();
+	frames(&scr_maze, 120);
+	snapshot("31_maze_walking");
+	frames(&scr_maze, 20 * 300);
+	snapshot("32_maze_later");
+	ui_autoplay = 0;
+}
+
 static void test_system(void) {
 	ui_last_pages = 3;
 	ui_last_frame_ms = 9;
@@ -621,6 +953,9 @@ int main(int argc, char** argv) {
 	RUN_TEST(test_cube);
 	RUN_TEST(test_dino);
 	RUN_TEST(test_music);
+	RUN_TEST(test_video);
+	RUN_TEST(test_weather);
+	RUN_TEST(test_maze);
 	printf("%d checks, %d failed\n", tt_checks, tt_fails);
 	return tt_fails ? 1 : 0;
 }

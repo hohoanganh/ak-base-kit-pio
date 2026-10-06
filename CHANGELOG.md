@@ -13,7 +13,19 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
   hoặc tô bóng bằng dither, chỉ dùng số nguyên), máy hát RTTTL trên còi với 6 bài, các nốt chạy trên màn hình.
   Menu cuộn được, 7 mục. `gfx` thêm `gfx_line`, `gfx_tri` (tô theo mức xám), `gfx_bitmap`. Unit test demo: 90 kiểm tra.
   Đo trên kit: Dino tối đa 24 ms mỗi khung, 3D 34–37 ms, máy hát 4 ms.
-- **Demo tự chơi:** lệnh shell `ui auto` cho Snake, Flappy và Dino tự chạy, máy hát tự phát lần lượt; bấm nút là
+- **Thêm ba demo nữa:**
+  - *Mê cung 3D* (ray casting kiểu Wolfenstein, chỉ dùng số nguyên): B1/B2 quay, B3 đi/dừng, tìm cửa ra có sọc.
+    Đo trên kit: tối đa 37 ms mỗi khung khi đang đi.
+  - *Video từ flash SPI*: clip 1 bit 128×64 nằm ở vùng 0–512 KB của flash SPI (vùng OTA không dùng), chỉ lưu các
+    trang thay đổi, nén PackBits, có thể lưu dạng hiệu với khung trước. Tool `tools/ak_video.py` chuyển video, GIF,
+    thư mục ảnh thành `.akv` và nạp vào kit qua UART (57 KB trong 8 s). Đo trên kit: 41–47 ms mỗi khung khi đổi cả màn hình.
+  - *Trạm thời tiết*: nhiệt độ, độ ẩm từ SHT45, đồ thị 96 điểm (mỗi 1 s, 1 phút hoặc 15 phút = 24 giờ); cảm biến được đọc
+    mỗi giây dù đang mở màn hình nào. Lệnh shell `th`, `th csv`.
+  Menu 10 mục. Unit test demo: 124 kiểm tra.
+- **Giao thức nạp (`fw_proto`) có chỗ mở rộng:** lệnh từ `0x40` trở lên được chuyển cho hàm `ext` của ứng dụng
+  (demo dùng để ghi file vào flash SPI). Bootloader không đổi hành vi.
+- **`demo/kit.h`** thêm SHT45 (`kit_sht_start/read`) và kho file trên flash SPI (`kit_store_*`).
+- **Demo tự chơi:** lệnh shell `ui auto` cho Snake, Flappy, Dino và mê cung tự chạy, máy hát tự phát lần lượt; bấm nút là
   giành lại quyền điều khiển.
 - **Ảnh động cho tài liệu:** `tests/test_demo <thư mục> record` ghi từng khung từ mã vẽ thật, `tools/demo_gif.py`
   dựng thành GIF (README, [ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md)).

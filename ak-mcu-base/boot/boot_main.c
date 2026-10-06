@@ -54,6 +54,7 @@ static const fw_proto_cfg_t proto_cfg = {
 	FW_ROLE_BOOT,
 	&boot_version,
 	console_tx,
+	0,						/* no application commands in the bootloader */
 };
 
 /* Marker for "not verified" (STAGING is skipped when the app is fine). */

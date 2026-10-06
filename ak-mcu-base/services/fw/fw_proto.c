@@ -141,7 +141,15 @@ static void handle_frame(void) {
 		break;
 
 	default:
-		st = FW_ERR_CMD;
+		if (rx_cmd >= FW_PROTO_CMD_EXT && cfg && cfg->ext) {
+			uint16_t n = 0;
+
+			st = (fw_err_t)cfg->ext(rx_cmd, rx_buf, rx_len, &r[1], &n);
+			rl = (uint16_t)(1 + (n > FW_PROTO_EXT_RESP_MAX ? FW_PROTO_EXT_RESP_MAX : n));
+		}
+		else {
+			st = FW_ERR_CMD;
+		}
 		break;
 	}
 

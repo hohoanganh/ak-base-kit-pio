@@ -2,6 +2,8 @@
  * Kernel side of the demo UI: the UI task, button polling, beeps.
  * See ui.h for the overall picture.
  */
+#include <string.h>
+
 #include "ak.h"
 #include "task.h"
 #include "timer.h"
@@ -11,6 +13,9 @@
 
 #include "ui.h"
 #include "music.h"
+#include "video.h"
+#include "weather.h"
+#include "fw_types.h"
 #include "task_list.h"
 
 #define TAG "UI"
@@ -128,6 +133,93 @@ void cmd_ui(const char* args) {
 	}
 }
 
+static void open_screen(const ui_screen_t* s);
+
+void cmd_th(const char* args) {
+	char a[8], b[8];
+	int16_t t;
+	uint16_t h;
+
+	if (!weather_now(&t, &h)) {
+		xprintf("no answer from the SHT45\n");
+		return;
+	}
+	xprintf("%s C, %s %%RH, %d samples, one every %d s\n", weather_fmt(a, t), weather_fmt(b, h),
+			weather_count(), weather_period_s());
+	if (args[0] == 'c') {
+		xprintf("n,temp_c,rh_pct\n");
+		for (uint8_t i = 0; i < weather_count(); i++) {
+			weather_sample(i, &t, &h);
+			xprintf("%d,%s,%s\n", i, weather_fmt(a, t), weather_fmt(b, h));
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------
+ * media store over the console protocol (tools/ak_video.py)
+ *   40 INFO   -                 size(4) sector(4)
+ *   41 ERASE  offset(4)         -          one sector
+ *   42 WRITE  offset(4) data    -          checked by reading back
+ *--------------------------------------------------------------------------*/
+static uint32_t get_u32(const uint8_t* p) {
+	return (uint32_t)p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
+}
+
+static void put_u32(uint8_t* p, uint32_t v) {
+	p[0] = (uint8_t)v;
+	p[1] = (uint8_t)(v >> 8);
+	p[2] = (uint8_t)(v >> 16);
+	p[3] = (uint8_t)(v >> 24);
+}
+
+uint8_t ui_proto_ext(uint8_t cmd, const uint8_t* req, uint16_t len, uint8_t* resp, uint16_t* resp_len) {
+	switch (cmd) {
+	case 0x40:
+		put_u32(&resp[0], kit_store_size());
+		put_u32(&resp[4], KIT_STORE_SECTOR);
+		*resp_len = 8;
+		return FW_OK;
+
+	case 0x41:
+		if (len != 4) {
+			return FW_ERR_ARG;
+		}
+		if (current == &scr_video) {
+			open_screen(0);			/* the clip on screen is about to disappear */
+		}
+		return kit_store_erase(get_u32(req)) ? FW_OK : FW_ERR_FLASH;
+
+	case 0x42: {
+		uint8_t back[64];
+		uint32_t off;
+
+		if (len <= 4) {
+			return FW_ERR_ARG;
+		}
+		off = get_u32(req);
+		req += 4;
+		len = (uint16_t)(len - 4);
+		if (!kit_store_write(off, req, len)) {
+			return FW_ERR_FLASH;
+		}
+		while (len) {
+			uint16_t n = len > sizeof(back) ? (uint16_t)sizeof(back) : len;
+
+			if (!kit_store_read(off, back, n) || memcmp(back, req, n) != 0) {
+				return FW_ERR_FLASH;
+			}
+			off += n;
+			req += n;
+			len = (uint16_t)(len - n);
+		}
+		return FW_OK;
+	}
+
+	default:
+		return FW_ERR_CMD;
+	}
+}
+
 /*----------------------------------------------------------------------------
  * UI task
  *--------------------------------------------------------------------------*/
@@ -175,6 +267,7 @@ void task_ui(ak_msg_t* msg) {
 
 	case UI_SIG_FRAME:
 		t0 = hal_millis();
+		weather_poll(t0);
 		if (current) {
 			current->frame(t0);
 		}

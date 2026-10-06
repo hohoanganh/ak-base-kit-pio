@@ -6,6 +6,8 @@
  *   buttons               PB3, PC13, PB4 - to GND, internal pull-up
  *   buzzer (passive)      PB0 = TIM3_CH3
  *   RTC PCF85063          I2C 0x51, bit-banged on the I2C1 pins: SCL PB6, SDA PB7
+ *   SHT45                 I2C 0x44, same pins as the RTC
+ *   media store           SPI NOR below the OTA staging area (0 .. PORT_STAGING_ADDR)
  *
  *  PA15, PB3 and PB4 are JTAG pins after reset; as plain GPIO they only cost
  *  JTAG, SWD (PA13/PA14) keeps working.
@@ -17,6 +19,8 @@
 
 #include "hal.h"
 #include "kit.h"
+#include "port_cfg.h"
+#include "spi_nor.h"
 
 /*----------------------------------------------------------------------------
  * bit-banged I2C master (open drain pins, about 400 kHz at 32 MHz)
@@ -32,6 +36,7 @@ static const i2c_bus_t bus_rtc = { GPIOB, GPIO_Pin_6, GPIO_Pin_7 };
 
 #define LCD_ADDR		(0x3C)
 #define RTC_ADDR		(0x51)
+#define SHT_ADDR		(0x44)
 
 static inline void i2c_delay(void) {
 	for (volatile uint32_t i = 0; i < 3; i++) {
@@ -247,6 +252,88 @@ uint8_t kit_rtc_set(uint8_t hh, uint8_t mm, uint8_t ss) {
 /*----------------------------------------------------------------------------
  * init
  *--------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------
+ * SHT45: command 0xFD = measure with high precision (8.3 ms), then read
+ * T(2) crc RH(2) crc
+ *--------------------------------------------------------------------------*/
+static uint8_t sht_crc(const uint8_t* d) {
+	uint8_t crc = 0xFF;
+
+	for (uint8_t i = 0; i < 2; i++) {
+		crc ^= d[i];
+		for (uint8_t b = 0; b < 8; b++) {
+			crc = (crc & 0x80) ? (uint8_t)((crc << 1) ^ 0x31) : (uint8_t)(crc << 1);
+		}
+	}
+	return crc;
+}
+
+uint8_t kit_sht_start(void) {
+	uint8_t ok;
+
+	i2c_start(&bus_rtc);
+	ok = i2c_tx(&bus_rtc, SHT_ADDR << 1);
+	ok &= i2c_tx(&bus_rtc, 0xFD);
+	i2c_stop(&bus_rtc);
+	return ok;
+}
+
+uint8_t kit_sht_read(int16_t* t10, uint16_t* rh10) {
+	uint8_t d[6];
+	uint8_t ok;
+	int32_t rh;
+
+	i2c_start(&bus_rtc);
+	ok = i2c_tx(&bus_rtc, (SHT_ADDR << 1) | 1);
+	if (!ok) {						/* not there, or still measuring */
+		i2c_stop(&bus_rtc);
+		return 0;
+	}
+	for (uint8_t i = 0; i < 6; i++) {
+		d[i] = i2c_rx(&bus_rtc, i < 5);
+	}
+	i2c_stop(&bus_rtc);
+	if (sht_crc(&d[0]) != d[2] || sht_crc(&d[3]) != d[5]) {
+		return 0;
+	}
+	/* data sheet: T = -45 + 175 * raw / 65535, RH = -6 + 125 * raw / 65535 */
+	*t10 = (int16_t)(-450 + (int32_t)(1750UL * (((uint32_t)d[0] << 8) | d[1]) / 65535UL));
+	rh = -60 + (int32_t)(1250UL * (((uint32_t)d[3] << 8) | d[4]) / 65535UL);
+	*rh10 = (uint16_t)(rh < 0 ? 0 : rh > 1000 ? 1000 : rh);
+	return 1;
+}
+
+/*----------------------------------------------------------------------------
+ * media store: SPI NOR from 0 up to the OTA staging area. The port found the
+ * chip at start-up (STAGING has a size only then).
+ *--------------------------------------------------------------------------*/
+uint32_t kit_store_size(void) {
+#if PORT_STAGING_EXTERNAL
+	return hal_flash_info(FLASH_PART_STAGING)->size ? PORT_STAGING_ADDR : 0;
+#else
+	return 0;
+#endif
+}
+
+static uint8_t store_range_ok(uint32_t off, uint32_t len) {
+	uint32_t size = kit_store_size();
+
+	return off <= size && len <= size - off;
+}
+
+uint8_t kit_store_read(uint32_t off, void* buf, uint32_t len) {
+	return store_range_ok(off, len) && spi_nor_read(off, buf, len) == SPI_NOR_OK;
+}
+
+uint8_t kit_store_erase(uint32_t off) {
+	return (off % KIT_STORE_SECTOR) == 0 && store_range_ok(off, KIT_STORE_SECTOR)
+		   && spi_nor_erase_sector(off) == SPI_NOR_OK;
+}
+
+uint8_t kit_store_write(uint32_t off, const void* data, uint32_t len) {
+	return store_range_ok(off, len) && spi_nor_write(off, data, len) == SPI_NOR_OK;
+}
+
 uint8_t kit_init(void) {
 	GPIO_InitTypeDef gpio;
 

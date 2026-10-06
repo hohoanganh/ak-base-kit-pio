@@ -257,3 +257,7 @@ uint8_t gfx_flush(uint8_t force) {
 const uint8_t* gfx_page(uint8_t page) {
 	return fb[page % KIT_LCD_PAGES];
 }
+
+uint8_t* gfx_fb(void) {
+	return &fb[0][0];
+}

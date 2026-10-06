@@ -637,9 +637,21 @@ static void resp_tx(const uint8_t* d, uint32_t n) {
 	}
 }
 
+/* application command: echoes its payload behind a marker */
+static uint8_t ext_echo(uint8_t cmd, const uint8_t* req, uint16_t len, uint8_t* resp, uint16_t* resp_len) {
+	if (cmd != 0x41) {
+		return FW_ERR_CMD;
+	}
+	resp[0] = 0xEE;
+	memcpy(&resp[1], req, len);
+	*resp_len = (uint16_t)(1 + len);
+	return FW_OK;
+}
+
 static void test_proto_robustness(void) {
 	static const fw_version_t v = { 1, 2, 3, 0, 4 };
-	static const fw_proto_cfg_t cfg = { FW_ROLE_APP, &v, resp_tx };
+	static const fw_proto_cfg_t cfg = { FW_ROLE_APP, &v, resp_tx, 0 };
+	static const fw_proto_cfg_t cfg_ext = { FW_ROLE_APP, &v, resp_tx, ext_echo };
 	uint8_t f[16];
 	uint32_t n;
 
@@ -683,6 +695,43 @@ static void test_proto_robustness(void) {
 		fw_proto_feed(f[i], 3000);
 	}
 	CHECK_EQ(fw_proto_take_action(), FW_PROTO_ACT_NONE);
+	host_console_take_tx(0, 1000);
+
+	/* commands from 0x40 go to the application, if it asked for them */
+	{
+		static const uint8_t arg[3] = { 1, 2, 3 };
+		uint8_t r[24];
+
+		n = fw_proto_pack(f, 0x41, 13, arg, sizeof(arg));
+		for (uint32_t i = 0; i < n; i++) {
+			fw_proto_feed(f[i], 4000);
+		}
+		CHECK_EQ(host_console_take_tx(r, sizeof(r)), 8);		/* no handler: unknown command */
+		CHECK_EQ(r[5], FW_ERR_CMD);
+
+		fw_proto_init(&cfg_ext);
+		for (uint32_t i = 0; i < n; i++) {
+			fw_proto_feed(f[i], 5000);
+		}
+		CHECK_EQ(host_console_take_tx(r, sizeof(r)), 12);		/* status + marker + 3 bytes */
+		CHECK_EQ(r[1], 0x41 | FW_PROTO_RESP);
+		CHECK_EQ(r[5], FW_OK);
+		CHECK_EQ(r[6], 0xEE);
+		CHECK(memcmp(&r[7], arg, sizeof(arg)) == 0);
+
+		n = fw_proto_pack(f, 0x42, 14, 0, 0);					/* the handler does not know this one */
+		for (uint32_t i = 0; i < n; i++) {
+			fw_proto_feed(f[i], 6000);
+		}
+		CHECK_EQ(host_console_take_tx(r, sizeof(r)), 8);
+		CHECK_EQ(r[5], FW_ERR_CMD);
+
+		n = fw_proto_pack(f, FW_PROTO_CMD_INFO, 15, 0, 0);		/* built-in commands are not affected */
+		for (uint32_t i = 0; i < n; i++) {
+			fw_proto_feed(f[i], 7000);
+		}
+		CHECK(host_console_take_tx(r, sizeof(r)) > 8);
+	}
 }
 
 /* APP has a header but bad CRC and STAGING holds an image: boot must recover,

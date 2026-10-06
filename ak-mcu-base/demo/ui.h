@@ -2,7 +2,8 @@
  ******************************************************************************
  * @brief:  Demo for the AK Base Kit: menu, digital clock, two games and a
  *          system monitor on the 128x64 display, three buttons, buzzer.
- *          Later additions: Dino runner, rotating 3D solids, a jukebox.
+ *          Later additions: Dino runner, rotating 3D solids, a jukebox,
+ *          a ray-cast maze, video from the SPI flash, a weather station.
  *
  *  How it sits on the kernel:
  *   - task_poll_buttons (polling) debounces the buttons and posts key signals;
@@ -63,6 +64,9 @@ extern const ui_screen_t scr_flappy;
 extern const ui_screen_t scr_dino;
 extern const ui_screen_t scr_cube;
 extern const ui_screen_t scr_music;
+extern const ui_screen_t scr_maze;
+extern const ui_screen_t scr_video;
+extern const ui_screen_t scr_weather;
 extern const ui_screen_t scr_system;
 
 /* menu (scr_menu.c): returns the chosen screen on B3, else 0 */
@@ -76,6 +80,9 @@ extern void ui_beep(uint16_t freq_hz, uint16_t ms);		/* silent while a song play
 extern void ui_music_play(const char* rtttl);
 extern void ui_music_stop(void);
 extern uint32_t ui_rand(void);
+/* 127 * sin / cos of an angle in 1/256 of a turn (table, no floating point) */
+extern int ui_sin(uint8_t a);
+extern int ui_cos(uint8_t a);
 extern void ui_footer(const char* b1, const char* b2, const char* b3);
 extern void ui_title(const char* left, const char* right);
 
@@ -90,6 +97,11 @@ extern uint16_t ui_last_frame_ms;
 /* shell: "ui" = status, "ui 1|2|3" = press a button, "ui back" = hold B3,
  * "ui auto" = games play themselves */
 extern void cmd_ui(const char* args);
+/* shell: "th" = temperature, humidity and the graph of the weather screen as CSV */
+extern void cmd_th(const char* args);
+/* fw_proto extension (console): commands 0x40.. load files into the media
+ * store, see tools/ak_video.py. Returns the status byte, fills the response. */
+extern uint8_t ui_proto_ext(uint8_t cmd, const uint8_t* req, uint16_t len, uint8_t* resp, uint16_t* resp_len);
 
 extern void task_ui(ak_msg_t* msg);
 extern void task_poll_buttons(void);
