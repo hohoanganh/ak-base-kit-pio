@@ -7,7 +7,9 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
-## ak-mcu-base v1.3.1 — chưa phát hành
+## ak-mcu-base v1.3.1 — 06/10/2026
+
+App **1.3.1**, bootloader không đổi (1.2.0). Bản này chủ yếu thêm bộ demo cho AK Base Kit.
 
 - **Ba demo mới trên kit:** Dino runner (B1 nhảy, B2 cúi), khối 3D quay (lập phương, bát diện, kim tự tháp; khung dây
   hoặc tô bóng bằng dither, chỉ dùng số nguyên), máy hát RTTTL trên còi với 6 bài, các nốt chạy trên màn hình.
