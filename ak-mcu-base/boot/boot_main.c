@@ -21,7 +21,7 @@
 
 #ifndef BOOT_VER_MAJOR
 #define BOOT_VER_MAJOR		1
-#define BOOT_VER_MINOR		0
+#define BOOT_VER_MINOR		1
 #define BOOT_VER_PATCH		0
 #endif
 
