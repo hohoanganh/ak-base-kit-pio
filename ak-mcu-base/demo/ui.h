@@ -2,6 +2,7 @@
  ******************************************************************************
  * @brief:  Demo for the AK Base Kit: menu, digital clock, two games and a
  *          system monitor on the 128x64 display, three buttons, buzzer.
+ *          Later additions: Dino runner, rotating 3D solids, a jukebox.
  *
  *  How it sits on the kernel:
  *   - task_poll_buttons (polling) debounces the buttons and posts key signals;
@@ -45,6 +46,7 @@ enum {
 	UI_SIG_KEY_3,			/* B3 released before UI_HOLD_MS */
 	UI_SIG_BACK,			/* B3 held */
 	UI_SIG_BEEP_OFF,
+	UI_SIG_NOTE,			/* music: the current piece of the song is over */
 };
 
 typedef struct {
@@ -52,11 +54,15 @@ typedef struct {
 	void (*enter)(void);					/* screen opened */
 	void (*key)(uint8_t btn);				/* KIT_BTN_1 / _2 / _3, short press */
 	void (*frame)(uint32_t now_ms);			/* every UI_FRAME_MS: update + draw */
+	void (*leave)(void);					/* screen closed (may be 0) */
 } ui_screen_t;
 
 extern const ui_screen_t scr_clock;
 extern const ui_screen_t scr_snake;
 extern const ui_screen_t scr_flappy;
+extern const ui_screen_t scr_dino;
+extern const ui_screen_t scr_cube;
+extern const ui_screen_t scr_music;
 extern const ui_screen_t scr_system;
 
 /* menu (scr_menu.c): returns the chosen screen on B3, else 0 */
@@ -65,7 +71,10 @@ extern const ui_screen_t* menu_key(uint8_t btn);
 extern void menu_frame(uint32_t now_ms);
 
 /* helpers for the screens */
-extern void ui_beep(uint16_t freq_hz, uint16_t ms);
+extern void ui_beep(uint16_t freq_hz, uint16_t ms);		/* silent while a song plays */
+/* play an RTTTL song on the buzzer without blocking (music.h) / stop it */
+extern void ui_music_play(const char* rtttl);
+extern void ui_music_stop(void);
 extern uint32_t ui_rand(void);
 extern void ui_footer(const char* b1, const char* b2, const char* b3);
 extern void ui_title(const char* left, const char* right);

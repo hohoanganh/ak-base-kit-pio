@@ -178,4 +178,4 @@ static void flappy_frame(uint32_t now_ms) {
 	}
 }
 
-const ui_screen_t scr_flappy = { "Flappy", flappy_enter, flappy_key, flappy_frame };
+const ui_screen_t scr_flappy = { "Flappy", flappy_enter, flappy_key, flappy_frame, 0 };

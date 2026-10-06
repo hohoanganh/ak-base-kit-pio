@@ -88,6 +88,85 @@ void gfx_invert(int x, int y, int w, int h) {
 	}
 }
 
+void gfx_line(int x0, int y0, int x1, int y1, uint8_t on) {
+	int dx = x1 > x0 ? x1 - x0 : x0 - x1;
+	int dy = y1 > y0 ? y0 - y1 : y1 - y0;		/* negative */
+	int sx = x0 < x1 ? 1 : -1;
+	int sy = y0 < y1 ? 1 : -1;
+	int err = dx + dy;
+
+	for (;;) {
+		int e2 = 2 * err;
+
+		gfx_pixel(x0, y0, on);
+		if (x0 == x1 && y0 == y1) {
+			break;
+		}
+		if (e2 >= dy) {
+			err += dy;
+			x0 += sx;
+		}
+		if (e2 <= dx) {
+			err += dx;
+			y0 += sy;
+		}
+	}
+}
+
+/* x on the edge (xa, ya) - (xb, yb) at row y, ya != yb */
+static int edge_x(int xa, int ya, int xb, int yb, int y) {
+	return xa + (xb - xa) * (y - ya) / (yb - ya);
+}
+
+void gfx_tri(int x0, int y0, int x1, int y1, int x2, int y2, uint8_t level) {
+	/* 4x4 Bayer matrix: pixel (x, y) is lit when bayer < level */
+	static const uint8_t bayer[4][4] = {
+		{  0,  8,  2, 10 },
+		{ 12,  4, 14,  6 },
+		{  3, 11,  1,  9 },
+		{ 15,  7, 13,  5 },
+	};
+	int t;
+
+	/* sort by y: (x0, y0) top, (x2, y2) bottom */
+	if (y0 > y1) { t = y0; y0 = y1; y1 = t; t = x0; x0 = x1; x1 = t; }
+	if (y1 > y2) { t = y1; y1 = y2; y2 = t; t = x1; x1 = x2; x2 = t; }
+	if (y0 > y1) { t = y0; y0 = y1; y1 = t; t = x0; x0 = x1; x1 = t; }
+
+	for (int y = y0; y <= y2; y++) {
+		int xa, xb;
+
+		if (y < 0 || y >= GFX_H) {
+			continue;
+		}
+		xa = (y2 == y0) ? x0 : edge_x(x0, y0, x2, y2, y);			/* long edge */
+		if (y < y1) {
+			xb = edge_x(x0, y0, x1, y1, y);
+		}
+		else {
+			xb = (y2 == y1) ? x1 : edge_x(x1, y1, x2, y2, y);
+		}
+		if (xa > xb) {
+			t = xa; xa = xb; xb = t;
+		}
+		for (int x = xa; x <= xb; x++) {
+			gfx_pixel(x, y, bayer[y & 3][x & 3] < level);
+		}
+	}
+}
+
+void gfx_bitmap(int x, int y, const uint16_t* rows, uint8_t h) {
+	for (uint8_t j = 0; j < h; j++) {
+		uint16_t r = rows[j];
+
+		for (int i = 0; r; i++, r = (uint16_t)(r << 1)) {
+			if (r & 0x8000) {
+				gfx_pixel(x + i, y + j, 1);
+			}
+		}
+	}
+}
+
 int gfx_text(int x, int y, const char* s, uint8_t scale) {
 	for (; *s; s++, x += GFX_FONT_W * scale) {
 		uint8_t ch = (uint8_t)*s;

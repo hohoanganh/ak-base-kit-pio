@@ -18,6 +18,9 @@ Cỡ việc: S = vài giờ, M = một hai ngày, L = nhiều ngày.
 |---|---|
 | GIF cho từng demo, dựng từ chính mã vẽ của firmware | `tests/test_demo.c` quay khung, `tools/demo_gif.py` dựng GIF |
 | Chế độ tự chơi ("attract mode") | Lệnh shell `ui auto`; bấm nút là lấy lại quyền điều khiển |
+| Khối 3D quay (mục 1) | Lập phương, bát diện, kim tự tháp; khung dây hoặc tô dither. 34–37 ms mỗi khung trên kit. Chưa làm lưới nhiều mặt kiểu ấm trà |
+| Dino runner (mục 2) | B1 nhảy, B2 cúi, có tự chơi |
+| Máy hát RTTTL (mục 3) | 6 bài nằm trong flash của chip, một kênh. Chưa lưu bài trong flash SPI, chưa thử hợp âm rải |
 
 Tham khảo cách làm: trình giả lập [Ardens](https://github.com/retrom-project/Ardens) và
 [ProjectABE](https://github.com/felipemanga/ProjectABE) của Arduboy đều có chức năng chụp ảnh và quay GIF.
@@ -26,9 +29,9 @@ Tham khảo cách làm: trình giả lập [Ardens](https://github.com/retrom-pr
 
 | # | Ý tưởng | Cỡ | Vì sao đáng làm | Khoe phần nào của kit | Tham khảo |
 |---|---|---|---|---|---|
-| 1 | **Khối lập phương 3D quay**, sau đó là lưới đặc tô bằng dither | S → M | Bản Arduboy dựng ấm trà 240 mặt hơn 30 khung/giây trên AVR 8 bit; Cortex-M3 dư sức | Màn hình, CPU | [arduboy3d](https://github.com/a1k0n/arduboy3d) · [U8G2 graphics demos](https://github.com/OkuboHeavyIndustries/U8G2_SSD1306_graphics_demos) |
-| 2 | **Dino runner**: một nút nhảy, một nút cúi | S | Ai nhìn GIF cũng nhận ra ngay | Màn hình, nút, còi | [t-rex-duino](https://github.com/AlexIII/t-rex-duino) |
-| 3 | **Máy hát chiptune / RTTTL**, nốt nhạc chạy trên màn hình, bài hát lưu trong flash SPI | S | Hợp tự nhiên với kernel dùng timer mềm; cần video có tiếng, GIF không thể hiện được | Còi, flash, nút | [PlayRtttl](https://github.com/ArminJo/PlayRtttl) |
+| ~~1~~ | ~~Khối lập phương 3D quay~~ (đã làm); còn lại: lưới nhiều mặt kiểu ấm trà | S → M | Bản Arduboy dựng ấm trà 240 mặt hơn 30 khung/giây trên AVR 8 bit; Cortex-M3 dư sức | Màn hình, CPU | [arduboy3d](https://github.com/a1k0n/arduboy3d) · [U8G2 graphics demos](https://github.com/OkuboHeavyIndustries/U8G2_SSD1306_graphics_demos) |
+| ~~2~~ | ~~Dino runner~~ (đã làm): một nút nhảy, một nút cúi | S | Ai nhìn GIF cũng nhận ra ngay | Màn hình, nút, còi | [t-rex-duino](https://github.com/AlexIII/t-rex-duino) |
+| ~~3~~ | ~~Máy hát chiptune / RTTTL~~ (đã làm), nốt nhạc chạy trên màn hình, bài hát lưu trong flash SPI | S | Hợp tự nhiên với kernel dùng timer mềm; cần video có tiếng, GIF không thể hiện được | Còi, flash, nút | [PlayRtttl](https://github.com/ArminJo/PlayRtttl) |
 | 4 | **Bộ màn hình chờ**: Game of Life, trường sao, plasma | S mỗi cái | Life trọn 128×64 chỉ cần hai bộ đệm 1 KB | Màn hình, RTC (làm hạt giống ngẫu nhiên) | [cgol_i2c_oled](https://github.com/weightan/cgol_i2c_oled_arduino) · [SSD1306-GameOfLife](https://github.com/babonev/SSD1306-GameOfLife) |
 | 5 | **Video Bad Apple** phát từ flash SPI (nén RLE + heatshrink) | M | Đoạn phim "màn hình bé làm được gì" nổi tiếng nhất | Flash SPI, driver màn hình | [ESP32_BadApple](https://github.com/hackffm/ESP32_BadApple) · [pico-badapple](https://github.com/HaruYou27/pico-badapple) |
 | 6 | **Trạm thời tiết**: nhiệt độ, độ ẩm chữ to, đồ thị 24 giờ, ghi log vào flash, xuất CSV qua shell | S – M | Không hào nhoáng nhưng làm kit trông như một sản phẩm | SHT45, RTC, flash, UART | [Ví dụ trạm thời tiết SSD1306](https://simple-circuit.com/weather-station-arduino-bme280-ssd1306/) |

@@ -10,6 +10,7 @@
 #include "ak_log.h"
 
 #include "ui.h"
+#include "music.h"
 #include "task_list.h"
 
 #define TAG "UI"
@@ -26,8 +27,35 @@ static uint8_t lcd_ok;
  * beep: buzzer on now, a one-shot timer turns it off
  *--------------------------------------------------------------------------*/
 void ui_beep(uint16_t freq_hz, uint16_t ms) {
+	if (music_playing()) {
+		return;				/* the buzzer belongs to the song */
+	}
 	kit_buzzer(freq_hz);
 	timer_set(TASK_UI_ID, UI_SIG_BEEP_OFF, ms, TIMER_ONE_SHOT);
+}
+
+/*----------------------------------------------------------------------------
+ * music: music_step() sounds the next piece and says how long it lasts; a
+ * one-shot timer brings UI_SIG_NOTE when that time is over
+ *--------------------------------------------------------------------------*/
+static void music_next(void) {
+	uint16_t ms = music_step();
+
+	if (ms) {
+		timer_set(TASK_UI_ID, UI_SIG_NOTE, ms, TIMER_ONE_SHOT);
+	}
+}
+
+void ui_music_play(const char* rtttl) {
+	timer_remove_attr(TASK_UI_ID, UI_SIG_BEEP_OFF);		/* a pending beep-off would cut the first note */
+	if (music_start(rtttl)) {
+		music_next();
+	}
+}
+
+void ui_music_stop(void) {
+	timer_remove_attr(TASK_UI_ID, UI_SIG_NOTE);
+	music_stop();
 }
 
 /*----------------------------------------------------------------------------
@@ -104,6 +132,9 @@ void cmd_ui(const char* args) {
  * UI task
  *--------------------------------------------------------------------------*/
 static void open_screen(const ui_screen_t* s) {
+	if (current && current->leave) {
+		current->leave();
+	}
 	current = s;
 	if (s) {
 		s->enter();
@@ -174,7 +205,13 @@ void task_ui(ak_msg_t* msg) {
 		break;
 
 	case UI_SIG_BEEP_OFF:
-		kit_buzzer(0);
+		if (!music_playing()) {
+			kit_buzzer(0);
+		}
+		break;
+
+	case UI_SIG_NOTE:
+		music_next();
 		break;
 
 	default:

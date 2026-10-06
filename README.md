@@ -1,5 +1,7 @@
 # ak-base-kit-pio — Firmware source base cho STM32L151
 
+![Repo Traffic](https://komarev.com/ghpvc/?username=ak-base-kit-pio&label=Repo+Traffic&color=blue&style=flat-square)
+
 Nền firmware bare-metal cho **STM32L151CBT6** (AK Base Kit): kernel AK kiểu Active Object không cần RTOS,
 bootloader và cập nhật firmware có sẵn. Dựng lại từ
 [ak-base-kit-stm32l151](https://github.com/the-ak-foundation/ak-base-kit-stm32l151) của AK Foundation.
@@ -7,9 +9,9 @@ bootloader và cập nhật firmware có sẵn. Dựng lại từ
 Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/>
 
 <p align="center">
-  <a href="ak-mcu-base/docs/demo-kit.md"><img src="ak-mcu-base/docs/demo-tour.gif" alt="Demo trên AK Base Kit: đồng hồ số, Snake, Flappy" width="404"></a>
+  <a href="ak-mcu-base/docs/demo-kit.md"><img src="ak-mcu-base/docs/demo-tour.gif" alt="Demo trên AK Base Kit: đồng hồ số, Snake, Flappy, Dino, khối 3D, máy hát" width="404"></a>
   <br>
-  <em>Demo trên kit với base mới: đồng hồ số, Snake và Flappy tự chơi, màn hình hệ thống.<br>
+  <em>Demo trên kit với base mới: đồng hồ số, Snake, Flappy và Dino tự chơi, khối 3D quay, máy hát.<br>
   Ảnh dựng từ chính mã vẽ của firmware, không phải ảnh chụp.</em>
 </p>
 

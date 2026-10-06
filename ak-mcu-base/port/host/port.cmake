@@ -49,6 +49,7 @@ add_executable(test_demo
 	${ROOT}/tests/test_demo.c
 	${ROOT}/demo/gfx.c ${ROOT}/demo/ui_common.c
 	${ROOT}/demo/scr_clock.c ${ROOT}/demo/scr_snake.c ${ROOT}/demo/scr_flappy.c ${ROOT}/demo/scr_system.c
+	${ROOT}/demo/scr_dino.c ${ROOT}/demo/scr_cube.c ${ROOT}/demo/scr_music.c ${ROOT}/demo/music.c
 	${KERNEL_SRC} ${COMMON_SRC} ${SYS_SRC}
 	${HOST_DIR}/port_host.c
 )

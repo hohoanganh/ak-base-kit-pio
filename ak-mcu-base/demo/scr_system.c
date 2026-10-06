@@ -56,4 +56,4 @@ static void system_frame(uint32_t now_ms) {
 	ui_footer("BEEP", 0, "hold:MENU");
 }
 
-const ui_screen_t scr_system = { "System monitor", system_enter, system_key, system_frame };
+const ui_screen_t scr_system = { "System monitor", system_enter, system_key, system_frame, 0 };

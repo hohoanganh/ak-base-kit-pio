@@ -39,6 +39,18 @@ extern int gfx_text(int x, int y, const char* s, uint8_t scale);
 extern int gfx_text_width(const char* s, uint8_t scale);
 extern int gfx_text_center(int y, const char* s, uint8_t scale);
 
+/* Line between two points (Bresenham). */
+extern void gfx_line(int x0, int y0, int x1, int y1, uint8_t on);
+
+/* Filled triangle in a shade of grey: level 0 (black) .. 16 (white), made of
+ * pixels with a 4x4 ordered dither. Pixels of the triangle that the dither
+ * leaves dark are cleared, so it covers what is behind it. */
+extern void gfx_tri(int x0, int y0, int x1, int y1, int x2, int y2, uint8_t level);
+
+/* 1-bit picture: h rows of up to 16 pixels, bit 15 = leftmost pixel. Only the
+ * set pixels are drawn. */
+extern void gfx_bitmap(int x, int y, const uint16_t* rows, uint8_t h);
+
 /* Seven-segment digit 0..9 in a w x h box, segment thickness t. */
 extern void gfx_digit7(int x, int y, int w, int h, int t, uint8_t digit);
 

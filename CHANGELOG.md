@@ -9,9 +9,15 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 
 ## ak-mcu-base v1.3.1 — chưa phát hành
 
-- **Demo tự chơi:** lệnh shell `ui auto` cho Snake và Flappy tự chạy; bấm nút là giành lại quyền điều khiển.
+- **Ba demo mới trên kit:** Dino runner (B1 nhảy, B2 cúi), khối 3D quay (lập phương, bát diện, kim tự tháp; khung dây
+  hoặc tô bóng bằng dither, chỉ dùng số nguyên), máy hát RTTTL trên còi với 6 bài, các nốt chạy trên màn hình.
+  Menu cuộn được, 7 mục. `gfx` thêm `gfx_line`, `gfx_tri` (tô theo mức xám), `gfx_bitmap`. Unit test demo: 90 kiểm tra.
+  Đo trên kit: Dino tối đa 24 ms mỗi khung, 3D 34–37 ms, máy hát 4 ms.
+- **Demo tự chơi:** lệnh shell `ui auto` cho Snake, Flappy và Dino tự chạy, máy hát tự phát lần lượt; bấm nút là
+  giành lại quyền điều khiển.
 - **Ảnh động cho tài liệu:** `tests/test_demo <thư mục> record` ghi từng khung từ mã vẽ thật, `tools/demo_gif.py`
   dựng thành GIF (README, [ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md)).
+- **Huy hiệu Repo Traffic** ở đầu README.
 - **Ý tưởng demo tiếp theo**, kèm nguồn tham khảo: [ak-mcu-base/docs/y-tuong-demo.md](ak-mcu-base/docs/y-tuong-demo.md).
 
 ## ak-mcu-base v1.3.0 — 06/10/2026

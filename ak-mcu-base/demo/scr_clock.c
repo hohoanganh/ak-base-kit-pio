@@ -107,4 +107,4 @@ static void clock_frame(uint32_t now_ms) {
 			  set_field ? "+1" : 0, "hold:MENU");
 }
 
-const ui_screen_t scr_clock = { "Digital clock", clock_enter, clock_key, clock_frame };
+const ui_screen_t scr_clock = { "Digital clock", clock_enter, clock_key, clock_frame, 0 };

@@ -16,6 +16,7 @@
 #include "timer.h"
 #include "hal.h"
 #include "ui.h"
+#include "music.h"
 #include "port_host.h"
 #include "tiny_test.h"
 
@@ -33,8 +34,11 @@ uint8_t ui_last_pages;
 uint16_t ui_last_frame_ms;
 
 uint8_t kit_init(void) { return 1; }
-uint8_t kit_buttons(void) { return 0; }
-void kit_buzzer(uint16_t freq_hz) { (void)freq_hz; }
+static uint16_t buzzer_hz;
+static uint8_t held_buttons;
+
+uint8_t kit_buttons(void) { return held_buttons; }
+void kit_buzzer(uint16_t freq_hz) { buzzer_hz = freq_hz; }
 
 uint8_t kit_lcd_write_page(uint8_t page, const uint8_t* data) {
 	memcpy(panel[page], data, KIT_LCD_W);
@@ -70,6 +74,31 @@ void ui_beep(uint16_t freq_hz, uint16_t ms) {
 	beeps++;
 }
 
+/* The firmware advances the song with a kernel timer; here the frames do it:
+ * music_due_ms is when the piece that is sounding ends. */
+static uint32_t music_due_ms;
+
+void ui_music_play(const char* rtttl) {
+	if (music_start(rtttl)) {
+		music_due_ms = now_ms + music_step();
+	}
+}
+
+void ui_music_stop(void) {
+	music_stop();
+}
+
+static void music_run(void) {
+	while (music_playing() && (int32_t)(now_ms - music_due_ms) >= 0) {
+		uint16_t ms = music_step();
+
+		if (!ms) {
+			break;
+		}
+		music_due_ms += ms;
+	}
+}
+
 /*----------------------------------------------------------------------------
  * helpers
  *--------------------------------------------------------------------------*/
@@ -79,6 +108,7 @@ static void frames(const ui_screen_t* s, int n) {
 	while (n--) {
 		now_ms += UI_FRAME_MS;
 		host_advance_ms(UI_FRAME_MS);
+		music_run();
 		if (s) {
 			s->frame(now_ms);
 		}
@@ -150,10 +180,52 @@ static void record(void) {
 	play(&scr_flappy, 300);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
+	scr_dino.enter();
+	play(&scr_dino, 300);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_cube.enter();
+	play(&scr_cube, 90);
+	scr_cube.key(KIT_BTN_1);
+	play(&scr_cube, 70);
+	scr_cube.key(KIT_BTN_1);
+	play(&scr_cube, 70);
+	scr_cube.key(KIT_BTN_1);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_music.enter();
+	play(&scr_music, 200);
+	scr_music.leave();
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
 	scr_system.enter();
 	play(&scr_system, 50);
 	play(0, 6);
 	menu_press(KIT_BTN_1, 10);				/* wraps to the first entry: the GIF loops cleanly */
+	rec_close();
+
+	rec_open("dino");
+	scr_dino.enter();
+	play(&scr_dino, 520);
+	rec_close();
+
+	rec_open("3d");
+	scr_cube.enter();
+	play(&scr_cube, 128);					/* cube: 128 frames = one full turn of the slow axis */
+	scr_cube.key(KIT_BTN_1);
+	play(&scr_cube, 128);
+	scr_cube.key(KIT_BTN_1);
+	play(&scr_cube, 128);
+	scr_cube.key(KIT_BTN_3);				/* the same pyramid as a wireframe */
+	play(&scr_cube, 64);
+	scr_cube.key(KIT_BTN_3);
+	scr_cube.key(KIT_BTN_1);
+	rec_close();
+
+	rec_open("music");
+	scr_music.enter();
+	play(&scr_music, 400);
+	scr_music.leave();
 	rec_close();
 
 	rec_open("snake");
@@ -351,6 +423,168 @@ static void test_flappy(void) {
 	CHECK_EQ(lit_pixels(), before);
 }
 
+static void test_gfx_shapes(void) {
+	gfx_clear();
+	gfx_line(0, 0, 9, 9, 1);					/* diagonal: exactly its 10 pixels */
+	gfx_flush(0);
+	CHECK_EQ(lit_pixels(), 10);
+	CHECK_EQ(gfx_get(5, 5), 1);
+	gfx_clear();
+	gfx_line(20, 30, 20, 30, 1);				/* a single point */
+	gfx_line(0, 63, 127, 63, 1);
+	gfx_line(127, 0, 127, 63, 1);
+	gfx_flush(0);
+	CHECK_EQ(lit_pixels(), 1 + 128 + 63);
+	gfx_clear();
+	gfx_tri(10, 10, 50, 10, 10, 50, 16);		/* white: about half of a 41 x 41 square */
+	gfx_flush(0);
+	CHECK(lit_pixels() > 780 && lit_pixels() < 900);
+	gfx_tri(10, 10, 50, 10, 10, 50, 8);			/* 50 % grey: half of that, and it clears the rest */
+	gfx_flush(0);
+	CHECK(lit_pixels() > 380 && lit_pixels() < 460);
+	gfx_tri(10, 10, 50, 10, 10, 50, 0);
+	gfx_flush(0);
+	CHECK_EQ(lit_pixels(), 0);
+	gfx_tri(-40, -40, 300, 20, 60, 200, 16);	/* far outside the screen: clipped, no crash */
+}
+
+static void test_cube(void) {
+	int a, b;
+
+	scr_cube.enter();
+	frames(&scr_cube, 9);
+	snapshot("12_3d_cube");
+	a = lit_pixels();
+	CHECK(a > 250);
+	frames(&scr_cube, 7);
+	CHECK(lit_pixels() != a);					/* it turns */
+	scr_cube.key(KIT_BTN_3);					/* wireframe: far fewer pixels */
+	frames(&scr_cube, 1);
+	snapshot("13_3d_wire");
+	b = lit_pixels();
+	CHECK(b < a);
+	scr_cube.key(KIT_BTN_3);
+	scr_cube.key(KIT_BTN_1);
+	frames(&scr_cube, 13);
+	snapshot("14_3d_octa");
+	scr_cube.key(KIT_BTN_1);
+	frames(&scr_cube, 21);
+	snapshot("15_3d_pyramid");
+	scr_cube.key(KIT_BTN_2);					/* fast */
+	scr_cube.key(KIT_BTN_2);					/* stopped: the picture stands still */
+	frames(&scr_cube, 1);
+	a = lit_pixels();
+	frames(&scr_cube, 10);
+	CHECK_EQ(lit_pixels(), a);
+	scr_cube.key(KIT_BTN_2);
+	scr_cube.key(KIT_BTN_1);					/* back to the cube for the next run */
+	/* a full turn on both axes never draws outside the frame buffer (ASan) */
+	frames(&scr_cube, 300);
+}
+
+static void test_dino(void) {
+	int before;
+
+	ui_autoplay = 0;
+	scr_dino.enter();
+	frames(&scr_dino, 2);
+	snapshot("16_dino_ready");
+	before = lit_pixels();
+	frames(&scr_dino, 30);						/* waits for the first key */
+	CHECK_EQ(lit_pixels(), before);
+
+	/* never jumping: runs into the first cactus */
+	scr_dino.key(KIT_BTN_2);					/* a duck starts the game too */
+	before = beeps;
+	frames(&scr_dino, 200);
+	snapshot("17_dino_game_over");
+	CHECK(beeps > before);
+	before = lit_pixels();
+	frames(&scr_dino, 30);
+	CHECK_EQ(lit_pixels(), before);
+
+	/* the autopilot jumps and ducks its way through a long run */
+	ui_autoplay = 1;
+	scr_dino.key(KIT_BTN_1);
+	frames(&scr_dino, 100);
+	snapshot("18_dino_running");
+	before = beeps;
+	frames(&scr_dino, 900);
+	snapshot("19_dino_later");
+	CHECK(beeps - before > 20);					/* jumps + the beep every 100 points */
+	ui_autoplay = 0;
+}
+
+static void test_music(void) {
+	uint32_t ms;
+	char name[16];
+
+	/* d=4, b=120: a quarter is 500 ms. Dots, sharps, octaves, a pause. */
+	static const char* song = "Test:d=4,o=5,b=120:a4,8c,c#6,2p,e.,8g#7.";
+
+	CHECK_EQ(music_measure(song, &ms), 6);
+	CHECK_EQ(ms, 500 + 250 + 500 + 1000 + 750 + 375);
+	CHECK(strcmp(music_name(song, name, sizeof(name)), "Test") == 0);
+	CHECK_EQ(music_measure("no header at all", &ms), 0);
+	CHECK_EQ(music_start("broken:d=4"), 0);
+	CHECK_EQ(music_playing(), 0);
+
+	CHECK_EQ(music_start(song), 1);
+	CHECK_EQ(music_step(), 438);				/* A4 for 7/8 of 500 ms ... */
+	CHECK_EQ(buzzer_hz, 440);
+	CHECK_EQ(music_note(), 10);
+	CHECK_EQ(music_octave(), 4);
+	CHECK_EQ(music_step(), 62);					/* ... then the gap */
+	CHECK_EQ(buzzer_hz, 0);
+	CHECK_EQ(music_step(), 219);				/* C5, an eighth */
+	CHECK_EQ(buzzer_hz, 523);
+	music_step();
+	music_step();								/* C#6 */
+	CHECK_EQ(buzzer_hz, 1108);
+	music_step();
+	CHECK_EQ(music_step(), 1000);				/* the pause: silent, no gap after it */
+	CHECK_EQ(buzzer_hz, 0);
+	CHECK_EQ(music_note(), 0);
+	music_step();								/* E5 dotted */
+	CHECK_EQ(buzzer_hz, 659);
+	music_step();
+	music_step();								/* G#7 dotted eighth */
+	CHECK_EQ(buzzer_hz, 3322);
+	CHECK_EQ(music_count(), 6);
+	music_step();
+	CHECK_EQ(music_step(), 0);					/* end of the song */
+	CHECK_EQ(music_playing(), 0);
+	CHECK_EQ(buzzer_hz, 0);
+
+	/* the jukebox: play, the bars fill up, next song keeps playing, stop */
+	scr_music.enter();
+	frames(&scr_music, 2);
+	snapshot("20_music_stopped");
+	scr_music.key(KIT_BTN_2);
+	CHECK_EQ(music_playing(), 1);
+	frames(&scr_music, 20 * 12);
+	snapshot("21_music_playing");
+	CHECK(music_count() > 20);
+	scr_music.key(KIT_BTN_1);
+	CHECK_EQ(music_playing(), 1);
+	frames(&scr_music, 20 * 5);
+	snapshot("22_music_next_song");
+	scr_music.key(KIT_BTN_2);
+	CHECK_EQ(music_playing(), 0);
+	CHECK_EQ(buzzer_hz, 0);
+	scr_music.key(KIT_BTN_2);
+	scr_music.leave();							/* leaving the screen silences the buzzer */
+	CHECK_EQ(music_playing(), 0);
+	/* every built-in song parses to the end and has a sane length */
+	for (int i = 0; i < 6; i++) {
+		scr_music.key(KIT_BTN_2);
+		CHECK_EQ(music_playing(), 1);
+		frames(&scr_music, 20 * 60);
+		CHECK_EQ(music_playing(), 0);			/* over within a minute */
+		scr_music.key(KIT_BTN_1);
+	}
+}
+
 static void test_system(void) {
 	ui_last_pages = 3;
 	ui_last_frame_ms = 9;
@@ -383,6 +617,10 @@ int main(int argc, char** argv) {
 	RUN_TEST(test_snake);
 	RUN_TEST(test_flappy);
 	RUN_TEST(test_system);
+	RUN_TEST(test_gfx_shapes);
+	RUN_TEST(test_cube);
+	RUN_TEST(test_dino);
+	RUN_TEST(test_music);
 	printf("%d checks, %d failed\n", tt_checks, tt_fails);
 	return tt_fails ? 1 : 0;
 }

@@ -35,7 +35,11 @@ void ui_footer(const char* b1, const char* b2, const char* b3) {
 		gfx_text(1, 56, b1, 1);
 	}
 	if (b2) {
-		gfx_text((GFX_W - gfx_text_width(b2, 1)) / 2, 56, b2, 1);
+		/* centred in what the two outer labels leave free */
+		int left = b1 ? 1 + gfx_text_width(b1, 1) : 0;
+		int right = b3 ? GFX_W - 1 - gfx_text_width(b3, 1) : GFX_W;
+
+		gfx_text(left + (right - left - gfx_text_width(b2, 1)) / 2, 56, b2, 1);
 	}
 	if (b3) {
 		gfx_text(GFX_W - 1 - gfx_text_width(b3, 1), 56, b3, 1);
@@ -49,12 +53,18 @@ static const ui_screen_t* const menu_items[] = {
 	&scr_clock,
 	&scr_snake,
 	&scr_flappy,
+	&scr_dino,
+	&scr_cube,
+	&scr_music,
 	&scr_system,
 };
 
 #define MENU_NUM	((uint8_t)(sizeof(menu_items) / sizeof(menu_items[0])))
 
+#define MENU_LINES	(4)
+
 static uint8_t menu_sel;
+static uint8_t menu_top;			/* first entry shown */
 
 void menu_enter(void) {
 }
@@ -80,14 +90,25 @@ void menu_frame(uint32_t now_ms) {
 
 	gfx_clear();
 	ui_title("AK MCU KIT", "demo");
-	for (uint8_t i = 0; i < MENU_NUM; i++) {
-		int y = 12 + i * 10;
+	if (menu_sel < menu_top) {
+		menu_top = menu_sel;
+	}
+	else if (menu_sel >= menu_top + MENU_LINES) {
+		menu_top = (uint8_t)(menu_sel - MENU_LINES + 1);
+	}
+	for (uint8_t line = 0; line < MENU_LINES && menu_top + line < MENU_NUM; line++) {
+		uint8_t i = (uint8_t)(menu_top + line);
+		int y = 12 + line * 10;
 
 		gfx_text(10, y + 1, menu_items[i]->name, 1);
 		if (i == menu_sel) {
 			gfx_text(2, y + 1, ">", 1);
-			gfx_invert(0, y, GFX_W, 9);
+			gfx_invert(0, y, GFX_W - 4, 9);
 		}
 	}
+	/* scroll bar: where the window sits in the list */
+	gfx_vline(GFX_W - 2, 12, MENU_LINES * 10 - 1, 1);
+	gfx_fill(GFX_W - 3, 12 + menu_top * (MENU_LINES * 10 - 1) / MENU_NUM, 3,
+			 MENU_LINES * (MENU_LINES * 10 - 1) / MENU_NUM + 1, 1);
 	ui_footer("DOWN", "UP", "OPEN");
 }

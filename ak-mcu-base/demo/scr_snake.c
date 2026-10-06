@@ -213,4 +213,4 @@ static void snake_frame(uint32_t now_ms) {
 	}
 }
 
-const ui_screen_t scr_snake = { "Snake", snake_enter, snake_key, snake_frame };
+const ui_screen_t scr_snake = { "Snake", snake_enter, snake_key, snake_frame, 0 };
