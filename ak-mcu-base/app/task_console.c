@@ -1,0 +1,227 @@
+/**
+ ******************************************************************************
+ * @brief:  Console: one UART for both the text shell and the fw protocol.
+ *
+ *  task_poll_console (polling): read bytes -> fw_proto_feed(); bytes outside
+ *  a frame go to the line editor; Enter -> post CONSOLE_SIG_LINE.
+ *  task_console: execute shell commands.
+ ******************************************************************************
+**/
+
+#include <string.h>
+
+#include "ak.h"
+#include "task.h"
+#include "timer.h"
+#include "message.h"
+
+#include "hal.h"
+#include "ak_log.h"
+#include "boot_ctrl.h"
+#include "fw_image.h"
+#include "fw_update.h"
+#include "fw_proto.h"
+
+#include "app.h"
+#include "task_list.h"
+
+#define CONSOLE_LINE_MAX		(AK_COMMON_MSG_DATA_SIZE - 1)
+
+static char line_buf[CONSOLE_LINE_MAX + 1];
+static uint8_t line_len;
+
+static void console_tx(const uint8_t* data, uint32_t len) {
+	while (len--) {
+		hal_console_putc(*data++);
+	}
+}
+
+static fw_proto_cfg_t proto_cfg;
+
+/*----------------------------------------------------------------------------
+ * shell
+ *--------------------------------------------------------------------------*/
+typedef struct {
+	const char* name;
+	const char* help;
+	void (*fn)(const char* args);
+} shell_cmd_t;
+
+static void cmd_help(const char* args);
+
+static void cmd_ver(const char* args) {
+	const fw_version_t* v = app_version();
+	(void)args;
+	xprintf("app v%d.%d.%d build %u, kernel %s, board %s\n",
+			v->major, v->minor, v->patch, v->build, AK_VERSION, hal_board_name());
+}
+
+static void print_part(const char* name, flash_part_t part) {
+	const flash_part_info_t* p = hal_flash_info(part);
+	fw_image_hdr_t hdr;
+	fw_err_t err = fw_image_verify(part, &hdr);
+
+	xprintf("  %-8s 0x%08X %6u B  ", name, p->addr, p->size);
+	if (err == FW_OK) {
+		xprintf("v%d.%d.%d build %u (%u B)\n", hdr.version.major, hdr.version.minor,
+				hdr.version.patch, hdr.version.build, hdr.img_size);
+	}
+	else {
+		xprintf("%s\n", fw_err_str(err));
+	}
+}
+
+static void cmd_info(const char* args) {
+	boot_ctrl_t ctrl;
+	(void)args;
+
+	xprintf("partitions:\n");
+	print_part("boot", FLASH_PART_BOOT);
+	print_part("app", FLASH_PART_APP);
+	print_part("staging", FLASH_PART_STAGING);
+
+	boot_ctrl_load(&ctrl);
+	xprintf("boot_ctrl: cmd %d, attempts %d, last %s, installs %u\n", ctrl.cmd,
+			ctrl.install_attempts, fw_err_str((fw_err_t)ctrl.last_result), ctrl.install_count);
+	xprintf("reset reason %d, uptime %u ms\n", hal_reset_reason(), hal_millis());
+}
+
+static void cmd_stat(const char* args) {
+	(void)args;
+	xprintf("pool      used  max\n");
+	xprintf("pure     %4u %4u\n", get_pure_msg_pool_used(), get_pure_msg_pool_used_max());
+	xprintf("common   %4u %4u\n", get_common_msg_pool_used(), get_common_msg_pool_used_max());
+	xprintf("dynamic  %4u %4u\n", get_dynamic_msg_pool_used(), get_dynamic_msg_pool_used_max());
+	xprintf("timer    %4u %4u\n", get_timer_msg_pool_used(), get_timer_msg_pool_used_max());
+}
+
+static void cmd_reboot(const char* args) {
+	(void)args;
+	task_post_pure_msg(TASK_FW_ID, FW_SIG_RESET);
+}
+
+static void cmd_loader(const char* args) {
+	(void)args;
+	task_post_pure_msg(TASK_FW_ID, FW_SIG_LOADER);
+}
+
+static const shell_cmd_t shell_cmds[] = {
+	{ "help",	"list commands",				cmd_help	},
+	{ "ver",	"firmware version",				cmd_ver		},
+	{ "info",	"partitions + boot state",		cmd_info	},
+	{ "stat",	"kernel pool usage",			cmd_stat	},
+	{ "reboot",	"software reset",				cmd_reboot	},
+	{ "loader",	"reset into bootloader loader",	cmd_loader	},
+};
+
+#define SHELL_CMD_NUM	(sizeof(shell_cmds) / sizeof(shell_cmds[0]))
+
+static void cmd_help(const char* args) {
+	(void)args;
+	for (uint32_t i = 0; i < SHELL_CMD_NUM; i++) {
+		xprintf("  %-8s %s\n", shell_cmds[i].name, shell_cmds[i].help);
+	}
+}
+
+static void shell_exec(char* line) {
+	char* args;
+
+	while (*line == ' ') {
+		line++;
+	}
+	if (*line == 0) {
+		return;
+	}
+
+	args = strchr(line, ' ');
+	if (args) {
+		*args++ = 0;
+	}
+	else {
+		args = line + strlen(line);
+	}
+
+	for (uint32_t i = 0; i < SHELL_CMD_NUM; i++) {
+		if (strcmp(line, shell_cmds[i].name) == 0) {
+			shell_cmds[i].fn(args);
+			return;
+		}
+	}
+	xprintf("unknown command '%s', try 'help'\n", line);
+}
+
+/*----------------------------------------------------------------------------
+ * task
+ *--------------------------------------------------------------------------*/
+void task_console(ak_msg_t* msg) {
+	switch (msg->sig) {
+	case CONSOLE_SIG_INIT:
+		line_len = 0;
+		proto_cfg.role = FW_ROLE_APP;
+		proto_cfg.version = app_version();
+		proto_cfg.tx = console_tx;
+		fw_update_abort();
+		fw_proto_init(&proto_cfg);
+		xprintf("type 'help'\n> ");
+		break;
+
+	case CONSOLE_SIG_LINE: {
+		char line[CONSOLE_LINE_MAX + 1];
+		uint8_t len = get_data_len_common_msg(msg);
+
+		memcpy(line, get_data_common_msg(msg), len);
+		line[len] = 0;
+		shell_exec(line);
+		xprintf("> ");
+	}
+		break;
+
+	default:
+		break;
+	}
+}
+
+void task_poll_console(void) {
+	int c;
+
+	while ((c = hal_console_getc()) >= 0) {
+		if (fw_proto_feed((uint8_t)c, hal_millis())) {
+			continue;
+		}
+
+		if (c == '\r' || c == '\n') {
+			if (line_len) {
+				xprintf("\n");
+				task_post_common_msg(TASK_CONSOLE_ID, CONSOLE_SIG_LINE, (uint8_t*)line_buf, line_len);
+				line_len = 0;
+			}
+		}
+		else if (c == 0x08 || c == 0x7F) {
+			if (line_len) {
+				line_len--;
+				xprintf("\b \b");
+			}
+		}
+		else if (c >= 0x20 && c < 0x7F && line_len < CONSOLE_LINE_MAX) {
+			line_buf[line_len++] = (char)c;
+			xputc((uint8_t)c);
+		}
+	}
+
+	switch (fw_proto_take_action()) {
+	case FW_PROTO_ACT_INSTALL:
+		task_post_pure_msg(TASK_FW_ID, FW_SIG_INSTALL);
+		break;
+
+	case FW_PROTO_ACT_LOADER:
+		task_post_pure_msg(TASK_FW_ID, FW_SIG_LOADER);
+		break;
+
+	case FW_PROTO_ACT_RESET:
+		task_post_pure_msg(TASK_FW_ID, FW_SIG_RESET);
+		break;
+
+	default:	/* RUN: already running the app */
+		break;
+	}
+}

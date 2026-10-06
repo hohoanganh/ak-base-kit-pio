@@ -1,0 +1,416 @@
+/**
+ ******************************************************************************
+ * @brief:  ak_port.h + hal.h + hal_flash.h for STM32L151CB (SPL).
+ ******************************************************************************
+**/
+
+#include <stddef.h>
+#include <string.h>
+#include <errno.h>
+
+#include "stm32l1xx.h"
+#include "stm32l1xx_conf.h"
+#include "core_cm3.h"
+
+#include "ak_port.h"
+#include "hal.h"
+#include "port_cfg.h"
+#include "port_stm32.h"
+
+/*----------------------------------------------------------------------------
+ * critical section (nestable, ISR safe)
+ *--------------------------------------------------------------------------*/
+static volatile uint32_t crit_nest;
+static volatile uint32_t crit_primask;
+
+void ak_port_enter_critical(void) {
+	uint32_t pm = __get_PRIMASK();
+	__disable_irq();
+	if (crit_nest++ == 0) {
+		crit_primask = pm;
+	}
+}
+
+void ak_port_exit_critical(void) {
+	if (crit_nest == 0) {
+		ak_port_fatal("CRIT", 0x01);
+	}
+	if (--crit_nest == 0) {
+		__set_PRIMASK(crit_primask);
+	}
+}
+
+/*----------------------------------------------------------------------------
+ * systick 1 ms
+ *--------------------------------------------------------------------------*/
+static volatile uint32_t millis;
+
+__attribute__((weak)) void hal_tick_hook(uint32_t elapsed_ms) {
+	(void)elapsed_ms;
+}
+
+void systick_handler(void) {
+	millis++;
+	hal_tick_hook(1);
+}
+
+uint32_t hal_millis(void) {
+	return millis;
+}
+
+uint32_t ak_port_millis(void) {
+	return millis;
+}
+
+void hal_delay_ms(uint32_t ms) {
+	uint32_t t0 = millis;
+	while ((millis - t0) < ms) {
+	}
+}
+
+void ak_port_idle(void) {
+	__WFI();	/* woken by SysTick / UART RX */
+}
+
+/*----------------------------------------------------------------------------
+ * console USART1 (PA9/PA10): RX interrupt -> ring, TX polled
+ *--------------------------------------------------------------------------*/
+static volatile uint8_t rx_buf[PORT_CONSOLE_RX_BUF];
+static volatile uint16_t rx_head, rx_tail;
+
+void usart1_irq_handler(void) {
+	if (USART1->SR & (USART_SR_RXNE | USART_SR_ORE)) {
+		uint8_t c = (uint8_t)USART1->DR;	/* reading DR clears RXNE and ORE */
+		uint16_t next = (uint16_t)((rx_head + 1) & (PORT_CONSOLE_RX_BUF - 1));
+		if (next != rx_tail) {
+			rx_buf[rx_head] = c;
+			rx_head = next;
+		}
+	}
+}
+
+int hal_console_getc(void) {
+	int c;
+
+	if (rx_tail == rx_head) {
+		return -1;
+	}
+	c = rx_buf[rx_tail];
+	rx_tail = (uint16_t)((rx_tail + 1) & (PORT_CONSOLE_RX_BUF - 1));
+	return c;
+}
+
+void hal_console_putc(uint8_t c) {
+	while (!(USART1->SR & USART_SR_TXE)) {
+	}
+	USART1->DR = c;
+}
+
+void hal_console_flush(void) {
+	while (!(USART1->SR & USART_SR_TC)) {
+	}
+}
+
+static void console_init(void) {
+	GPIO_InitTypeDef gpio;
+	USART_InitTypeDef uart;
+	NVIC_InitTypeDef nvic;
+
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
+
+	GPIO_StructInit(&gpio);
+	gpio.GPIO_Mode = GPIO_Mode_AF;
+	gpio.GPIO_Speed = GPIO_Speed_2MHz;
+	gpio.GPIO_OType = GPIO_OType_PP;
+	gpio.GPIO_PuPd = GPIO_PuPd_UP;
+	gpio.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;
+	GPIO_Init(GPIOA, &gpio);
+
+	USART_StructInit(&uart);
+	uart.USART_BaudRate = PORT_CONSOLE_BAUD;
+	uart.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+	USART_Init(USART1, &uart);
+
+	nvic.NVIC_IRQChannel = USART1_IRQn;
+	nvic.NVIC_IRQChannelPreemptionPriority = 2;
+	nvic.NVIC_IRQChannelSubPriority = 0;
+	nvic.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&nvic);
+
+	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+	USART_Cmd(USART1, ENABLE);
+}
+
+/*----------------------------------------------------------------------------
+ * system
+ *--------------------------------------------------------------------------*/
+static void port_xputc(uint8_t c) {
+	hal_console_putc(c);
+}
+
+void hal_init(void) {
+	GPIO_InitTypeDef gpio;
+
+	SystemCoreClockUpdate();
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+	/* LED */
+	RCC_AHBPeriphClockCmd(PORT_LED_CLK, ENABLE);
+	GPIO_StructInit(&gpio);
+	gpio.GPIO_Pin = PORT_LED_PIN;
+	gpio.GPIO_Mode = GPIO_Mode_OUT;
+	gpio.GPIO_OType = GPIO_OType_PP;
+	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	gpio.GPIO_Speed = GPIO_Speed_400KHz;
+	GPIO_Init(PORT_LED_PORT, &gpio);
+
+	console_init();
+	xfunc_out = port_xputc;
+
+	/* SysTick 1 ms, lower priority than UART */
+	SysTick_Config(SystemCoreClock / 1000U);
+	NVIC_SetPriority(SysTick_IRQn, 3);
+	__enable_irq();
+
+	if (port_noinit.fault_magic == PORT_FAULT_MAGIC) {
+		port_noinit.fault_magic = 0;
+		xprintf("[port] last HardFault: pc 0x%08X lr 0x%08X cfsr 0x%08X\n",
+				port_noinit.fault_pc, port_noinit.fault_lr, port_noinit.fault_cfsr);
+	}
+}
+
+uint8_t hal_reset_reason(void) {
+	return (port_noinit.reason_magic == PORT_REASON_MAGIC) ? (uint8_t)port_noinit.reset_reason
+														   : HAL_RESET_REASON_UNKNOWN;
+}
+
+void hal_reset(void) {
+	hal_console_flush();
+	NVIC_SystemReset();
+	for (;;) {
+	}
+}
+
+const char* hal_board_name(void) {
+	return PORT_BOARD_NAME;
+}
+
+void hal_jump_to_app(uint32_t vector_addr) {
+	port_noinit.jump_addr = vector_addr;
+	port_noinit.jump_magic = PORT_JUMP_MAGIC;
+	hal_reset();
+}
+
+uint8_t hal_vector_ok(uint32_t initial_sp, uint32_t reset_handler) {
+	return initial_sp > PORT_RAM_START && initial_sp <= PORT_RAM_END && (initial_sp & 3U) == 0 &&
+		   (reset_handler & 1U) &&
+		   reset_handler > PORT_APP_ADDR + 256U && reset_handler < PORT_APP_ADDR + PORT_APP_SIZE;
+}
+
+void ak_port_fatal(const char* s, uint8_t c) {
+	__disable_irq();
+	xprintf("\n[FATAL] %s 0x%02X\n", s, c);
+	hal_console_flush();
+	/* give time to read the log, then reset */
+	for (volatile uint32_t i = 0; i < 2000000UL; i++) {
+	}
+	NVIC_SystemReset();
+	for (;;) {
+	}
+}
+
+/* HardFault: save PC/LR in .noinit, report on next boot, reset. */
+void hard_fault_c(uint32_t* frame) {
+	port_noinit.fault_pc = frame[6];
+	port_noinit.fault_lr = frame[5];
+	port_noinit.fault_cfsr = SCB->CFSR;
+	port_noinit.fault_magic = PORT_FAULT_MAGIC;
+	NVIC_SystemReset();
+	for (;;) {
+	}
+}
+
+__attribute__((naked)) void hard_fault_handler(void) {
+	__asm volatile (
+		"tst lr, #4			\n"
+		"ite eq				\n"
+		"mrseq r0, msp		\n"
+		"mrsne r0, psp		\n"
+		"b hard_fault_c		\n"
+	);
+}
+
+/*----------------------------------------------------------------------------
+ * LED / IWDG
+ *--------------------------------------------------------------------------*/
+void hal_led_set(uint8_t on) {
+	if (on) {
+		GPIO_SetBits(PORT_LED_PORT, PORT_LED_PIN);
+	}
+	else {
+		GPIO_ResetBits(PORT_LED_PORT, PORT_LED_PIN);
+	}
+}
+
+void hal_led_toggle(void) {
+	GPIO_ToggleBits(PORT_LED_PORT, PORT_LED_PIN);
+}
+
+void hal_wdt_start(uint32_t timeout_ms) {
+	/* LSI ~37 kHz / 256 = ~144 Hz; max reload 4095 (~28 s) */
+	uint32_t reload = (timeout_ms * 144U) / 1000U;
+
+	if (reload > 0xFFF) {
+		reload = 0xFFF;
+	}
+	if (reload == 0) {
+		reload = 1;
+	}
+	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+	IWDG_SetPrescaler(IWDG_Prescaler_256);
+	IWDG_SetReload((uint16_t)reload);
+	IWDG_ReloadCounter();
+	IWDG_Enable();
+}
+
+void hal_wdt_kick(void) {
+	IWDG_ReloadCounter();
+}
+
+/*----------------------------------------------------------------------------
+ * NVM = data EEPROM (byte writes, only changed bytes -> endurance)
+ *--------------------------------------------------------------------------*/
+int hal_nvm_read(uint32_t offset, void* buf, uint32_t len) {
+	if (offset + len > HAL_NVM_SIZE) {
+		return -1;
+	}
+	memcpy(buf, (const void*)(PORT_EEPROM_ADDR + offset), len);
+	return 0;
+}
+
+int hal_nvm_write(uint32_t offset, const void* buf, uint32_t len) {
+	const uint8_t* d = (const uint8_t*)buf;
+	int ret = 0;
+
+	if (offset + len > HAL_NVM_SIZE) {
+		return -1;
+	}
+
+	DATA_EEPROM_Unlock();
+	FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
+					FLASH_FLAG_SIZERR | FLASH_FLAG_OPTVERR);
+	for (uint32_t i = 0; i < len; i++) {
+		uint32_t a = PORT_EEPROM_ADDR + offset + i;
+		if (*(volatile uint8_t*)a != d[i]) {
+			if (DATA_EEPROM_ProgramByte(a, d[i]) != FLASH_COMPLETE) {
+				ret = -2;
+				break;
+			}
+		}
+	}
+	DATA_EEPROM_Lock();
+	return ret;
+}
+
+/*----------------------------------------------------------------------------
+ * internal flash (program memory)
+ *--------------------------------------------------------------------------*/
+static const flash_part_info_t parts[FLASH_PART_NUM] = {
+	{ PORT_BOOT_ADDR,		PORT_BOOT_SIZE,		PORT_FLASH_PAGE, 4, 0x00 },
+	{ PORT_APP_ADDR,		PORT_APP_SIZE,		PORT_FLASH_PAGE, 4, 0x00 },
+	{ PORT_STAGING_ADDR,	PORT_STAGING_SIZE,	PORT_FLASH_PAGE, 4, 0x00 },
+};
+
+const flash_part_info_t* hal_flash_info(flash_part_t part) {
+	return (part < FLASH_PART_NUM) ? &parts[part] : 0;
+}
+
+static int range_ok(flash_part_t part, uint32_t off, uint32_t len, uint32_t align) {
+	const flash_part_info_t* p = hal_flash_info(part);
+	return p && off <= p->size && len <= p->size - off && (off % align) == 0 && (len % align) == 0;
+}
+
+/* BOOT is never writable. The app may only write STAGING (a bug cannot
+ * brick the running image); only the bootloader writes APP. */
+static int part_writable(flash_part_t part) {
+#if defined(AK_BOOTLOADER)
+	return part == FLASH_PART_APP || part == FLASH_PART_STAGING;
+#else
+	return part == FLASH_PART_STAGING;
+#endif
+}
+
+static void flash_unlock(void) {
+	FLASH_Unlock();
+	FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR |
+					FLASH_FLAG_SIZERR | FLASH_FLAG_OPTVERR);
+}
+
+int hal_flash_erase(flash_part_t part, uint32_t off, uint32_t len) {
+	int ret = HAL_FLASH_OK;
+
+	if (!part_writable(part) || !range_ok(part, off, len, PORT_FLASH_PAGE)) {
+		return HAL_FLASH_ERR_ARG;
+	}
+
+	flash_unlock();
+	for (uint32_t a = parts[part].addr + off; a < parts[part].addr + off + len; a += PORT_FLASH_PAGE) {
+		if (FLASH_ErasePage(a) != FLASH_COMPLETE) {
+			ret = HAL_FLASH_ERR_HW;
+			break;
+		}
+	}
+	FLASH_Lock();
+	return ret;
+}
+
+int hal_flash_write(flash_part_t part, uint32_t off, const void* data, uint32_t len) {
+	const uint8_t* d = (const uint8_t*)data;
+	int ret = HAL_FLASH_OK;
+
+	if (!part_writable(part) || !range_ok(part, off, len, 4)) {
+		return HAL_FLASH_ERR_ARG;
+	}
+
+	flash_unlock();
+	for (uint32_t i = 0; i < len; i += 4) {
+		uint32_t w;
+		uint32_t a = parts[part].addr + off + i;
+		memcpy(&w, d + i, 4);
+		if (FLASH_FastProgramWord(a, w) != FLASH_COMPLETE || *(volatile uint32_t*)a != w) {
+			ret = HAL_FLASH_ERR_HW;
+			break;
+		}
+	}
+	FLASH_Lock();
+	return ret;
+}
+
+int hal_flash_read(flash_part_t part, uint32_t off, void* buf, uint32_t len) {
+	if (!range_ok(part, off, len, 1)) {
+		return HAL_FLASH_ERR_ARG;
+	}
+	memcpy(buf, (const void*)(parts[part].addr + off), len);
+	return HAL_FLASH_OK;
+}
+
+/*----------------------------------------------------------------------------
+ * newlib: heap for malloc (dynamic messages), bounded
+ *--------------------------------------------------------------------------*/
+extern uint8_t _heap_start, _heap_end;
+
+void* _sbrk(ptrdiff_t incr) {
+	static uint8_t* brk = &_heap_start;
+	uint8_t* prev = brk;
+
+	if (brk + incr > &_heap_end) {
+		errno = ENOMEM;
+		return (void*)-1;
+	}
+	brk += incr;
+	return prev;
+}

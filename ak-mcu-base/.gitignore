@@ -1,0 +1,5 @@
+build/
+.pio/
+*.img
+ak_sim_flash.bin
+__pycache__/

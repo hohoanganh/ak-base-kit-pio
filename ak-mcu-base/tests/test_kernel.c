@@ -1,0 +1,320 @@
+/**
+ * Portable AK kernel tests on host: priority order, FIFO, message pools,
+ * timers, remove, src_task_id, FATAL.
+ */
+#include <string.h>
+#include <setjmp.h>
+
+#include "ak.h"
+#include "task.h"
+#include "timer.h"
+#include "message.h"
+#include "task_list.h"
+#include "port_host.h"
+#include "tiny_test.h"
+
+#define SIG_A	(AK_USER_DEFINE_SIG + 0)
+#define SIG_B	(AK_USER_DEFINE_SIG + 1)
+#define SIG_C	(AK_USER_DEFINE_SIG + 2)
+#define SIG_FWD	(AK_USER_DEFINE_SIG + 3)
+
+typedef struct {
+	uint8_t task;
+	uint8_t sig;
+	uint8_t src;
+	uint8_t data0;
+	uint8_t len;
+} rec_t;
+
+static rec_t log_buf[64];
+static int log_n;
+static int poll_count;
+
+static void rec(uint8_t task, ak_msg_t* m) {
+	if (log_n < 64) {
+		log_buf[log_n].task = task;
+		log_buf[log_n].sig = m->sig;
+		log_buf[log_n].src = m->src_task_id;
+		log_buf[log_n].data0 = 0;
+		log_buf[log_n].len = 0;
+		if (get_msg_type(m) == COMMON_MSG_TYPE) {
+			log_buf[log_n].len = get_data_len_common_msg(m);
+			log_buf[log_n].data0 = get_data_common_msg(m)[0];
+		}
+		else if (get_msg_type(m) == DYNAMIC_MSG_TYPE) {
+			log_buf[log_n].len = (uint8_t)get_data_len_dynamic_msg(m);
+			log_buf[log_n].data0 = get_data_dynamic_msg(m)[0];
+		}
+		log_n++;
+	}
+}
+
+static void task_low(ak_msg_t* m) {
+	rec(TASK_LOW_ID, m);
+}
+
+static void task_mid(ak_msg_t* m) {
+	rec(TASK_MID_ID, m);
+	/* message created inside a task: src_task_id must be TASK_MID_ID */
+	if (m->sig == SIG_FWD) {
+		task_post_pure_msg(TASK_LOW_ID, SIG_C);
+	}
+}
+
+static void task_high(ak_msg_t* m) {
+	rec(TASK_HIGH_ID, m);
+}
+
+static void poll_a(void) {
+	poll_count++;
+}
+
+static task_t tbl[] = {
+	{TASK_TIMER_TICK_ID,	TASK_PRI_LEVEL_7,	task_timer_tick	},
+	{TASK_LOW_ID,			TASK_PRI_LEVEL_1,	task_low		},
+	{TASK_MID_ID,			TASK_PRI_LEVEL_3,	task_mid		},
+	{TASK_HIGH_ID,			TASK_PRI_LEVEL_6,	task_high		},
+	{AK_TASK_EOT_ID,		TASK_PRI_LEVEL_0,	(pf_task)0		},
+};
+
+static task_polling_t poll_tbl[] = {
+	{TASK_POLL_A_ID,			AK_ENABLE,	poll_a				},
+	{AK_TASK_POLLING_EOT_ID,	AK_DISABLE,	(pf_task_polling)0	},
+};
+
+static void setup(void) {
+	host_reset_state(0xFF);
+	host_use_virtual_time(1);
+	host_fatal_jmp = 0;
+	log_n = 0;
+	poll_count = 0;
+	task_init();
+	task_create(tbl);
+	task_polling_create(poll_tbl);
+}
+
+static void run_all(void) {
+	while (task_run_once()) {
+	}
+}
+
+static void test_log2lkup(void) {
+	CHECK_EQ(LOG2LKUP(0), 0);
+	CHECK_EQ(LOG2LKUP(1), 1);
+	CHECK_EQ(LOG2LKUP(0x80), 8);
+	CHECK_EQ(LOG2LKUP(0x81), 8);
+	CHECK_EQ(LOG2LKUP(0x80000000UL), 32);
+}
+
+static void test_priority_order(void) {
+	setup();
+	task_post_pure_msg(TASK_LOW_ID, SIG_A);
+	task_post_pure_msg(TASK_MID_ID, SIG_A);
+	task_post_pure_msg(TASK_HIGH_ID, SIG_A);
+	run_all();
+	CHECK_EQ(log_n, 3);
+	CHECK_EQ(log_buf[0].task, TASK_HIGH_ID);
+	CHECK_EQ(log_buf[1].task, TASK_MID_ID);
+	CHECK_EQ(log_buf[2].task, TASK_LOW_ID);
+	CHECK(poll_count > 0);
+}
+
+static void test_fifo_same_task(void) {
+	setup();
+	task_post_pure_msg(TASK_MID_ID, SIG_A);
+	task_post_pure_msg(TASK_MID_ID, SIG_B);
+	task_post_pure_msg(TASK_MID_ID, SIG_C);
+	run_all();
+	CHECK_EQ(log_n, 3);
+	CHECK_EQ(log_buf[0].sig, SIG_A);
+	CHECK_EQ(log_buf[1].sig, SIG_B);
+	CHECK_EQ(log_buf[2].sig, SIG_C);
+}
+
+static void test_msg_types_and_pools(void) {
+	uint8_t d[5] = { 0x42, 1, 2, 3, 4 };
+	uint8_t big[200];
+
+	setup();
+	memset(big, 0x77, sizeof(big));
+	task_post_common_msg(TASK_LOW_ID, SIG_A, d, sizeof(d));
+	task_post_dynamic_msg(TASK_LOW_ID, SIG_B, big, sizeof(big));
+	CHECK_EQ(get_common_msg_pool_used(), 1);
+	CHECK_EQ(get_dynamic_msg_pool_used(), 1);
+	run_all();
+	CHECK_EQ(log_n, 2);
+	CHECK_EQ(log_buf[0].len, 5);
+	CHECK_EQ(log_buf[0].data0, 0x42);
+	CHECK_EQ(log_buf[1].len, 200);
+	CHECK_EQ(log_buf[1].data0, 0x77);
+	/* no pool leak */
+	CHECK_EQ(get_common_msg_pool_used(), 0);
+	CHECK_EQ(get_dynamic_msg_pool_used(), 0);
+	CHECK_EQ(get_pure_msg_pool_used(), 0);
+}
+
+static void test_src_task_id(void) {
+	setup();
+	task_post_pure_msg(TASK_MID_ID, SIG_FWD);
+	run_all();
+	CHECK_EQ(log_n, 2);
+	CHECK_EQ(log_buf[1].task, TASK_LOW_ID);
+	CHECK_EQ(log_buf[1].sig, SIG_C);
+	/* original returned if_des_task_id (0) - fixed */
+	CHECK_EQ(log_buf[1].src, TASK_MID_ID);
+}
+
+static void test_timer_one_shot(void) {
+	setup();
+	timer_set(TASK_LOW_ID, SIG_A, 100, TIMER_ONE_SHOT);
+	CHECK_EQ(get_timer_msg_pool_used(), 1);
+	for (int i = 0; i < 99; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(log_n, 0);
+	timer_tick(1);
+	run_all();
+	CHECK_EQ(log_n, 1);
+	CHECK_EQ(log_buf[0].sig, SIG_A);
+	CHECK_EQ(get_timer_msg_pool_used(), 0);
+	for (int i = 0; i < 300; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(log_n, 1);
+}
+
+static void test_timer_periodic_and_remove(void) {
+	setup();
+	timer_set(TASK_MID_ID, SIG_B, 10, TIMER_PERIODIC);
+	for (int i = 0; i < 55; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(log_n, 5);
+	/* batched tick (late ISR): 30 ms at once -> fires once, not 3 times */
+	timer_tick(30);
+	run_all();
+	CHECK_EQ(log_n, 6);
+	timer_remove_attr(TASK_MID_ID, SIG_B);
+	CHECK_EQ(get_timer_msg_pool_used(), 0);
+	for (int i = 0; i < 50; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(log_n, 6);
+}
+
+static void test_timer_reset_existing(void) {
+	setup();
+	timer_set(TASK_LOW_ID, SIG_A, 50, TIMER_ONE_SHOT);
+	for (int i = 0; i < 40; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	/* re-arm same (task, sig): restarts the counter, no new timer */
+	timer_set(TASK_LOW_ID, SIG_A, 50, TIMER_ONE_SHOT);
+	CHECK_EQ(get_timer_msg_pool_used(), 1);
+	for (int i = 0; i < 40; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(log_n, 0);
+	for (int i = 0; i < 10; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(log_n, 1);
+}
+
+static void test_remove_msg(void) {
+	setup();
+	task_post_pure_msg(TASK_LOW_ID, SIG_A);
+	task_post_pure_msg(TASK_LOW_ID, SIG_B);
+	task_post_pure_msg(TASK_LOW_ID, SIG_A);
+	task_post_pure_msg(TASK_LOW_ID, SIG_C);
+	CHECK_EQ(task_remove_msg(TASK_LOW_ID, SIG_A), 2);
+	CHECK_EQ(get_pure_msg_pool_used(), 2);
+	run_all();
+	CHECK_EQ(log_n, 2);
+	CHECK_EQ(log_buf[0].sig, SIG_B);
+	CHECK_EQ(log_buf[1].sig, SIG_C);
+	/* remove the tail message then post again: qtail must stay valid */
+	task_post_pure_msg(TASK_LOW_ID, SIG_A);
+	task_post_pure_msg(TASK_LOW_ID, SIG_B);
+	CHECK_EQ(task_remove_msg(TASK_LOW_ID, SIG_B), 1);
+	task_post_pure_msg(TASK_LOW_ID, SIG_C);
+	run_all();
+	CHECK_EQ(log_n, 4);
+	CHECK_EQ(log_buf[2].sig, SIG_A);
+	CHECK_EQ(log_buf[3].sig, SIG_C);
+}
+
+static void test_fatal_bad_table(void) {
+	static task_t bad[] = {
+		{TASK_TIMER_TICK_ID,	TASK_PRI_LEVEL_7,	task_timer_tick	},
+		{TASK_MID_ID,			TASK_PRI_LEVEL_3,	task_mid		},	/* wrong order */
+		{AK_TASK_EOT_ID,		TASK_PRI_LEVEL_0,	(pf_task)0		},
+	};
+	jmp_buf j;
+
+	setup();
+	host_fatal_jmp = &j;
+	if (setjmp(j) == 0) {
+		task_create(bad);
+		CHECK(0);	/* must not get here */
+	}
+	else {
+		CHECK(strcmp(host_fatal_str, "TK") == 0);
+		CHECK_EQ(host_fatal_code, 0x08);
+	}
+	host_fatal_jmp = 0;
+}
+
+static void test_fatal_pool_exhausted(void) {
+	jmp_buf j;
+	volatile int posted = 0;
+
+	setup();
+	host_fatal_jmp = &j;
+	if (setjmp(j) == 0) {
+		for (;;) {
+			task_post_pure_msg(TASK_LOW_ID, SIG_A);
+			posted++;
+		}
+	}
+	CHECK_EQ(posted, AK_PURE_MSG_POOL_SIZE);
+	CHECK(strcmp(host_fatal_str, "MF") == 0);
+	host_fatal_jmp = 0;
+}
+
+static void test_fatal_bad_dest(void) {
+	jmp_buf j;
+
+	setup();
+	host_fatal_jmp = &j;
+	if (setjmp(j) == 0) {
+		task_post_pure_msg(AK_TASK_EOT_ID, SIG_A);
+		CHECK(0);
+	}
+	else {
+		CHECK_EQ(host_fatal_code, 0x02);
+	}
+	host_fatal_jmp = 0;
+}
+
+TT_MAIN_BEGIN("test_kernel")
+	RUN_TEST(test_log2lkup);
+	RUN_TEST(test_priority_order);
+	RUN_TEST(test_fifo_same_task);
+	RUN_TEST(test_msg_types_and_pools);
+	RUN_TEST(test_src_task_id);
+	RUN_TEST(test_timer_one_shot);
+	RUN_TEST(test_timer_periodic_and_remove);
+	RUN_TEST(test_timer_reset_existing);
+	RUN_TEST(test_remove_msg);
+	RUN_TEST(test_fatal_bad_table);
+	RUN_TEST(test_fatal_pool_exhausted);
+	RUN_TEST(test_fatal_bad_dest);
+TT_MAIN_END()
