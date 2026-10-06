@@ -663,7 +663,9 @@ extern uint8_t _heap_start, _heap_end;
 
 static uint8_t* heap_brk = &_heap_start;
 
-void* _sbrk(ptrdiff_t incr) {
+/* used: only referenced from libc (not an LTO object); without it LTO may
+ * drop the function before the library asks for it */
+__attribute__((used)) void* _sbrk(ptrdiff_t incr) {
 	uint8_t* prev = heap_brk;
 
 	if (heap_brk + incr > &_heap_end) {
