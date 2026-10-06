@@ -10,6 +10,8 @@ qua message, run-to-completion); bootloader + cập nhật firmware qua UART/ext
 bật/tắt bằng cờ biên dịch; kiến trúc phân lớp dễ port; build 1 lệnh, release tự động có version.
 Chi tiết: [docs/huong-dan-su-dung-source-base.md](docs/huong-dan-su-dung-source-base.md).
 
+**Trang giới thiệu dự án:** <https://hohoanganh.github.io/ak-base-kit-pio/> (nguồn: [`docs/index.html`](docs/index.html)).
+
 **Phiên bản mới nhất: `v1.3.0`** — lịch sử thay đổi: [CHANGELOG.md](CHANGELOG.md) · lỗi đã biết và
 bản sửa: [docs/known-bugs.md](docs/known-bugs.md).
 
