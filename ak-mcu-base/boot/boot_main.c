@@ -1,0 +1,214 @@
+/**
+ ******************************************************************************
+ * @brief:  Bootloader main flow (chip independent).
+ *
+ *   load boot_ctrl -> verify APP, STAGING -> boot_decide()
+ *     RUN      : jump to app
+ *     INSTALL  : copy STAGING -> APP, update boot_ctrl, loop
+ *     LOADER   : receive an image on the console via fw_proto (tools/ak_fw.py)
+ ******************************************************************************
+**/
+
+#include <string.h>
+
+#include "hal.h"
+#include "ak_log.h"
+#include "boot_core.h"
+#include "boot_ctrl.h"
+#include "fw_image.h"
+#include "fw_update.h"
+#include "fw_proto.h"
+
+#ifndef BOOT_VER_MAJOR
+#define BOOT_VER_MAJOR		1
+#define BOOT_VER_MINOR		0
+#define BOOT_VER_PATCH		0
+#endif
+
+/* 1: allow running an APP without header (debug SWD flash). Set 0 in
+ * production to run CRC-checked images only. */
+#ifndef BOOT_ALLOW_RAW_APP
+#define BOOT_ALLOW_RAW_APP	1
+#endif
+
+#define TAG "BOOT"
+
+static const fw_version_t boot_version = { BOOT_VER_MAJOR, BOOT_VER_MINOR, BOOT_VER_PATCH, 0, 0 };
+
+static void console_tx(const uint8_t* data, uint32_t len) {
+	while (len--) {
+		hal_console_putc(*data++);
+	}
+}
+
+static const fw_proto_cfg_t proto_cfg = {
+	FW_ROLE_BOOT,
+	&boot_version,
+	console_tx,
+};
+
+static void print_ver(const char* name, const fw_image_hdr_t* hdr, fw_err_t err) {
+	if (err == FW_OK) {
+		LOG_I(TAG, "%s: v%d.%d.%d build %u, %u bytes\n", name,
+			  hdr->version.major, hdr->version.minor, hdr->version.patch,
+			  hdr->version.build, hdr->img_size);
+	}
+	else {
+		LOG_I(TAG, "%s: %s\n", name, fw_err_str(err));
+	}
+}
+
+/* Returns FW_PROTO_ACT_INSTALL (new image received + verified) or FW_PROTO_ACT_RUN. */
+static fw_proto_action_t loader_loop(void) {
+	uint32_t last_blink = 0;
+	int c;
+
+	LOG_I(TAG, "loader mode - send firmware with tools/ak_fw.py\n");
+
+	fw_update_abort();
+	fw_proto_init(&proto_cfg);
+
+	for (;;) {
+		while ((c = hal_console_getc()) >= 0) {
+			fw_proto_feed((uint8_t)c, hal_millis());
+		}
+
+		switch (fw_proto_take_action()) {
+		case FW_PROTO_ACT_INSTALL:
+			hal_console_flush();
+			return FW_PROTO_ACT_INSTALL;
+
+		case FW_PROTO_ACT_RUN:
+			hal_console_flush();
+			return FW_PROTO_ACT_RUN;
+
+		case FW_PROTO_ACT_RESET:
+			hal_console_flush();
+			hal_reset();
+			break;
+
+		default:
+			break;
+		}
+
+		if (hal_millis() - last_blink >= 100) {
+			last_blink = hal_millis();
+			hal_led_toggle();
+		}
+		hal_wdt_kick();
+	}
+}
+
+void boot_main(void) {
+	const flash_part_info_t* app = hal_flash_info(FLASH_PART_APP);
+	boot_ctrl_t ctrl;
+	boot_state_t st;
+	fw_image_hdr_t app_hdr, stg_hdr;
+	fw_err_t app_err, stg_err;
+	boot_act_t act;
+
+	xprintf("\n");
+	LOG_I(TAG, "ak-mcu-base bootloader v%d.%d.%d, board %s, reset reason %d\n",
+		  BOOT_VER_MAJOR, BOOT_VER_MINOR, BOOT_VER_PATCH, hal_board_name(), hal_reset_reason());
+
+	boot_ctrl_load(&ctrl);
+
+	for (;;) {
+		app_err = fw_image_verify(FLASH_PART_APP, &app_hdr);
+		stg_err = fw_image_verify(FLASH_PART_STAGING, &stg_hdr);
+
+		memset(&st, 0, sizeof(st));
+		st.cmd = ctrl.cmd;
+		st.install_attempts = ctrl.install_attempts;
+		st.app_ok = (app_err == FW_OK);
+		st.staging_ok = (stg_err == FW_OK);
+		if (BOOT_ALLOW_RAW_APP && app_err == FW_ERR_MAGIC) {
+			uint32_t vec[2];
+			if (hal_flash_read(FLASH_PART_APP, FW_IMAGE_HDR_SIZE, vec, sizeof(vec)) == HAL_FLASH_OK) {
+				st.app_raw_ok = hal_vector_ok(vec[0], vec[1]);
+			}
+		}
+
+		print_ver("app    ", &app_hdr, app_err);
+		print_ver("staging", &stg_hdr, stg_err);
+
+		act = boot_decide(&st);
+		LOG_I(TAG, "cmd %d, attempts %d -> %s\n", ctrl.cmd, ctrl.install_attempts, boot_act_str(act));
+
+		/* UPDATE requested but STAGING invalid / attempts exhausted: drop it */
+		if (ctrl.cmd == BOOT_CMD_UPDATE && act != BOOT_ACT_INSTALL) {
+			LOG_W(TAG, "update dropped (staging: %s)\n", fw_err_str(stg_err));
+			ctrl.cmd = BOOT_CMD_NONE;
+			ctrl.last_result = (uint8_t)(stg_err != FW_OK ? stg_err : FW_ERR_STATE);
+			boot_ctrl_save(&ctrl);
+		}
+
+		switch (act) {
+		case BOOT_ACT_RUN_RAW:
+			LOG_W(TAG, "app has no image header (debug flash?)\n");
+			/* fall through */
+		case BOOT_ACT_RUN:
+			/* a valid image is running: stale failed-attempt count is meaningless */
+			if (act == BOOT_ACT_RUN && ctrl.install_attempts && ctrl.cmd == BOOT_CMD_NONE) {
+				ctrl.install_attempts = 0;
+				boot_ctrl_save(&ctrl);
+			}
+			LOG_I(TAG, "jump to 0x%08X\n\n", app->addr + FW_IMAGE_HDR_SIZE);
+			hal_console_flush();
+			hal_jump_to_app(app->addr + FW_IMAGE_HDR_SIZE);
+			break;
+
+		case BOOT_ACT_INSTALL: {
+			fw_err_t err;
+
+			/* persist BEFORE copying: after a power loss the next boot knows
+			 * an install is pending (cmd UPDATE) and counts the attempt. The
+			 * recovery path (cmd was NONE) must set UPDATE too. */
+			ctrl.cmd = BOOT_CMD_UPDATE;
+			ctrl.install_attempts++;
+			boot_ctrl_save(&ctrl);
+
+			LOG_I(TAG, "installing v%d.%d.%d (attempt %d)...\n", stg_hdr.version.major,
+				  stg_hdr.version.minor, stg_hdr.version.patch, ctrl.install_attempts);
+			hal_led_set(1);
+			err = boot_install(&stg_hdr);
+			hal_led_set(0);
+
+			ctrl.last_result = (uint8_t)err;
+			if (err == FW_OK) {
+				ctrl.cmd = BOOT_CMD_NONE;
+				ctrl.install_attempts = 0;
+				ctrl.install_count++;
+				LOG_I(TAG, "install ok\n");
+			}
+			else {
+				LOG_E(TAG, "install failed: %s\n", fw_err_str(err));
+			}
+			boot_ctrl_save(&ctrl);
+		}
+			break;
+
+		case BOOT_ACT_LOADER:
+		default: {
+			fw_proto_action_t r = loader_loop();
+
+			if (r == FW_PROTO_ACT_INSTALL) {
+				ctrl.cmd = BOOT_CMD_UPDATE;
+				ctrl.install_attempts = 0;	/* new image -> reset counter */
+			}
+			else if (ctrl.cmd == BOOT_CMD_LOADER) {
+				ctrl.cmd = BOOT_CMD_NONE;
+			}
+			boot_ctrl_save(&ctrl);
+		}
+			break;
+		}
+	}
+}
+
+#if !defined(AK_SIM)
+int main(void) {
+	boot_main();
+	return 0;
+}
+#endif

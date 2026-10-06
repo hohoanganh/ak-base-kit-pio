@@ -17,6 +17,11 @@ bản sửa: [docs/known-bugs.md](docs/known-bugs.md).
 **cập nhật firmware qua RS485** không cần ST-Link — tổng hợp tính năng, cách dùng và kết quả kiểm
 trên board: [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
+**Đang thử nghiệm — [`ak-mcu-base/`](ak-mcu-base/README.md):** source base đa nền tảng, độc lập
+với code trong `sources/`. Gồm AK kernel tách khỏi chip qua lớp HAL, bootloader + OTA an toàn khi
+mất điện, port STM32L151 và port host (unit test + giả lập cả hệ thống trên máy tính). Chưa chạy
+trên board thật.
+
 ## Kiến trúc & bộ nhớ
 
 ```mermaid
