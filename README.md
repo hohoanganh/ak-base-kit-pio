@@ -31,6 +31,17 @@ cập nhật firmware qua UART và RS485. Dựng lại từ
 | **Tải firmware** | [Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases) |
 | **Đọc tổng quan** | [Trang giới thiệu](https://hohoanganh.github.io/ak-base-kit-pio/) |
 
+## Phần cứng: AK Base Kit
+
+<p align="center">
+  <img src="docs/kit/kit-top-running.jpg" alt="AK Base Kit nhìn từ trên, đang cấp nguồn: màn hình OLED, ba nút bấm, nút reset, các hàng chân RS485, UART, I2C" width="49%">
+  <img src="docs/kit/kit-angle.jpg" alt="AK Base Kit nhìn nghiêng: tấm mica phía trên, bo mạch ở giữa, cổng USB Type-C và ba cổng nối ở cạnh" width="49%">
+</p>
+
+Ảnh chụp kit thật: STM32L151CBT6, màn hình OLED 1,54 inch 128×64, ba nút bấm, còi, RTC có pin, cảm biến nhiệt độ và độ ẩm,
+flash SPI, RS485, UART, I2C, USB Type-C. Trong ảnh bên trái, kit đang chạy firmware kiểm tra của khâu sản xuất
+(màn hình "RTC TEST"), chưa phải bộ demo ở đầu trang. Thêm ảnh: [demo-kit.md](ak-mcu-base/docs/demo-kit.md#phần-cứng-ak-base-kit-3i0).
+
 ## Repo có hai base — chọn cái nào
 
 | | [`sources/`](sources/) — base cũ | [`ak-mcu-base/`](ak-mcu-base/README.md) — base cho dự án mới |

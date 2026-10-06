@@ -250,6 +250,15 @@ Mã màn hình không đụng tới chip (`demo/kit.h` là ranh giới), nên th
 
 ## Phần cứng (AK Base Kit 3I0)
 
+| Nhìn từ trên, đang cấp nguồn | Nhìn nghiêng |
+|---|---|
+| ![Kit nhìn từ trên](../../docs/kit/kit-top-running.jpg) | ![Kit nhìn nghiêng](../../docs/kit/kit-angle.jpg) |
+| **Nhìn ngang: mica, bo mạch, đế** | **Bản dựng 3D của bo mạch (không phải ảnh chụp)** |
+| ![Kit nhìn ngang](../../docs/kit/kit-side.jpg) | ![Bản dựng 3D của PCB](../../docs/kit/pcb-3d-render.jpg) |
+
+Ba ảnh đầu là ảnh chụp kit thật. Ở ảnh thứ nhất, kit đang chạy firmware kiểm tra của khâu sản xuất (màn hình "RTC TEST"),
+chưa phải bộ demo của tài liệu này.
+
 | Thứ | Chân | Ghi chú |
 |---|---|---|
 | OLED SSD1309 128×64 | SCL PB13, SDA PB12, RES PA15 | I2C `0x3C`, bit-bang |

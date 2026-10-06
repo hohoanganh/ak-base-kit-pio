@@ -18,6 +18,17 @@ a bootloader, and firmware update over UART and RS485. Rebuilt from
 The pictures above are not photos. They are rendered by the firmware's own drawing code, and the link runs that same
 C code in your browser as WebAssembly. No kit needed.
 
+## The hardware
+
+<p align="center">
+  <img src="docs/kit/kit-top-running.jpg" alt="The AK Base Kit from above, powered: OLED display, three buttons, reset button, RS485, UART and I2C headers" width="49%">
+  <img src="docs/kit/kit-angle.jpg" alt="The AK Base Kit at an angle: acrylic cover, the board, USB Type-C and three connectors on the edge" width="49%">
+</p>
+
+Photos of the real kit: STM32L151CBT6, a 1.54 inch 128×64 OLED, three buttons, a buzzer, a battery-backed RTC,
+a temperature and humidity sensor, SPI flash, RS485, UART, I2C, USB Type-C. In the left photo the kit runs the
+factory test firmware ("RTC TEST" on the display), not the demo shown above.
+
 ## What is in it
 
 | | |
