@@ -7,7 +7,9 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
-## ak-mcu-base — sau v1.3.3, chưa phát hành
+## ak-mcu-base v1.3.4 — 06/10/2026
+
+App **1.3.4**, bootloader không đổi (1.2.0).
 
 - **Lệnh `ui open <tên>`**: mở thẳng một màn hình theo một phần tên trong menu (`ui open tetris`, `ui open 3d`,
   `ui open menu`), không phải bấm qua menu. Dùng được trên kit qua shell.

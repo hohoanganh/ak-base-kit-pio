@@ -33,7 +33,7 @@ C code in your browser as WebAssembly. No kit needed.
 ## Two bases in this repository
 
 - [`ak-mcu-base/`](ak-mcu-base/README.md) — **start new projects here.** Portable (the code above the HAL never includes
-  a chip header), unit-tested, builds with PlatformIO or CMake. Current version: v1.3.3.
+  a chip header), unit-tested, builds with PlatformIO or CMake. Current version: v1.3.4.
 - [`sources/`](sources/) — the older base, kept for projects already running on it.
 
 ## Try it
