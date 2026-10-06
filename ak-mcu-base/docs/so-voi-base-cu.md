@@ -1,6 +1,6 @@
 # ak-mcu-base so với base cũ (`sources/`): hơn gì, bằng gì, còn thiếu gì
 
-Cập nhật: 06/10/2026 · `ak-mcu-base` v1.2.0 (bootloader 1.2.0) · so với `ak-base-kit-pio` v1.3.0 (bootloader 0.0.3)
+Cập nhật: 06/10/2026 · `ak-mcu-base` v1.3.0 (bootloader 1.2.0) · so với `ak-base-kit-pio` v1.3.0 (bootloader 0.0.3)
 · Board: AK Base Kit, STM32L151CBT6 (128K flash, 16K RAM)
 
 Bản HTML (có bản đồ flash vẽ đúng tỉ lệ, in được): <https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html> · nguồn: `docs/ak-mcu-base-so-voi-base-cu.html`.
@@ -14,13 +14,14 @@ Mỗi dòng "hơn" đều ghi rõ đã kiểm bằng gì. Chỗ nào bản mới
 
 | | Base cũ (`sources/`) | `ak-mcu-base` |
 |---|---|---|
-| Mức hoàn thiện | Đầy đủ driver, Modbus, OTA qua RS485; đã dùng cho sản phẩm | Lõi kernel + bootloader + OTA qua UART; app mẫu tối thiểu |
+| Mức hoàn thiện | Đầy đủ driver, Modbus, OTA qua RS485; đã dùng cho sản phẩm | Kernel, bootloader, OTA qua UART và RS485, Modbus RTU; ít driver |
 | Phụ thuộc chip | Kernel, boot, app gọi thẳng SPL / lớp Arduino | Mọi thứ trên HAL không include header của chip |
 | Kiểm thử trên máy tính | Chỉ lớp Modbus (`tests_host/modbus`) | Kernel, định dạng ảnh, bootloader, OTA đầu-cuối trên giả lập |
 | Kiểm ảnh trước khi chạy | Dựa vào lệnh trong BSF + bảng vector hợp lý | CRC32 header + CRC32 toàn ảnh + tên board + địa chỉ nạp + bảng vector, **mỗi lần boot** |
 | Mất điện giữa lúc cài | Dựa vào BSF (xoá rồi mới ghi) | Trang header xoá đầu, chép cuối; trạng thái boot có hai bản ghi |
 
-**Khuyến nghị:** sản phẩm cần Modbus, RS485 hoặc driver sẵn có → vẫn dùng base cũ (v1.3.0).
+**Khuyến nghị:** dự án mới dùng `ak-mcu-base`. Base cũ (v1.3.0) dành cho dự án đang chạy trên nó, hoặc khi cần ngay
+driver mà base mới chưa có (EEPROM ngoài, nRF24, lớp Arduino).
 Dự án mới mà phần OTA an toàn và khả năng chuyển chip quan trọng hơn bộ driver có sẵn → `ak-mcu-base`,
 chấp nhận tự viết lại driver cần dùng.
 
@@ -90,9 +91,11 @@ theo [porting.md](porting.md). Hiện có hai port: `stm32l151` và `host` (máy
 
 ---
 
-### 2.6 Tiện ích thêm ở v1.2.0
+### 2.6 Thêm ở v1.2.0 và v1.3.0
 
 Nhật ký sự cố trong EEPROM, giám sát từng task, đo mức dùng stack, script xuất dự án mới, build PlatformIO và CI.
+Modbus RTU trên RS485 (slave, master, OTA qua khối thanh ghi `0xF000`): [modbus.md](modbus.md). OTA ảnh 20K qua RS485 9600
+mất 26 s, đo trên kit. Demo trên kit (đồng hồ số, Snake, Flappy): [demo-kit.md](demo-kit.md).
 Chi tiết: [tien-ich.md](tien-ich.md). Các hướng tối ưu còn lại, kèm nguồn: [huong-toi-uu-tiep.md](huong-toi-uu-tiep.md).
 
 ## 3. Ngang nhau
@@ -108,7 +111,6 @@ Chi tiết: [tien-ich.md](tien-ich.md). Các hướng tối ưu còn lại, kèm
 
 | Thiếu | Ghi chú |
 |---|---|
-| Modbus RTU (nanoMODBUS master/slave) và OTA qua RS485 | Kênh mới chỉ cần gọi `fw_update_*()` rồi post `FW_SIG_INSTALL`; chưa viết |
 | Driver: nút, còi, OLED, nRF24, EEPROM ngoài, lớp Arduino | Cố ý không mang sang; viết lại theo nhu cầu từng sản phẩm |
 | Rollback về ảnh trước | Chỉ có cài lại từ staging |
 | Ký số ảnh | Chỉ có CRC: chống hỏng dữ liệu, không chống giả mạo |

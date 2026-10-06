@@ -10,17 +10,18 @@ Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/>
 
 | | [`sources/`](sources/) — base cũ | [`ak-mcu-base/`](ak-mcu-base/README.md) — base cho dự án mới |
 |---|---|---|
-| Phiên bản | **v1.3.0**, bootloader 0.0.3 | **v1.2.0**, bootloader 1.2.0 |
-| Dùng khi | Cần Modbus, RS485, driver có sẵn (OLED, nút, còi, EEPROM…) | Cần OTA an toàn khi mất điện, có unit test, dễ chuyển sang chip khác |
-| Mức hoàn thiện | Đầy đủ, đã dùng cho sản phẩm | Lõi kernel + bootloader + OTA qua UART + nhật ký sự cố; driver tự viết thêm |
+| Phiên bản | **v1.3.0**, bootloader 0.0.3 | **v1.3.0**, bootloader 1.2.0 |
+| Dùng khi | Dự án đang chạy trên nó; cần driver có sẵn (EEPROM ngoài, nRF24, lớp Arduino…) | Dự án mới: OTA an toàn khi mất điện, có unit test, dễ chuyển sang chip khác |
+| Mức hoàn thiện | Đầy đủ, đã dùng cho sản phẩm | Kernel, bootloader, OTA, Modbus RTU, nhật ký sự cố, demo trên kit; driver khác tự viết thêm |
 | Build | PlatformIO | PlatformIO hoặc CMake |
-| Cập nhật firmware | UART, RS485 (Modbus), flash SPI ngoài | UART; ảnh có CRC32, tên board, chống cài dở |
-| Kiểm thử trên máy tính | Lớp Modbus | Kernel, bootloader, OTA đầu-cuối trên giả lập |
+| Cập nhật firmware | UART, RS485 (Modbus), flash SPI ngoài | UART và RS485 (Modbus); ảnh có CRC32, tên board, chống cài dở |
+| Kiểm thử trên máy tính | Lớp Modbus | Kernel, bootloader, Modbus, OTA đầu-cuối trên giả lập, màn hình demo |
 
 So sánh chi tiết, kèm những gì base mới còn thiếu: **[xem trang so sánh](https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html)** · bản Markdown: [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
 
 **Dự án mới bắt đầu từ `ak-mcu-base`**: `python ak-mcu-base/tools/new_project.py <thư-mục> --board <tên-board>`
-(xem [ak-mcu-base/docs/tien-ich.md](ak-mcu-base/docs/tien-ich.md)). Phần còn lại của trang này nói về base `sources/`,
+(xem [ak-mcu-base/docs/tien-ich.md](ak-mcu-base/docs/tien-ich.md)). Demo chạy trên kit (đồng hồ số, Snake, Flappy):
+[ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md). Phần còn lại của trang này nói về base `sources/`,
 dành cho các dự án đang chạy trên nó.
 
 ## Bộ nhớ và kiến trúc

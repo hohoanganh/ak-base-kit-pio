@@ -148,7 +148,7 @@ li{margin:3px 0}
   <main>
 
     <dl class="meta">
-      <dt>Base mới</dt><dd><code>ak-mcu-base</code> v1.2.0, bootloader 1.2.0</dd>
+      <dt>Base mới</dt><dd><code>ak-mcu-base</code> v1.3.0, bootloader 1.2.0</dd>
       <dt>Base cũ</dt><dd><code>sources/</code> của ak-base-kit-pio v1.3.0, bootloader 0.0.3</dd>
       <dt>Board</dt><dd>AK Base Kit, STM32L151CBT6 (128K flash, 16K RAM)</dd>
       <dt>Ngày lập</dt><dd>06/10/2026</dd>
@@ -166,16 +166,14 @@ li{margin:3px 0}
         <div class="d">Những thứ base cũ đã làm tốt sẵn</div>
       </a>
       <a class="less" href="#thieu">
-        <div class="n num">5</div>
+        <div class="n num">4</div>
         <div class="k">điểm còn thiếu</div>
-        <div class="d">Modbus, RS485, driver, rollback, ký số</div>
+        <div class="d">Driver, rollback, ký số, dự án con</div>
       </a>
     </div>
 
     <div class="verdict">
-      <b>Khuyến nghị.</b> Sản phẩm cần Modbus, RS485 hoặc driver có sẵn thì vẫn dùng base cũ.
-      Dự án mới mà cập nhật firmware an toàn và khả năng chuyển chip quan trọng hơn bộ driver có sẵn
-      thì dùng <code>ak-mcu-base</code>, và chấp nhận tự viết lại driver cần dùng.
+      <b>Khuyến nghị.</b> Dự án mới dùng <code>ak-mcu-base</code>. Base cũ dành cho dự án đang chạy trên nó, hoặc khi cần ngay driver mà base mới chưa có.
     </div>
 
     <h2>1. Bản đồ flash, vẽ đúng tỉ lệ</h2>
@@ -260,9 +258,10 @@ li{margin:3px 0}
     <p>Không so trực tiếp được với OTA qua RS485 9600 của base cũ (khoảng 78 s mỗi lượt) vì khác đường truyền và khác cỡ ảnh.</p>
 
     <div class="note">
-      <span class="h">Thêm ở v1.2.0</span>
+      <span class="h">Thêm ở v1.2.0 và v1.3.0</span>
       Nhật ký sự cố trong EEPROM (HardFault, FATAL, watchdog, task bị bỏ đói), giám sát từng task, đo mức dùng stack,
-      script xuất dự án mới, build PlatformIO và CI.
+      script xuất dự án mới, build PlatformIO và CI. Modbus RTU trên RS485 (slave, master, OTA: ảnh 20K mất 26 s ở 9600 baud,
+      đo trên kit) và bộ demo trên kit (đồng hồ số, Snake, Flappy).
       Chi tiết: <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/docs/tien-ich.md">tien-ich.md</a>.
     </div>
 
@@ -279,7 +278,6 @@ li{margin:3px 0}
     <table>
       <thead><tr><th style="width:42%">Thiếu</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        <tr><td class="lbl">Modbus RTU và OTA qua RS485</td><td>Kênh mới chỉ cần gọi <code>fw_update_*()</code> rồi post <code>FW_SIG_INSTALL</code>; chưa viết</td></tr>
         <tr><td class="lbl">Driver: nút, còi, OLED, nRF24, EEPROM ngoài, lớp Arduino</td><td>Cố ý không mang sang; viết lại theo nhu cầu từng sản phẩm</td></tr>
         <tr><td class="lbl">Rollback về ảnh trước</td><td>Chỉ có cài lại từ staging</td></tr>
         <tr><td class="lbl">Ký số ảnh</td><td>Chỉ có CRC: chống hỏng dữ liệu, không chống giả mạo</td></tr>

@@ -7,13 +7,14 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
-## ak-mcu-base v1.3.0 — chưa phát hành
+## ak-mcu-base v1.3.0 — 06/10/2026
 
 App **1.3.0**, bootloader không đổi (1.2.0).
 
 - **Modbus RTU trên RS485** (nanoMODBUS): slave với bảng thanh ghi khai theo khối, master, OTA qua khối thanh ghi
   `0xF000` mang ảnh `.img` của base mới; tool `tools/ak_mb.py`. Vai trò chọn lúc build (`env:app` là slave,
-  `env:app_mbmaster`). Unit test 174 kiểm tra. **Trên board chưa kiểm xong** (dây A/B của bộ chuyển đang đảo).
+  `env:app_mbmaster`). Unit test 174 kiểm tra. Đã kiểm trên kit: đọc/ghi thanh ghi, OTA qua RS485 (20K trong 26 s ở
+  9600 baud), master.
   Tài liệu: [ak-mcu-base/docs/modbus.md](ak-mcu-base/docs/modbus.md).
 - **Demo trên AK Base Kit** (`env:demo`): menu, đồng hồ số (RTC hoặc tự đếm), Snake, Flappy, màn hình hệ thống trên
   OLED 128×64 + 3 nút + còi; điều khiển được qua shell (`ui`). Đã chạy trên kit; ảnh màn hình dựng từ mã vẽ thật.

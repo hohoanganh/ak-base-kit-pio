@@ -12,8 +12,10 @@ Một cổng RS485, một vai trò, chọn lúc build:
 Cổng: USART2, PA2 TX, PA3 RX, chân hướng PA1 (`port/stm32l151/port_cfg.h`), 8N1.
 Tốc độ và địa chỉ: `APP_MB_BAUD` (9600), `APP_MB_UNIT_ID` (1) trong `app/app.h`.
 
-> **Trạng thái kiểm (06/10/2026):** unit test trên máy tính pass (174 kiểm tra). Trên kit, UART2 nhận đủ số byte
-> nhưng chưa đọc/ghi được thanh ghi vì hai dây A/B của bộ chuyển đang đảo. Phần trên board **chưa kiểm xong**.
+> **Đã kiểm trên AK Base Kit (06/10/2026)** qua bộ chuyển USB-RS485:
+> slave đọc/ghi thanh ghi và trả đúng exception; OTA qua RS485 (ảnh 20K mất 26 s, ảnh 27K mất 35 s ở 9600 baud);
+> bỏ dở giữa chừng rồi nạp lại; master đọc/ghi một slave giả trên máy tính, nhận đúng exception và timeout.
+> Unit test trên máy tính: 174 kiểm tra.
 
 ## Slave
 
