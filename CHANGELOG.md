@@ -7,7 +7,9 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
-## Tài liệu — sau v1.3.5
+## ak-mcu-base v1.3.6 — 06/10/2026
+
+App **1.3.6**, bootloader không đổi (1.2.0). Mã firmware không đổi so với v1.3.4 ngoài số phiên bản; bản này là sơ đồ và sửa tài liệu theo schematic.
 
 - **Sơ đồ chân đã đối chiếu với schematic AK MCU KIT 3.0.** Mọi chân firmware dùng đều khớp. Sửa theo schematic: PA4,
   PA8, PB1 không phải chân trống mà ra cổng SPI mở rộng J6 (CSN, CE, IRQ); PA15 vừa là reset màn hình vừa có trên J13;

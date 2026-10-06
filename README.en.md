@@ -68,7 +68,7 @@ The connectors, pin by pin, from the schematic (*chân* = pin, *cầu hàn* = so
 ## Two bases in this repository
 
 - [`ak-mcu-base/`](ak-mcu-base/README.md) — **start new projects here.** Portable (the code above the HAL never includes
-  a chip header), unit-tested, builds with PlatformIO or CMake. Current version: v1.3.5.
+  a chip header), unit-tested, builds with PlatformIO or CMake. Current version: v1.3.6.
 - [`sources/`](sources/) — the older base, kept for projects already running on it.
 
 ## Try it
