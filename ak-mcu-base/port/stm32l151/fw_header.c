@@ -9,7 +9,7 @@
 #ifndef APP_VER_MAJOR
 #define APP_VER_MAJOR	1
 #define APP_VER_MINOR	3
-#define APP_VER_PATCH	2
+#define APP_VER_PATCH	3
 #endif
 #ifndef APP_VER_BUILD
 #define APP_VER_BUILD	0

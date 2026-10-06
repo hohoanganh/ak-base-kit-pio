@@ -7,7 +7,9 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
-## ak-mcu-base — sau v1.3.2, chưa phát hành
+## ak-mcu-base v1.3.3 — 06/10/2026
+
+App **1.3.3**, bootloader không đổi (1.2.0). Mã firmware không đổi so với v1.3.2 ngoài số phiên bản; bản này thêm clip mẫu và tool.
 
 - **Clip mẫu của màn hình Video là logo AK Foundation xoay 3D** (6 giây, 19 KB), thay cho clip đốm trắng; bản chạy trên
   trình duyệt cũng dùng clip này. Logo thuộc về AK Foundation.
