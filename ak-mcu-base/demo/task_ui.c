@@ -16,6 +16,7 @@
 #include "video.h"
 #include "weather.h"
 #include "fw_types.h"
+#include "hal_rs485.h"
 #include "task_list.h"
 
 #define TAG "UI"
@@ -27,6 +28,35 @@ uint16_t ui_last_frame_ms;
 
 static const ui_screen_t* current;		/* 0 = menu */
 static uint8_t lcd_ok;
+
+/* screen mirror (shell "ui dump" / "ui stream") */
+#define STREAM_CHARS_PER_FRAME	(400)		/* about 35 ms of UART time at 115200 baud */
+static uint8_t stream_on;
+static uint8_t stream_dirty;			/* pages the PC has not seen yet */
+static uint32_t stream_next_ms;			/* the UART is busy with the last batch until then */
+
+/*----------------------------------------------------------------------------
+ * RS485 link for a screen (Pong): Modbus stops listening while it is open
+ *--------------------------------------------------------------------------*/
+void ui_link_open(void) {
+	task_polling_set_ability(TASK_POLL_MODBUS_ID, AK_DISABLE);
+	while (hal_rs485_getc() >= 0) {
+	}
+}
+
+void ui_link_close(void) {
+	while (hal_rs485_getc() >= 0) {
+	}
+	task_polling_set_ability(TASK_POLL_MODBUS_ID, AK_ENABLE);
+}
+
+int ui_link_getc(void) {
+	return hal_rs485_getc();
+}
+
+void ui_link_write(const uint8_t* data, uint8_t len) {
+	hal_rs485_write(data, len);
+}
 
 /*----------------------------------------------------------------------------
  * beep: buzzer on now, a one-shot timer turns it off
@@ -76,6 +106,9 @@ void task_poll_buttons(void) {
 	uint32_t now = hal_millis();
 	uint8_t sample, pressed, released;
 
+	if (current == &scr_pong) {
+		pong_poll();			/* answers the other kit without waiting for the next frame */
+	}
 	if (now - last_ms < BTN_DEBOUNCE_MS) {
 		return;
 	}
@@ -121,6 +154,19 @@ void cmd_ui(const char* args) {
 	}
 	else if (args[0] == 'b') {
 		task_post_pure_msg(TASK_UI_ID, UI_SIG_BACK);
+	}
+	else if (args[0] == 'd') {
+		stream_dirty = 0xFF;		/* the whole screen once (stream_on stays as it is) */
+		stream_next_ms = 0;
+		if (!stream_on) {
+			stream_on = 2;			/* 2 = off again when the screen is out */
+		}
+	}
+	else if (args[0] == 's') {
+		stream_on = (stream_on == 1) ? 0 : 1;
+		stream_dirty = 0xFF;
+		stream_next_ms = 0;
+		xprintf("stream %s\n", stream_on ? "on" : "off");
 	}
 	else if (args[0] == 'a') {
 		ui_autoplay = !ui_autoplay;
@@ -276,6 +322,22 @@ void task_ui(ak_msg_t* msg) {
 		}
 		ui_last_pages = lcd_ok ? gfx_flush(0) : 0;
 		ui_last_frame_ms = (uint16_t)(hal_millis() - t0);
+		stream_dirty |= gfx_changed();
+		if (stream_on && stream_dirty && (int32_t)(t0 - stream_next_ms) >= 0) {
+			uint16_t chars = 0;
+
+			for (uint8_t p = 0; p < KIT_LCD_PAGES && chars < STREAM_CHARS_PER_FRAME; p++) {
+				if (stream_dirty & (1 << p)) {
+					chars = (uint16_t)(chars + ui_dump_page(p, hal_console_putc));
+					stream_dirty &= (uint8_t)~(1 << p);
+				}
+			}
+			xprintf("@E\n");			/* end of the batch: the PC redraws */
+			stream_next_ms = hal_millis() + chars / 11U;
+			if (stream_on == 2 && !stream_dirty) {
+				stream_on = 0;
+			}
+		}
 		/* The next frame is asked for only now. A periodic timer would keep
 		 * posting while a full-screen effect needs more than UI_FRAME_MS, and
 		 * the message pool would fill up; this way the effect just runs slower. */

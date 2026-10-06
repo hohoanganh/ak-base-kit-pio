@@ -19,6 +19,7 @@
 #include "music.h"
 #include "video.h"
 #include "weather.h"
+#include "crc.h"
 #include "port_host.h"
 #include "tiny_test.h"
 
@@ -68,6 +69,62 @@ uint8_t kit_rtc_set(uint8_t hh, uint8_t mm, uint8_t ss) {
 	rtc_h = hh; rtc_m = mm; rtc_s = ss;
 	rtc_base_ms = now_ms;
 	return 1;
+}
+
+/* RS485 link of the Pong screen: what the kit sent, what it will receive */
+static uint8_t link_open;
+static uint8_t link_tx[4096];
+static uint32_t link_tx_len;
+static uint8_t link_rx[256];
+static uint32_t link_rx_len, link_rx_pos;
+
+void ui_link_open(void) { link_open = 1; link_rx_len = link_rx_pos = 0; link_tx_len = 0; }
+void ui_link_close(void) { link_open = 0; }
+
+int ui_link_getc(void) {
+	return link_rx_pos < link_rx_len ? link_rx[link_rx_pos++] : -1;
+}
+
+void ui_link_write(const uint8_t* data, uint8_t len) {
+	if (link_tx_len + len <= sizeof(link_tx)) {
+		memcpy(link_tx + link_tx_len, data, len);
+		link_tx_len += len;
+	}
+}
+
+/* the other kit says something: one frame C5 type payload crc16 */
+static void link_say(uint8_t type, const uint8_t* payload, uint8_t n) {
+	uint8_t* f = link_rx;
+	uint16_t crc;
+
+	link_rx_pos = 0;
+	f[0] = 0xC5;
+	f[1] = type;
+	memcpy(&f[2], payload, n);
+	crc = crc16_update(CRC16_INIT, &f[1], (uint32_t)n + 1);
+	f[2 + n] = (uint8_t)crc;
+	f[3 + n] = (uint8_t)(crc >> 8);
+	link_rx_len = (uint32_t)n + 4;
+}
+
+/* last frame of the given type the kit sent; 0 if none. Clears the log. */
+static const uint8_t* link_heard(uint8_t type, uint8_t n) {
+	static uint8_t found[12];
+	const uint8_t* hit = 0;
+
+	for (uint32_t i = 0; i + n + 4U <= link_tx_len; i++) {
+		if (link_tx[i] == 0xC5 && link_tx[i + 1] == type) {
+			uint16_t crc = crc16_update(CRC16_INIT, &link_tx[i + 1], (uint32_t)n + 1);
+
+			if (link_tx[i + 2 + n] == (uint8_t)crc && link_tx[i + 3 + n] == (uint8_t)(crc >> 8)) {
+				memcpy(found, &link_tx[i + 2], n);
+				hit = found;
+				i += n + 3U;
+			}
+		}
+	}
+	link_tx_len = 0;
+	return hit;
 }
 
 /* SHT45: a slow wave around 26.5 C / 61 %, or no sensor at all */
@@ -162,6 +219,9 @@ static void frames(const ui_screen_t* s, int n) {
 		host_advance_ms(UI_FRAME_MS);
 		music_run();
 		weather_poll(now_ms);
+		if (link_open) {
+			pong_poll();
+		}
 		if (s) {
 			s->frame(now_ms);
 		}
@@ -344,6 +404,11 @@ static void record(void) {
 	play(&scr_invaders, 160);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
+	scr_pong.enter();
+	play(&scr_pong, 140);
+	scr_pong.leave();
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
 	scr_cube.enter();
 	play(&scr_cube, 60);
 	scr_cube.key(KIT_BTN_1);
@@ -383,6 +448,12 @@ static void record(void) {
 	play(&scr_system, 50);
 	play(0, 6);
 	menu_press(KIT_BTN_1, 10);				/* wraps to the first entry: the GIF loops cleanly */
+	rec_close();
+
+	rec_open("pong");
+	scr_pong.enter();
+	play(&scr_pong, 500);
+	scr_pong.leave();
 	rec_close();
 
 	rec_open("tetris");
@@ -1113,6 +1184,167 @@ static void test_saver(void) {
 	scr_saver.key(KIT_BTN_1);					/* back to Life */
 }
 
+/* rows of the screen column x that are lit, as first row (or -1) */
+static int column_top(int x) {
+	for (int y = 10; y < KIT_LCD_H; y++) {
+		if ((panel[y >> 3][x] >> (y & 7)) & 1) {
+			return y;
+		}
+	}
+	return -1;
+}
+
+static void test_pong(void) {
+	const uint8_t* f;
+	uint8_t p[8];
+	uint16_t my_id;
+	int a;
+
+	ui_autoplay = 1;
+	scr_pong.enter();
+	CHECK_EQ(link_open, 1);
+	frames(&scr_pong, 40);
+	snapshot("45_pong_alone");
+	/* alone: the kit calls hello, and plays against itself */
+	f = link_heard('H', 2);
+	CHECK(f != 0);
+	my_id = (uint16_t)(f[0] | (f[1] << 8));
+	CHECK(my_id != 0);
+	CHECK(link_heard('S', 7) == 0);
+	frames(&scr_pong, 20 * 120);				/* two minutes: rallies, points, no crash */
+	link_heard('H', 2);
+
+	/* a kit with a lower number answers: this one becomes the host and sends the game */
+	p[0] = (uint8_t)(my_id - 1); p[1] = (uint8_t)((my_id - 1) >> 8);
+	link_say('H', p, 2);
+	frames(&scr_pong, 2);
+	f = link_heard('S', 7);
+	CHECK(f != 0);
+	if (f) {
+		CHECK(f[1] < KIT_LCD_W && f[2] >= 10 && f[2] < KIT_LCD_H);
+		CHECK_EQ(f[4], 0);						/* a new game */
+		CHECK_EQ(f[5], 0);
+	}
+	snapshot("46_pong_host");
+	/* the guest moves its paddle: it shows on the right edge */
+	p[0] = 1; p[1] = 10;
+	link_say('P', p, 2);
+	frames(&scr_pong, 1);
+	CHECK_EQ(column_top(124), 10);
+	p[0] = 2; p[1] = 52;
+	link_say('P', p, 2);
+	frames(&scr_pong, 1);
+	CHECK_EQ(column_top(124), 52);
+	p[0] = 3; p[1] = 200;						/* nonsense position: ignored */
+	link_say('P', p, 2);
+	frames(&scr_pong, 1);
+	CHECK_EQ(column_top(124), 52);
+	/* the guest falls silent: after a second the kit is alone again */
+	frames(&scr_pong, 30);
+	link_heard('S', 7);
+	frames(&scr_pong, 20);
+	CHECK(link_heard('S', 7) == 0);
+
+
+	/* a host appears: this kit becomes the guest, shows the game mirrored and answers */
+	p[0] = 7; p[1] = 20; p[2] = 30; p[3] = 40; p[4] = 3; p[5] = 5; p[6] = 0;
+	link_say('S', p, 7);
+	frames(&scr_pong, 1);
+	snapshot("47_pong_guest");
+	f = link_heard('P', 2);
+	CHECK(f != 0);
+	if (f) {
+		CHECK_EQ(f[0], 7);						/* same sequence number */
+		CHECK(f[1] >= 10 && f[1] <= KIT_LCD_H - 12);
+	}
+	CHECK_EQ(column_top(124), 40);				/* the host's paddle is on the right here */
+	CHECK_EQ(column_top(KIT_LCD_W - 2 - 20), 30);	/* ball at x 20 of the host = mirrored */
+	a = lit_pixels();
+	/* damaged frame and noise: ignored, nothing is sent */
+	link_say('S', p, 7);
+	link_rx[5] ^= 0x40;
+	frames(&scr_pong, 1);
+	CHECK(link_heard('P', 2) == 0);
+	CHECK_EQ(lit_pixels(), a);
+	for (uint32_t i = 0; i < sizeof(link_rx); i++) {
+		link_rx[i] = (uint8_t)(i * 37 + 0xC5 * (i % 5 == 0));
+	}
+	link_rx_pos = 0;
+	link_rx_len = sizeof(link_rx);
+	frames(&scr_pong, 3);
+	link_rx_len = 0;
+
+	scr_pong.leave();
+	CHECK_EQ(link_open, 0);						/* the port goes back to Modbus */
+	ui_autoplay = 0;
+}
+
+/* the screen mirror: every page, sent as text, decodes to what is on screen */
+static char dump_text[600];
+static uint32_t dump_len;
+
+static void dump_put(uint8_t c) {
+	if (dump_len < sizeof(dump_text) - 1) {
+		dump_text[dump_len++] = (char)c;
+	}
+}
+
+static int hex_val(char c) {
+	return c >= '0' && c <= '9' ? c - '0' : c >= 'A' && c <= 'F' ? c - 'A' + 10 : -1;
+}
+
+static void test_screen_dump(void) {
+	static const ui_screen_t* const screens[] = { 0, &scr_clock, &scr_saver, &scr_system };
+
+	for (uint32_t s = 0; s < sizeof(screens) / sizeof(screens[0]); s++) {
+		if (screens[s]) {
+			screens[s]->enter();
+			if (screens[s] == &scr_saver) {
+				scr_saver.key(KIT_BTN_1);
+				scr_saver.key(KIT_BTN_1);		/* plasma: the hardest picture to pack */
+			}
+		}
+		frames(screens[s], 45);
+		for (uint8_t page = 0; page < KIT_LCD_PAGES; page++) {
+			uint8_t raw[160], out[KIT_LCD_W + 130];
+			uint32_t n = 0, o = 0, i = 0;
+			uint16_t chars, crc;
+			const char* h;
+
+			dump_len = 0;
+			chars = ui_dump_page(page, dump_put);
+			dump_text[dump_len] = 0;
+			CHECK_EQ(chars, dump_len);
+			CHECK(dump_len <= 4 + 2 * 130 + 6);			/* never much longer than the raw page */
+			CHECK(dump_text[0] == '@' && dump_text[1] == 'P' && dump_text[2] == '0' + page && dump_text[3] == ' ');
+			CHECK_EQ(dump_text[dump_len - 1], '\n');
+			for (h = dump_text + 4; hex_val(h[0]) >= 0 && hex_val(h[1]) >= 0 && n < sizeof(raw); h += 2) {
+				raw[n++] = (uint8_t)(hex_val(h[0]) * 16 + hex_val(h[1]));
+			}
+			CHECK_EQ(*h, ' ');
+			while (i < n && o < KIT_LCD_W) {				/* PackBits */
+				uint8_t c = raw[i++];
+
+				if (c < 128) {
+					memcpy(out + o, raw + i, (size_t)c + 1);
+					o += (uint32_t)c + 1;
+					i += (uint32_t)c + 1;
+				}
+				else {
+					memset(out + o, raw[i++], (size_t)c - 126);
+					o += (uint32_t)c - 126;
+				}
+			}
+			CHECK_EQ(o, KIT_LCD_W);
+			CHECK_EQ(i, n);
+			CHECK(memcmp(out, panel[page], KIT_LCD_W) == 0);
+			crc = crc16_update(CRC16_INIT, panel[page], KIT_LCD_W);
+			CHECK(hex_val(h[1]) * 16 + hex_val(h[2]) == (crc >> 8) && hex_val(h[3]) * 16 + hex_val(h[4]) == (crc & 0xFF));
+		}
+	}
+	scr_saver.key(KIT_BTN_1);						/* back to Life for whoever comes next */
+}
+
 static void test_system(void) {
 	ui_last_pages = 3;
 	ui_last_frame_ms = 9;
@@ -1156,6 +1388,8 @@ int main(int argc, char** argv) {
 	RUN_TEST(test_breakout);
 	RUN_TEST(test_invaders);
 	RUN_TEST(test_saver);
+	RUN_TEST(test_pong);
+	RUN_TEST(test_screen_dump);
 	printf("%d checks, %d failed\n", tt_checks, tt_fails);
 	return tt_fails ? 1 : 0;
 }

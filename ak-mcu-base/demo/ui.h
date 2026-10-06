@@ -4,7 +4,7 @@
  *          system monitor on the 128x64 display, three buttons, buzzer.
  *          Later additions: Dino runner, rotating 3D solids, a jukebox,
  *          a ray-cast maze, video from the SPI flash, a weather station,
- *          Tetris, Breakout, Invaders, screen savers.
+ *          Tetris, Breakout, Invaders, screen savers, Pong over RS485.
  *
  *  How it sits on the kernel:
  *   - task_poll_buttons (polling) debounces the buttons and posts key signals;
@@ -72,6 +72,7 @@ extern const ui_screen_t scr_tetris;
 extern const ui_screen_t scr_breakout;
 extern const ui_screen_t scr_invaders;
 extern const ui_screen_t scr_saver;
+extern const ui_screen_t scr_pong;
 extern const ui_screen_t scr_system;
 
 /* menu (scr_menu.c): returns the chosen screen on B3, else 0 */
@@ -91,6 +92,22 @@ extern int ui_cos(uint8_t a);
 extern void ui_footer(const char* b1, const char* b2, const char* b3);
 extern void ui_title(const char* left, const char* right);
 
+/* RS485 for a screen that talks to another kit (Pong). Open takes the port
+ * away from Modbus until close. getc: one received byte or -1; write blocks
+ * for the time the bytes need on the wire. */
+extern void ui_link_open(void);
+extern void ui_link_close(void);
+extern int ui_link_getc(void);
+extern void ui_link_write(const uint8_t* data, uint8_t len);
+/* Pong reads the link between frames too, to answer the other kit at once. */
+extern void pong_poll(void);
+
+/* One display page as a line of text, for the screen mirror on the PC
+ * (tools/ak_screen.py): "@P<page> <hex> <crc16>\n". The hex is the 128 bytes
+ * of the page, PackBits packed as in video.h; the CRC is over the 128 bytes.
+ * Returns the number of characters written. */
+extern uint16_t ui_dump_page(uint8_t page, void (*out)(uint8_t c));
+
 /* 1: the games play themselves (shell "ui auto", also used to record the
  * pictures in the documentation). Any button gives control back. */
 extern uint8_t ui_autoplay;
@@ -100,7 +117,8 @@ extern uint8_t ui_last_pages;
 extern uint16_t ui_last_frame_ms;
 
 /* shell: "ui" = status, "ui 1|2|3" = press a button, "ui back" = hold B3,
- * "ui auto" = games play themselves */
+ * "ui auto" = games play themselves, "ui dump" = the screen as text once,
+ * "ui stream" = the screen as text whenever it changes (on / off) */
 extern void cmd_ui(const char* args);
 /* shell: "th" = temperature, humidity and the graph of the weather screen as CSV */
 extern void cmd_th(const char* args);

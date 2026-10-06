@@ -3,6 +3,7 @@
  * random numbers. Shared by the firmware and the host renderer.
  */
 #include "ui.h"
+#include "crc.h"
 
 /*----------------------------------------------------------------------------
  * helpers
@@ -47,6 +48,67 @@ int ui_cos(uint8_t a) {
 	return sin_tbl[(uint8_t)(a + 64)];
 }
 
+/*----------------------------------------------------------------------------
+ * screen mirror: a page as PackBits (see video.h) in hex
+ *--------------------------------------------------------------------------*/
+static void (*dump_out)(uint8_t c);
+static uint16_t dump_chars;
+
+static void dump_char(char c) {
+	dump_out((uint8_t)c);
+	dump_chars++;
+}
+
+static void dump_hex(uint8_t v) {
+	static const char digits[] = "0123456789ABCDEF";
+
+	dump_char(digits[v >> 4]);
+	dump_char(digits[v & 15]);
+}
+
+uint16_t ui_dump_page(uint8_t page, void (*out)(uint8_t c)) {
+	const uint8_t* p = gfx_page(page);
+	uint16_t crc = crc16_update(CRC16_INIT, p, GFX_W);
+	uint16_t i = 0;
+
+	dump_out = out;
+	dump_chars = 0;
+	dump_char('@');
+	dump_char('P');
+	dump_char((char)('0' + page));
+	dump_char(' ');
+	while (i < GFX_W) {
+		uint16_t run = 1;
+
+		while (i + run < GFX_W && p[i + run] == p[i] && run < 129) {
+			run++;
+		}
+		if (run >= 2) {
+			dump_hex((uint8_t)(run + 126));
+			dump_hex(p[i]);
+			i = (uint16_t)(i + run);
+		}
+		else {
+			uint16_t lit = 1;
+
+			/* bytes as they are, up to the next pair of equal ones */
+			while (i + lit < GFX_W && lit < 128 && !(i + lit + 1 < GFX_W && p[i + lit] == p[i + lit + 1])) {
+				lit++;
+			}
+			dump_hex((uint8_t)(lit - 1));
+			for (uint16_t k = 0; k < lit; k++) {
+				dump_hex(p[i + k]);
+			}
+			i = (uint16_t)(i + lit);
+		}
+	}
+	dump_char(' ');
+	dump_hex((uint8_t)(crc >> 8));
+	dump_hex((uint8_t)crc);
+	dump_char('\n');
+	return dump_chars;
+}
+
 /* Title bar: inverted strip of 9 pixels with a left and a right text. */
 void ui_title(const char* left, const char* right) {
 	gfx_text(2, 1, left, 1);
@@ -85,6 +147,7 @@ static const ui_screen_t* const menu_items[] = {
 	&scr_tetris,
 	&scr_breakout,
 	&scr_invaders,
+	&scr_pong,
 	&scr_cube,
 	&scr_maze,
 	&scr_music,

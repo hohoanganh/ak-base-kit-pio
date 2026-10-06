@@ -12,6 +12,8 @@ Nó vẫn giữ nguyên mọi thứ của app mẫu: shell, OTA qua UART, Modbus
 | ![Dino tự chơi](demo-dino.gif) | ![Khối 3D quay](demo-3d.gif) | ![Máy hát](demo-music.gif) |
 | **Tetris** | **Breakout** | **Invaders** |
 | ![Tetris tự chơi](demo-tetris.gif) | ![Breakout tự chơi](demo-breakout.gif) | ![Invaders tự chơi](demo-invaders.gif) |
+| **Pong qua RS485** | | |
+| ![Pong, kit tự chơi khi chưa có kit thứ hai](demo-pong.gif) | | |
 | **Mê cung 3D** | **Trạm thời tiết** | **Video từ flash SPI** |
 | ![Mê cung tự đi](demo-maze.gif) | ![Nhiệt độ, độ ẩm](demo-weather.gif) | ![Clip thử](demo-video.gif) |
 
@@ -58,6 +60,7 @@ Ba nút dưới màn hình, từ trái sang phải: B1, B2, B3. Dòng cuối mà
 | Tetris | Sang trái | Sang phải | Xoay | Về menu |
 | Breakout | Sang trái (giữ) | Sang phải (giữ) | Phát bóng | Về menu |
 | Invaders | Sang trái (giữ) | Sang phải (giữ) | Bắn | Về menu |
+| Pong RS485 | Lên (giữ) | Xuống (giữ) | — | Về menu |
 | Khối 3D | Đổi khối | Tốc độ quay | Khung dây / tô bóng | Về menu |
 | Mê cung 3D | Quay trái | Quay phải | Đi / dừng | Về menu |
 | Máy hát | Bài kế | Phát / dừng | — | Về menu |
@@ -85,6 +88,42 @@ Ba nút dưới màn hình, từ trái sang phải: B1, B2, B3. Dòng cuối mà
 - **Trạm thời tiết** đọc SHT45 mỗi giây, kể cả khi đang mở màn hình khác. Đồ thị có 96 điểm; B2 chọn mỗi điểm cách nhau
   1 giây, 1 phút hoặc 15 phút (96 điểm × 15 phút = 24 giờ). Đổi nhịp là xoá đồ thị. Số liệu nằm trong RAM, mất khi reset.
 - **Hệ thống** hiện uptime, mức dùng pool message, RAM chưa từng dùng, số bản ghi sự cố, thời gian vẽ khung trước.
+
+## Pong qua RS485: hai kit, hoặc một kit với máy tính
+
+Nối A với A, B với B giữa hai kit, mở **Pong RS485** trên cả hai. Trong vòng một giây hai kit nhận ra nhau:
+góc phải thanh tiêu đề đổi từ `alone` sang `host` hoặc `guest`, và ván mới bắt đầu. Thanh đỡ của mình luôn ở bên trái.
+
+- Kit có số ngẫu nhiên lớn hơn làm chủ (`host`): nó tính đường bóng và gửi trạng thái 20 lần/giây. Kit kia (`guest`)
+  trả lời ngay sau mỗi khung bằng vị trí thanh đỡ của nó, nên hai bên không bao giờ nói cùng lúc trên đường dây bán song công.
+- Mất liên lạc quá một giây thì mỗi kit quay về chơi một mình với máy.
+- Khi màn hình Pong đang mở, cổng RS485 thuộc về trò chơi: Modbus slave không trả lời. Rời màn hình là Modbus chạy lại.
+- Tốc độ 9600 8N1 như Modbus. Khung truyền mô tả trong `demo/scr_pong.c`.
+
+Chỉ có một kit thì cho máy tính làm kit thứ hai qua bộ USB-RS485:
+
+```bash
+python tools/pong_peer.py --port COMx            # máy tính làm guest, kit tính đường bóng
+python tools/pong_peer.py --port COMx --host     # máy tính làm host, kit làm guest
+```
+
+Đã thử theo cách này ở cả hai vai. **Chưa thử với hai kit thật**, vì lúc viết chỉ có một kit.
+
+## Xem màn hình kit trên máy tính
+
+```bash
+python tools/ak_screen.py --port COMx shot man-hinh.png         # chụp một ảnh
+python tools/ak_screen.py --port COMx record clip.gif -t 20     # quay 20 giây thành GIF
+python tools/ak_screen.py --port COMx live                      # cửa sổ xem trực tiếp
+```
+
+Trong cửa sổ `live`: phím `1` `2` `3` là ba nút, `b` là giữ B3 (về menu), `a` bật/tắt tự chơi, `s` lưu ảnh, `q` thoát.
+
+- Kit gửi các trang màn hình **đã đổi** qua cổng console dưới dạng dòng chữ (`@P<trang> <hex> <crc>`), nén PackBits.
+  Shell vẫn dùng được trong lúc đó. Lệnh gốc: `ui dump` (một lần), `ui stream` (bật/tắt).
+- Ảnh nhận được là bộ đệm khung của firmware, tức đúng thứ firmware đã vẽ, không phải ảnh chụp tấm OLED.
+- Số đo: 19 hình/giây với màn hình ít đổi; khoảng 9,5 hình/giây khi cả màn hình đổi liên tục, vì 115200 baud không
+  tải nổi nhiều hơn. Lúc đang truyền, các màn hình nặng trên kit cũng chậm đi một chút.
 
 ## Nạp video vào kit
 
@@ -117,6 +156,7 @@ display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 > ui back     (giữ B3: về menu)
 > ui auto     (bật/tắt tự chơi: mở một game thì game tự chạy, mở máy hát thì phát lần lượt; bấm nút để giành lại quyền điều khiển)
 > th          (nhiệt độ, độ ẩm hiện tại; th csv in thêm cả đồ thị dạng CSV)
+> ui dump     (gửi màn hình hiện tại một lần; ui stream: gửi mỗi khi đổi, gõ lần nữa để tắt)
 29.3 C, 65.1 %RH, 37 samples, one every 1 s
 ```
 
@@ -130,6 +170,7 @@ display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 | Đọc cảm biến | Khung này gửi lệnh đo, khung sau mới lấy kết quả: SHT45 cần 8 ms để đo và không ai phải đứng chờ nó |
 | Phát video | Tính theo đồng hồ xem lúc này phải tới khung nào rồi giải mã tới đó; đọc flash từng 64 byte, không cần bộ đệm cỡ một khung |
 | Nạp file qua UART | Lệnh `0x40`–`0x42` của giao thức nạp firmware được chuyển cho demo qua hàm `ext` của `fw_proto`; ghi xong đọc lại để so |
+| Hai kit nói chuyện qua RS485 | Màn hình Pong mượn cổng của Modbus bằng cách tắt polling task của nó (`task_polling_set_ability`), trả lại khi rời màn hình |
 | Phát nhạc | `music_step()` bật nốt kế và trả về độ dài; timer một lần post `UI_SIG_NOTE` đúng lúc nốt hết. Không có vòng lặp chờ nên game và shell vẫn chạy |
 | Màn hình I2C chậm | Chỉ gửi những trang đã đổi (8 trang × 128 byte): đồng hồ thường gửi 0–2 trang mỗi khung |
 | Vẫn phản hồi | Shell, Modbus và OTA chạy song song; `task_ui` ưu tiên thấp hơn chúng |
@@ -140,7 +181,7 @@ Tetris 20 ms, Breakout 15 ms, Invaders 31 ms. Màn hình chờ đổi cả 8 tra
 Video đổi cả 8 trang thì mất 41–47 ms, tức sát ngân sách: clip 20 khung/giây có cảnh đổi toàn màn hình sẽ bị chậm lại
 một chút thay vì bỏ khung. 15 khung/giây là mức an toàn.
 
-Ý tưởng cho các demo tiếp theo (Pong qua RS485, truyền màn hình về máy tính, chạy trên trình duyệt…), kèm nguồn tham khảo:
+Ý tưởng cho các demo tiếp theo (chạy trên trình duyệt, máy hiện sóng mini, đồng hồ kim…), kèm nguồn tham khảo:
 [y-tuong-demo.md](y-tuong-demo.md).
 
 ## Thêm một màn hình

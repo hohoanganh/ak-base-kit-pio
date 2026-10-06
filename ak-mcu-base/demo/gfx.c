@@ -240,15 +240,23 @@ char* gfx_utoa(char* buf, uint32_t v, uint8_t min_digits) {
 	return buf;
 }
 
+static uint8_t changed_mask;
+
+uint8_t gfx_changed(void) {
+	return changed_mask;
+}
+
 uint8_t gfx_flush(uint8_t force) {
 	uint8_t written = 0;
 
+	changed_mask = 0;
 	for (uint8_t p = 0; p < KIT_LCD_PAGES; p++) {
 		if (force || memcmp(fb[p], shown[p], GFX_W) != 0) {
 			if (kit_lcd_write_page(p, fb[p])) {
 				memcpy(shown[p], fb[p], GFX_W);
 			}
 			written++;
+			changed_mask |= (uint8_t)(1 << p);
 		}
 	}
 	return written;

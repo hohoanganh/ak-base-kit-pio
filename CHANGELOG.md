@@ -7,6 +7,19 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
+## ak-mcu-base v1.3.2 — chưa phát hành
+
+- **Pong qua RS485** (màn hình mới của demo): hai kit nối chung dây RS485 chơi với nhau; kit có số ngẫu nhiên lớn hơn
+  làm chủ, tính đường bóng và gửi trạng thái 20 lần/giây, kit kia trả lời vị trí thanh đỡ. Một mình thì kit tự chơi
+  với máy và phát "hello" chờ kit thứ hai. Khi màn hình này mở, cổng RS485 thuộc về trò chơi, Modbus tạm nghỉ.
+  `tools/pong_peer.py` cho máy tính đóng vai kit thứ hai qua USB-RS485. Đã thử trên kit với máy tính ở cả hai vai:
+  20 khung/giây, 300/300 khung được trả lời, không khung hỏng; rời màn hình thì Modbus trả lời lại bình thường.
+- **Xem màn hình kit trên máy tính:** lệnh shell `ui dump` (một lần) và `ui stream` (liên tục) gửi các trang màn hình
+  đã đổi dưới dạng dòng chữ nén PackBits, có CRC. `tools/ak_screen.py` chụp ảnh (`shot`), quay GIF (`record`) hoặc mở
+  cửa sổ xem trực tiếp (`live`), bấm phím 1 2 3 thay cho ba nút. Đo trên kit: 19 hình/giây với màn hình đồng hồ,
+  9,5 hình/giây khi cả màn hình đổi liên tục.
+- Unit test demo: 445 kiểm tra.
+
 ## ak-mcu-base v1.3.1 — 06/10/2026
 
 App **1.3.1**, bootloader không đổi (1.2.0). Bản này chủ yếu thêm bộ demo cho AK Base Kit.

@@ -61,6 +61,8 @@ extern char* gfx_utoa(char* buf, uint32_t v, uint8_t min_digits);
 /* Send the pages that changed. Returns the number of pages written; force = 1
  * sends everything (first frame, display re-initialised). */
 extern uint8_t gfx_flush(uint8_t force);
+/* Pages the last gfx_flush() found changed: bit n = page n. */
+extern uint8_t gfx_changed(void);
 
 /* Frame buffer as the display takes it: [page][column], bit 0 = top pixel. */
 extern const uint8_t* gfx_page(uint8_t page);
