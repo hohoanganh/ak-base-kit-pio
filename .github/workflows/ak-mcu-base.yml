@@ -24,6 +24,19 @@ jobs:
       - name: Unit tests + simulator OTA
         run: ctest --test-dir build/host --output-on-failure
 
+  # the firmware as WebAssembly (docs/play): only checks that it still builds;
+  # the published copy in docs/play is built locally and committed
+  web-build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+      - name: Build
+        run: |
+          emcc --version | head -1
+          python3 ak-mcu-base/port/web/build.py --out build/play
+          test -s build/play/ak-kit.js && test -s build/play/index.html
+
   stm32-build:
     runs-on: ubuntu-24.04
     steps:

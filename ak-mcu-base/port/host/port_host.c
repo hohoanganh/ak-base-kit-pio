@@ -331,6 +331,12 @@ void host_console_use_stdio(uint8_t on) {
 	}
 }
 
+static uint8_t rx_guard = 1;
+
+void host_console_rx_guard(uint8_t on) {
+	rx_guard = on;
+}
+
 void host_console_inject(const uint8_t* data, uint32_t len) {
 	while (len--) {
 		rx_q[rx_head % sizeof(rx_q)] = *data++;
@@ -376,7 +382,7 @@ int hal_console_getc(void) {
 		/* a test forgot the terminating command and the loader would spin
 		 * forever: fail instead of hanging */
 		static uint32_t empty_reads;
-		if (++empty_reads > 5000000UL) {
+		if (rx_guard && ++empty_reads > 5000000UL) {
 			empty_reads = 0;
 			ak_port_fatal("HOSTRX", 0x01);
 		}
@@ -395,6 +401,11 @@ void hal_console_flush(void) {
  * LED / watchdog
  *--------------------------------------------------------------------------*/
 static uint8_t led_state;
+
+uint8_t host_led(void) {
+	return led_state;
+}
+
 void hal_led_set(uint8_t on) {
 	led_state = on ? 1 : 0;
 }

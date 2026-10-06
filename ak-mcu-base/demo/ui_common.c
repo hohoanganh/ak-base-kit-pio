@@ -153,6 +153,7 @@ static const ui_screen_t* const menu_items[] = {
 	&scr_music,
 	&scr_video,
 	&scr_weather,
+	&scr_plot,
 	&scr_saver,
 	&scr_system,
 };

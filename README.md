@@ -6,12 +6,12 @@ Nền firmware bare-metal cho **STM32L151CBT6** (AK Base Kit): kernel AK kiểu 
 bootloader và cập nhật firmware có sẵn. Dựng lại từ
 [ak-base-kit-stm32l151](https://github.com/the-ak-foundation/ak-base-kit-stm32l151) của AK Foundation.
 
-Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/>
+Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/> · **[Chạy thử firmware ngay trên trình duyệt](https://hohoanganh.github.io/ak-base-kit-pio/play/)** (không cần kit)
 
 <p align="center">
-  <a href="ak-mcu-base/docs/demo-kit.md"><img src="ak-mcu-base/docs/demo-tour.gif" alt="Demo trên AK Base Kit: một vòng qua 13 màn hình" width="404"></a>
+  <a href="ak-mcu-base/docs/demo-kit.md"><img src="ak-mcu-base/docs/demo-tour.gif" alt="Demo trên AK Base Kit: một vòng qua các màn hình" width="404"></a>
   <br>
-  <em>Demo trên kit với base mới: đồng hồ số, sáu game tự chơi, khối 3D, mê cung 3D, máy hát, video từ flash SPI, trạm thời tiết, màn hình chờ.<br>
+  <em>Demo trên kit với base mới: đồng hồ số, bảy game, khối 3D, mê cung 3D, máy hát, video từ flash SPI, trạm thời tiết, máy hiện sóng.<br>
   Ảnh dựng từ chính mã vẽ của firmware, không phải ảnh chụp.</em>
 </p>
 
@@ -29,8 +29,8 @@ Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/>
 So sánh chi tiết, kèm những gì base mới còn thiếu: **[xem trang so sánh](https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html)** · bản Markdown: [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
 
 **Dự án mới bắt đầu từ `ak-mcu-base`**: `python ak-mcu-base/tools/new_project.py <thư-mục> --board <tên-board>`
-(xem [ak-mcu-base/docs/tien-ich.md](ak-mcu-base/docs/tien-ich.md)). Demo chạy trên kit (đồng hồ số, Snake, Flappy):
-[ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md). Phần còn lại của trang này nói về base `sources/`,
+(xem [ak-mcu-base/docs/tien-ich.md](ak-mcu-base/docs/tien-ich.md)). Demo chạy trên kit (16 màn hình):
+[ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md), chạy thử [trên trình duyệt](https://hohoanganh.github.io/ak-base-kit-pio/play/). Phần còn lại của trang này nói về base `sources/`,
 dành cho các dự án đang chạy trên nó.
 
 ## Bộ nhớ và kiến trúc

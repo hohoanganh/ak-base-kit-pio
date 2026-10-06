@@ -19,6 +19,7 @@
 #include "music.h"
 #include "video.h"
 #include "weather.h"
+#include "plot.h"
 #include "crc.h"
 #include "port_host.h"
 #include "tiny_test.h"
@@ -435,6 +436,10 @@ static void record(void) {
 	play(&scr_weather, 60);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
+	scr_plot.enter();
+	play(&scr_plot, 130);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
 	scr_saver.enter();
 	play(&scr_saver, 70);
 	scr_saver.key(KIT_BTN_1);
@@ -448,6 +453,12 @@ static void record(void) {
 	play(&scr_system, 50);
 	play(0, 6);
 	menu_press(KIT_BTN_1, 10);				/* wraps to the first entry: the GIF loops cleanly */
+	rec_close();
+
+	rec_open("scope");
+	scr_plot.enter();
+	scr_plot.key(KIT_BTN_2);
+	play(&scr_plot, 340);
 	rec_close();
 
 	rec_open("pong");
@@ -1345,6 +1356,67 @@ static void test_screen_dump(void) {
 	scr_saver.key(KIT_BTN_1);						/* back to Life for whoever comes next */
 }
 
+static void test_plot(void) {
+	int a;
+
+	ui_autoplay = 0;
+	scr_plot.enter();
+	scr_plot.key(KIT_BTN_2);					/* clear whatever is there */
+	frames(&scr_plot, 2);
+	snapshot("48_scope_empty");
+	CHECK_EQ(plot_count(), 0);
+	a = lit_pixels();
+
+	/* a ramp: the graph rises from the bottom left to the top right */
+	for (int i = 0; i < 60; i++) {
+		plot_add((int16_t)(i * 10 - 300));
+		if (i % 3 == 0) {
+			frames(&scr_plot, 1);
+		}
+	}
+	frames(&scr_plot, 1);
+	snapshot("49_scope_ramp");
+	CHECK_EQ(plot_count(), 60);
+	CHECK(lit_pixels() != a);
+	CHECK((panel[(29 + 23) >> 3][4 + 120 - 60] >> ((29 + 23) & 7)) & 1);	/* oldest point: bottom */
+	CHECK((panel[29 >> 3][4 + 119] >> (29 & 7)) & 1);						/* newest point: top */
+
+	/* more points than fit: the oldest leave on the left */
+	for (int i = 0; i < 200; i++) {
+		plot_add((int16_t)(i % 2 ? 32767 : -32768));	/* the full range: no overflow in the scaling */
+	}
+	frames(&scr_plot, 1);
+	CHECK_EQ(plot_count(), PLOT_POINTS);
+
+	scr_plot.key(KIT_BTN_1);					/* hold: new points are ignored */
+	frames(&scr_plot, 1);
+	a = lit_pixels();
+	plot_add(0);
+	plot_add(5);
+	frames(&scr_plot, 1);
+	CHECK_EQ(lit_pixels(), a);
+	scr_plot.key(KIT_BTN_1);
+	scr_plot.key(KIT_BTN_2);
+	CHECK_EQ(plot_count(), 0);
+	plot_add(7);								/* a single point, and a flat line */
+	frames(&scr_plot, 1);
+	plot_add(7);
+	plot_add(7);
+	frames(&scr_plot, 1);
+	CHECK_EQ(plot_count(), 3);
+
+	/* attract mode: after two quiet seconds the screen draws its own wave;
+	 * a real sample takes the graph back */
+	ui_autoplay = 1;
+	frames(&scr_plot, 200);
+	snapshot("50_scope_test_wave");
+	CHECK_EQ(plot_count(), PLOT_POINTS);
+	plot_add(100);
+	CHECK_EQ(plot_count(), 1);
+	ui_autoplay = 0;
+	scr_plot.key(KIT_BTN_2);
+}
+
 static void test_system(void) {
 	ui_last_pages = 3;
 	ui_last_frame_ms = 9;
@@ -1389,6 +1461,7 @@ int main(int argc, char** argv) {
 	RUN_TEST(test_invaders);
 	RUN_TEST(test_saver);
 	RUN_TEST(test_pong);
+	RUN_TEST(test_plot);
 	RUN_TEST(test_screen_dump);
 	printf("%d checks, %d failed\n", tt_checks, tt_fails);
 	return tt_fails ? 1 : 0;

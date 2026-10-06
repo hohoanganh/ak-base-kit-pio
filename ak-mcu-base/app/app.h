@@ -68,6 +68,10 @@ extern int app_main(void);
 
 /* task_modbus.c */
 extern void app_modbus_init(void);
+
+/* Everything app_main() does before the kernel loop: for a port that cannot
+ * give the kernel an endless loop (port/web) and calls task_run_once() itself. */
+extern void app_init(void);
 extern void cmd_mb(const char* args);
 
 #endif /* __APP_H__ */

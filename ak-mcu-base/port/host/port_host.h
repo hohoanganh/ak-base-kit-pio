@@ -67,6 +67,11 @@ extern int host_flash_save(const char* path);
 extern void host_console_use_stdio(uint8_t on);
 extern void host_console_inject(const uint8_t* data, uint32_t len);
 extern uint32_t host_console_take_tx(uint8_t* out, uint32_t max);
+/* In-memory console: FATAL after millions of reads without input catches a
+ * test that forgot to end the loader (default on). 0 = an idle console is fine. */
+extern void host_console_rx_guard(uint8_t on);
+/* Heartbeat LED as the firmware last set it. */
+extern uint8_t host_led(void);
 
 /* Reset / jump-to-app emulation (installed by sim_main or tests). */
 extern void (*host_reset_handler)(void);

@@ -27,6 +27,8 @@ Cỡ việc: S = vài giờ, M = một hai ngày, L = nhiều ngày.
 | Tetris, Breakout, Invaders (mục 7) | Ba nút: trái, phải, hành động; Tetris thả nhanh bằng cách giữ cả B1 và B2. Chưa lưu điểm cao vào flash |
 | Truyền màn hình về máy tính (mục 9) | `ui dump` / `ui stream` + `tools/ak_screen.py` (chụp, quay GIF, cửa sổ trực tiếp có phím bấm) |
 | Pong qua RS485 (mục 10) | Đã thử với máy tính đóng vai kit thứ hai (`tools/pong_peer.py`). Chưa thử hai kit thật |
+| Máy hiện sóng mini (mục 11) | Màn hình Scope: số liệu từ lệnh `plot` hoặc thanh ghi Modbus 16; `tools/ak_plot.py` |
+| Chạy trên trình duyệt (mục 12) | <https://hohoanganh.github.io/ak-base-kit-pio/play/>: cả firmware biên dịch sang WebAssembly, `port/web/` |
 | Máy hát RTTTL (mục 3) | 6 bài nằm trong flash của chip, một kênh. Chưa lưu bài trong flash SPI, chưa thử hợp âm rải |
 
 Tham khảo cách làm: trình giả lập [Ardens](https://github.com/retrom-project/Ardens) và
@@ -46,8 +48,8 @@ Tham khảo cách làm: trình giả lập [Ardens](https://github.com/retrom-pr
 | ~~8~~ | ~~Raycaster~~ (đã làm) kiểu Wolfenstein: trái, phải, tiến | M – L | Ấn tượng nhất trong các demo đơn lẻ | CPU, màn hình | [Raycaster-Arduino-SSD1306](https://github.com/kouzerumatsukite/Raycaster-Arduino-SSD1306) · [Arduboy3D](https://github.com/jhhoward/Arduboy3D) |
 | ~~9~~ | ~~Truyền màn hình về máy tính~~ (đã làm) qua UART, máy tính gửi ngược lại lệnh bấm nút | S – M | Cách Flipper Zero được trình diễn trong mọi video; shell `ui` đã làm được một nửa | UART, shell | — |
 | ~~10~~ | ~~Hai kit chơi Pong qua RS485~~ (đã làm, chưa thử hai kit thật) | M | Demo duy nhất dùng cổng RS485 cho việc vui | RS485, hai kit | [Mod nhiều người chơi qua cổng nối tiếp trên Arduboy](https://community.arduboy.com/t/network-of-the-damned-multiplayer-mod-for-catacombs-of-the-damned/8367) |
-| 11 | **Máy hiện sóng mini / vẽ đồ thị** giá trị nhận qua UART hoặc thanh ghi Modbus | S – M | Dụng cụ dùng được thật trên bàn làm việc | UART, RS485 | [Arduino OLED oscilloscope](https://hackaday.io/project/178003-arduino-oled-oscilloscope) |
-| 12 | **Chạy thử ngay trên trình duyệt** (build host sang WebAssembly) | L | Một đường link "bấm là chơi" là thứ làm README sống động nhất | Tính di động của firmware | [TinyJoypad SDL chơi online](https://joyrider3774.github.io/Tinyjoypad_SDL/) · [lv_web_emscripten](https://github.com/lvgl/lv_web_emscripten) |
+| ~~11~~ | ~~Máy hiện sóng mini / vẽ đồ thị~~ (đã làm) giá trị nhận qua UART hoặc thanh ghi Modbus | S – M | Dụng cụ dùng được thật trên bàn làm việc | UART, RS485 | [Arduino OLED oscilloscope](https://hackaday.io/project/178003-arduino-oled-oscilloscope) |
+| ~~12~~ | ~~Chạy thử ngay trên trình duyệt~~ (đã làm) (build host sang WebAssembly) | L | Một đường link "bấm là chơi" là thứ làm README sống động nhất | Tính di động của firmware | [TinyJoypad SDL chơi online](https://joyrider3774.github.io/Tinyjoypad_SDL/) · [lv_web_emscripten](https://github.com/lvgl/lv_web_emscripten) |
 | 13 | **Đồng hồ kim, pomodoro, máy đếm nhịp, báo thức** | S mỗi cái | Ít ấn tượng nhưng làm đầy bộ ảnh với chi phí thấp | RTC, còi | — |
 
 Ghi chú cho từng mục:

@@ -73,6 +73,7 @@ extern const ui_screen_t scr_breakout;
 extern const ui_screen_t scr_invaders;
 extern const ui_screen_t scr_saver;
 extern const ui_screen_t scr_pong;
+extern const ui_screen_t scr_plot;
 extern const ui_screen_t scr_system;
 
 /* menu (scr_menu.c): returns the chosen screen on B3, else 0 */
@@ -120,6 +121,8 @@ extern uint16_t ui_last_frame_ms;
  * "ui auto" = games play themselves, "ui dump" = the screen as text once,
  * "ui stream" = the screen as text whenever it changes (on / off) */
 extern void cmd_ui(const char* args);
+/* shell: "plot <number>" = one more point on the scope screen */
+extern void cmd_plot(const char* args);
 /* shell: "th" = temperature, humidity and the graph of the weather screen as CSV */
 extern void cmd_th(const char* args);
 /* fw_proto extension (console): commands 0x40.. load files into the media

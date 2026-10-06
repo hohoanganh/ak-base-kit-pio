@@ -15,6 +15,7 @@
 #include "music.h"
 #include "video.h"
 #include "weather.h"
+#include "plot.h"
 #include "fw_types.h"
 #include "hal_rs485.h"
 #include "task_list.h"
@@ -180,6 +181,24 @@ void cmd_ui(const char* args) {
 }
 
 static void open_screen(const ui_screen_t* s);
+
+void cmd_plot(const char* args) {
+	int32_t v = 0;
+	uint8_t neg = (args[0] == '-');
+	const char* p = args + neg;
+
+	if (*p < '0' || *p > '9') {
+		xprintf("usage: plot <number>   (-32768..32767, shown on the Scope screen)\n");
+		return;
+	}
+	while (*p >= '0' && *p <= '9' && v < 100000) {
+		v = v * 10 + (*p++ - '0');
+	}
+	if (neg) {
+		v = -v;
+	}
+	plot_add((int16_t)(v > 32767 ? 32767 : v < -32768 ? -32768 : v));
+}
 
 void cmd_th(const char* args) {
 	char a[8], b[8];

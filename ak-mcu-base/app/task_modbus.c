@@ -40,6 +40,9 @@
 
 #include "mb_slave.h"
 #include "hal_rs485.h"
+#if defined(APP_KIT_DEMO)
+#include "plot.h"
+#endif
 
 static uint16_t info_regs[4];
 static uint16_t user_regs[4];
@@ -50,6 +53,15 @@ static const mb_reg_block_t holding_blocks[] = {
 };
 
 static void on_write(uint16_t address, uint16_t quantity) {
+#if defined(APP_KIT_DEMO)
+	/* register 16 feeds the scope screen; no log line, a master may write it many times a second */
+	if (address == 16) {
+		plot_add((int16_t)user_regs[0]);
+		if (quantity == 1) {
+			return;
+		}
+	}
+#endif
 	LOG_I(TAG, "master wrote %d register(s) at %d\n", quantity, address);
 }
 

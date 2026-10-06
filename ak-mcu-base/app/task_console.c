@@ -214,6 +214,7 @@ static const shell_cmd_t shell_cmds[] = {
 #if defined(APP_KIT_DEMO)
 	{ "ui",		"demo: ui 1|2|3|back|auto|dump|stream",	cmd_ui	},
 	{ "th",		"temperature, humidity (th csv)",	cmd_th		},
+	{ "plot",	"plot <number>: point on the Scope screen",	cmd_plot	},
 #endif
 	{ "reboot",	"software reset",				cmd_reboot	},
 	{ "loader",	"reset into bootloader loader",	cmd_loader	},

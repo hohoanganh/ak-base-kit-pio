@@ -18,7 +18,17 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
   đã đổi dưới dạng dòng chữ nén PackBits, có CRC. `tools/ak_screen.py` chụp ảnh (`shot`), quay GIF (`record`) hoặc mở
   cửa sổ xem trực tiếp (`live`), bấm phím 1 2 3 thay cho ba nút. Đo trên kit: 19 hình/giây với màn hình đồng hồ,
   9,5 hình/giây khi cả màn hình đổi liên tục.
-- Unit test demo: 445 kiểm tra.
+- **Bản chạy trên trình duyệt** (<https://hohoanganh.github.io/ak-base-kit-pio/play/>): firmware (kernel, shell, Modbus slave, bộ demo) biên dịch sang
+  WebAssembly bằng Emscripten. `port/web/web_main.c` đóng vai bo mạch, `port/host` đóng vai chip; trang web có màn hình,
+  ba nút (chuột, chạm, phím 1 2 3), còi, console gõ lệnh shell, nút gây FATAL để xem nhật ký sự cố, nạp clip `.akv`.
+  Mở trang ở hai tab là hai bản firmware chơi Pong với nhau: byte RS485 đi giữa hai tab. Dựng lại bằng
+  `python port/web/build.py`; CI có thêm bước build này. `app_main()` tách ra `app_init()` để port không có vòng lặp
+  vô hạn gọi được `task_run_once()`.
+- **Máy hiện sóng mini** (màn hình Scope): đồ thị cuộn 120 điểm, tự co giãn. Số liệu vào bằng lệnh shell
+  `plot <số>` hoặc ghi thanh ghi Modbus 16. `tools/ak_plot.py` gửi sóng sin, nhiễu, hoặc số đọc từ stdin, qua UART
+  hay RS485. Đã thử cả hai đường trên kit.
+- Tổng kết phiên làm việc 06/10/2026: [ak-mcu-base/docs/tong-ket-2026-10-06.md](ak-mcu-base/docs/tong-ket-2026-10-06.md).
+- Unit test demo: 456 kiểm tra.
 
 ## ak-mcu-base v1.3.1 — 06/10/2026
 

@@ -51,7 +51,7 @@ add_executable(test_demo
 	${ROOT}/demo/scr_clock.c ${ROOT}/demo/scr_snake.c ${ROOT}/demo/scr_flappy.c ${ROOT}/demo/scr_system.c
 	${ROOT}/demo/scr_dino.c ${ROOT}/demo/scr_cube.c ${ROOT}/demo/scr_music.c ${ROOT}/demo/music.c
 	${ROOT}/demo/scr_maze.c ${ROOT}/demo/scr_video.c ${ROOT}/demo/video.c ${ROOT}/demo/scr_weather.c
-	${ROOT}/demo/scr_tetris.c ${ROOT}/demo/scr_breakout.c ${ROOT}/demo/scr_invaders.c ${ROOT}/demo/scr_saver.c ${ROOT}/demo/scr_pong.c
+	${ROOT}/demo/scr_tetris.c ${ROOT}/demo/scr_breakout.c ${ROOT}/demo/scr_invaders.c ${ROOT}/demo/scr_saver.c ${ROOT}/demo/scr_pong.c ${ROOT}/demo/scr_plot.c
 	${KERNEL_SRC} ${COMMON_SRC} ${SYS_SRC}
 	${HOST_DIR}/port_host.c
 )

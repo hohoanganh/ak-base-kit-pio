@@ -35,7 +35,7 @@ void hal_tick_hook(uint32_t elapsed_ms) {
 	task_exit_interrupt();
 }
 
-int app_main(void) {
+void app_init(void) {
 	fw_image_hdr_t hdr;
 	uint8_t crash_kind;
 
@@ -64,7 +64,10 @@ int app_main(void) {
 #if defined(APP_KIT_DEMO)
 	task_post_pure_msg(TASK_UI_ID, UI_SIG_INIT);
 #endif
+}
 
+int app_main(void) {
+	app_init();
 	return task_run();
 }
 

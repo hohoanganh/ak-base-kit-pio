@@ -1,5 +1,7 @@
 # Demo trên AK Base Kit: đồng hồ, game, 3D, nhạc, video, trạm thời tiết
 
+**Không có kit? [Chạy thử ngay trên trình duyệt](https://hohoanganh.github.io/ak-base-kit-pio/play/)**: chính firmware này, biên dịch sang WebAssembly.
+
 Bộ demo chạy trên nền `ak-mcu-base`, dùng màn hình OLED 128×64, ba nút bấm, còi, cảm biến SHT45 và flash SPI của kit.
 Nó vẫn giữ nguyên mọi thứ của app mẫu: shell, OTA qua UART, Modbus slave, nhật ký sự cố.
 
@@ -14,6 +16,8 @@ Nó vẫn giữ nguyên mọi thứ của app mẫu: shell, OTA qua UART, Modbus
 | ![Tetris tự chơi](demo-tetris.gif) | ![Breakout tự chơi](demo-breakout.gif) | ![Invaders tự chơi](demo-invaders.gif) |
 | **Pong qua RS485** | | |
 | ![Pong, kit tự chơi khi chưa có kit thứ hai](demo-pong.gif) | | |
+| **Máy hiện sóng** | | |
+| ![Máy hiện sóng vẽ sóng thử](demo-scope.gif) | | |
 | **Mê cung 3D** | **Trạm thời tiết** | **Video từ flash SPI** |
 | ![Mê cung tự đi](demo-maze.gif) | ![Nhiệt độ, độ ẩm](demo-weather.gif) | ![Clip thử](demo-video.gif) |
 
@@ -66,6 +70,7 @@ Ba nút dưới màn hình, từ trái sang phải: B1, B2, B3. Dòng cuối mà
 | Máy hát | Bài kế | Phát / dừng | — | Về menu |
 | Video | Tạm dừng / phát | Về đầu clip | — | Về menu |
 | Trạm thời tiết | Đồ thị nhiệt độ / độ ẩm | Đổi nhịp lấy mẫu | — | Về menu |
+| Máy hiện sóng | Giữ hình / chạy tiếp | Xoá | — | Về menu |
 | Màn hình chờ | Hiệu ứng kế | Life: gieo lại · sao: tốc độ · plasma: độ mịn | — | Về menu |
 | Hệ thống | Bíp | — | — | Về menu |
 
@@ -108,6 +113,37 @@ python tools/pong_peer.py --port COMx --host     # máy tính làm host, kit là
 ```
 
 Đã thử theo cách này ở cả hai vai. **Chưa thử với hai kit thật**, vì lúc viết chỉ có một kit.
+
+## Máy hiện sóng mini: vẽ số liệu gửi tới kit
+
+Mở **Scope** trên kit rồi gửi số, mỗi số là một điểm của đồ thị (số nguyên có dấu 16 bit):
+
+- qua console: gõ `plot 123`, hoặc để chương trình khác in ra các dòng `plot <số>`;
+- qua Modbus: ghi thanh ghi holding **16** của kit (địa chỉ 1, 9600 8N1).
+
+```bash
+python tools/ak_plot.py --port COMx sine                  # sóng sin qua UART console
+python tools/ak_plot.py --port COMy --rs485 noise         # qua RS485, bằng Modbus
+chuong_trinh_do | python tools/ak_plot.py --port COMx stdin   # mỗi dòng một số
+```
+
+Đồ thị giữ 120 điểm mới nhất và tự co giãn theo giá trị lớn nhất, nhỏ nhất đang hiện; góc phải thanh tiêu đề ghi số điểm
+nhận được mỗi giây. Đã thử trên kit: 20 điểm/giây qua UART, 10 điểm/giây qua Modbus, không mất điểm nào.
+Đây là công cụ xem xu hướng, không phải máy hiện sóng đo tín hiệu điện: kit không lấy mẫu ADC ở đây.
+
+## Chạy trên trình duyệt
+
+<https://hohoanganh.github.io/ak-base-kit-pio/play/> là chính firmware này (kernel, shell, Modbus slave, mọi màn hình) biên dịch sang WebAssembly.
+Khác với kit: nhiệt độ, độ ẩm là số giả; đồng hồ lấy giờ máy tính; flash nằm trong bộ nhớ. Mở trang ở hai tab rồi vào
+Pong RS485 ở cả hai là hai bản firmware chơi với nhau.
+
+Dựng lại (cần [Emscripten SDK](https://emscripten.org)):
+
+```bash
+python port/web/build.py            # ghi ra docs/play/ ở gốc repo
+```
+
+Mã nguồn nằm ở `port/web/`: `web_main.c` thay cho bo mạch (`demo/kit.h`), `index.html` là trang web, `clip.akv` là clip thử.
 
 ## Xem màn hình kit trên máy tính
 
@@ -181,7 +217,7 @@ Tetris 20 ms, Breakout 15 ms, Invaders 31 ms. Màn hình chờ đổi cả 8 tra
 Video đổi cả 8 trang thì mất 41–47 ms, tức sát ngân sách: clip 20 khung/giây có cảnh đổi toàn màn hình sẽ bị chậm lại
 một chút thay vì bỏ khung. 15 khung/giây là mức an toàn.
 
-Ý tưởng cho các demo tiếp theo (chạy trên trình duyệt, máy hiện sóng mini, đồng hồ kim…), kèm nguồn tham khảo:
+Ý tưởng cho các demo tiếp theo (đồng hồ kim, pomodoro, lưới 3D nhiều mặt…), kèm nguồn tham khảo:
 [y-tuong-demo.md](y-tuong-demo.md).
 
 ## Thêm một màn hình
