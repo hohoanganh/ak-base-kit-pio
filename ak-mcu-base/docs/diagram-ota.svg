@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 560" width="1280" height="560" role="img" aria-labelledby="t d">
+<title id="t">Một lần cập nhật firmware</title><desc id="d">Năm bước của một lần cập nhật: máy tính gửi ảnh, app ghi vào vùng chờ, app kiểm ảnh, app ghi yêu cầu cài rồi reset, bootloader cài và chạy app mới. Mất điện ở bước nào thiết bị cũng không hỏng.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8d9bab"/></marker></defs>
+<rect width="1280" height="560" fill="#0b0f14"/>
+<text x="48.0" y="64.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="30" font-weight="700" text-anchor="start">Một lần cập nhật firmware</text>
+<text x="48.0" y="96.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="400" text-anchor="start">Từ máy tính tới lúc app mới chạy · qua UART hoặc RS485</text>
+<rect x="48" y="150" width="216" height="130" rx="8" fill="#111821" stroke="#a8ff3e" stroke-width="1.5"/>
+<rect x="48" y="150" width="6" height="130" rx="3" fill="#a8ff3e"/>
+<text x="159.0" y="204.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">Máy tính gửi ảnh</text>
+<text x="159.0" y="225.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">ak_fw.py qua UART</text>
+<text x="159.0" y="244.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">ak_mb.py qua RS485</text>
+<circle cx="74" cy="150" r="17" fill="#a8ff3e"/>
+<text x="74.0" y="156.0" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" font-weight="700" text-anchor="middle">1</text>
+<path d="M264.0 215.0 L290.0 215.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="290" y="150" width="216" height="130" rx="8" fill="#111821" stroke="#c792ea" stroke-width="1.5"/>
+<rect x="290" y="150" width="6" height="130" rx="3" fill="#c792ea"/>
+<text x="401.0" y="204.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">App ghi vùng chờ</text>
+<text x="401.0" y="225.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">trên flash SPI</text>
+<text x="401.0" y="244.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">app vẫn chạy bình thường</text>
+<circle cx="316" cy="150" r="17" fill="#c792ea"/>
+<text x="316.0" y="156.0" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" font-weight="700" text-anchor="middle">2</text>
+<path d="M506.0 215.0 L532.0 215.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="532" y="150" width="216" height="130" rx="8" fill="#111821" stroke="#c792ea" stroke-width="1.5"/>
+<rect x="532" y="150" width="6" height="130" rx="3" fill="#c792ea"/>
+<text x="643.0" y="204.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">App kiểm ảnh</text>
+<text x="643.0" y="225.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">CRC32 · tên board</text>
+<text x="643.0" y="244.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">địa chỉ nạp · bảng vector</text>
+<circle cx="558" cy="150" r="17" fill="#c792ea"/>
+<text x="558.0" y="156.0" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" font-weight="700" text-anchor="middle">3</text>
+<path d="M748.0 215.0 L774.0 215.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="774" y="150" width="216" height="130" rx="8" fill="#111821" stroke="#facc15" stroke-width="1.5"/>
+<rect x="774" y="150" width="6" height="130" rx="3" fill="#facc15"/>
+<text x="885.0" y="204.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">Ghi yêu cầu, reset</text>
+<text x="885.0" y="225.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">hai ô có số thứ tự</text>
+<text x="885.0" y="244.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">trong EEPROM</text>
+<circle cx="800" cy="150" r="17" fill="#facc15"/>
+<text x="800.0" y="156.0" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" font-weight="700" text-anchor="middle">4</text>
+<path d="M990.0 215.0 L1016.0 215.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="1016" y="150" width="216" height="130" rx="8" fill="#111821" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="1016" y="150" width="6" height="130" rx="3" fill="#f5a623"/>
+<text x="1127.0" y="204.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">Bootloader cài</text>
+<text x="1127.0" y="225.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">xoá APP, chép, kiểm CRC</text>
+<text x="1127.0" y="244.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">rồi chạy app mới</text>
+<circle cx="1042" cy="150" r="17" fill="#f5a623"/>
+<text x="1042.0" y="156.0" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="17" font-weight="700" text-anchor="middle">5</text>
+<rect x="48" y="326" width="700" height="96" rx="8" fill="#111821" stroke="#223041"/>
+<text x="398.0" y="360.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" text-anchor="middle">Mất điện ở bước 1–3</text>
+<text x="398.0" y="386.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="middle">App cũ còn nguyên và chạy lại như chưa có gì.</text>
+<text x="398.0" y="408.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="middle">Vùng APP chưa hề bị đụng tới: gửi lại ảnh là xong.</text>
+<rect x="774" y="326" width="458" height="96" rx="8" fill="#111821" stroke="#223041"/>
+<text x="1003.0" y="360.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" text-anchor="middle">Mất điện ở bước 4–5</text>
+<text x="1003.0" y="386.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="middle">Bootloader thấy việc cài còn dở</text>
+<text x="1003.0" y="408.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="middle">và làm lại từ đầu, từ ảnh trong vùng chờ.</text>
+<path d="M398.0 280.0 L398.0 326.0" fill="none" stroke="#8d9bab" stroke-width="2" stroke-dasharray="6 5"/>
+<path d="M1003.0 280.0 L1003.0 326.0" fill="none" stroke="#8d9bab" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="48.0" y="470.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="start">Unit test giả lập cắt điện ở 1366 điểm trong bước 5: lần nào thiết bị cũng khởi động lại được.</text>
+<text x="48.0" y="496.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="start">Bootloader có watchdog 10 giây, nên một lần cài bị treo cũng tự reset và làm lại.</text>
+</svg>

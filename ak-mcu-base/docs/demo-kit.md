@@ -96,6 +96,8 @@ Ba nút dưới màn hình, từ trái sang phải: B1, B2, B3. Dòng cuối mà
 
 ## Pong qua RS485: hai kit, hoặc một kit với máy tính
 
+![Hai kit nối A với A, B với B; trong mỗi chu kỳ 50 ms kit chủ gửi 11 byte, kit khách trả lời 6 byte, còn lại đường dây im lặng](diagram-pong.svg)
+
 Nối A với A, B với B giữa hai kit, mở **Pong RS485** trên cả hai. Trong vòng một giây hai kit nhận ra nhau:
 góc phải thanh tiêu đề đổi từ `alone` sang `host` hoặc `guest`, và ván mới bắt đầu. Thanh đỡ của mình luôn ở bên trái.
 
@@ -168,6 +170,10 @@ Trong cửa sổ `live`: phím `1` `2` `3` là ba nút, `b` là giữ B3 (về m
 
 ## Nạp video vào kit
 
+Clip nằm ở nửa đầu của flash SPI, cạnh vùng chờ OTA:
+
+![Bản đồ bộ nhớ: flash trong, flash SPI, EEPROM](diagram-memory.svg)
+
 Clip nằm ở 512 KB đầu của flash SPI (phần còn lại dành cho OTA). Tool `tools/ak_video.py` chuyển và nạp:
 
 ```bash
@@ -217,6 +223,8 @@ display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 
 ## Demo này cho thấy gì ở base
 
+![Timer và nút bấm gửi message cho task giao diện; task gọi màn hình đang mở vẽ vào bộ đệm khung rồi chỉ gửi trang đã đổi ra OLED](diagram-frame-loop.svg)
+
 | Việc | Cách làm trên kernel AK |
 |---|---|
 | Vẽ 20 khung/giây | Timer một lần post `UI_SIG_FRAME` cho `task_ui`, đặt lại sau mỗi khung; không có vòng lặp chờ, khung nào chậm cũng không dồn message |
@@ -250,6 +258,8 @@ Mã màn hình không đụng tới chip (`demo/kit.h` là ranh giới), nên th
 
 ## Phần cứng (AK Base Kit 3I0)
 
+![Sơ đồ khối của AK Base Kit](../../docs/kit/block-diagram.svg)
+
 | Kit bản 3 | Sơ đồ mặt trên của bo |
 |---|---|
 | ![AK Base Kit bản 3](../../docs/kit/ak-base-kit-v3.jpg) | ![Sơ đồ mặt trên](../../docs/kit/board-view-top.png) |
@@ -264,6 +274,8 @@ với cấu hình trong `port/stm32l151`. Các chân ghi J13, J6 và UART3 ra c�
 ![Các cổng nối của AK Base Kit 3.0](../../docs/kit/connectors.svg)
 
 Sơ đồ cổng nối sinh bởi `tools/connectors_svg.py` theo trang Connectors và LCD của schematic.
+
+![Cây nguồn của bo](../../docs/kit/power-tree.svg)
 
 Hai điều schematic cho thấy mà firmware chưa theo:
 

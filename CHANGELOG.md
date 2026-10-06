@@ -15,6 +15,9 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 - **Sơ đồ các cổng nối** (`docs/kit/connectors.svg`, `tools/connectors_svg.py`): 10 cổng, từng chân một.
 - **SHT45 không nằm trên bo**: không có trong schematic và BOM bản 3.0. Tài liệu trước đây gọi nó là cảm biến của kit;
   đã sửa thành mô-đun cắm ngoài qua cổng I2C.
+- **Bảy sơ đồ khối mới** (`tools/diagrams_svg.py`): sơ đồ khối của bo, cây nguồn, các lớp phần mềm và ba nơi cùng mã
+  nguồn chạy, bản đồ bộ nhớ, năm bước cập nhật firmware, cách demo chạy trên kernel, đường dây và nhịp truyền của Pong.
+  Đặt vào README (hai ngôn ngữ), README của `ak-mcu-base`, tài liệu demo và tài liệu Modbus.
 - Ghi lại hai chỗ firmware chưa theo schematic (LED ngược pha, chân CSN của J6) trong tài liệu demo.
 
 ## ak-mcu-base v1.3.5 — 06/10/2026

@@ -41,6 +41,12 @@ cập nhật firmware qua UART và RS485. Dựng lại từ
 STM32L151CBT6, màn hình OLED 1,54 inch 128×64, ba nút bấm, còi, RTC có pin, flash SPI 1 MB, RS485, UART, I2C,
 USB Type-C có sẵn mạch USB–UART. Ảnh và sơ đồ bo: [AK Foundation](https://github.com/the-ak-foundation/ak-base-kit-stm32l151/tree/main/hardware/images) (giấy phép MIT).
 
+### Trên bo có gì
+
+<p align="center">
+  <img src="docs/kit/block-diagram.svg" alt="Sơ đồ khối của AK Base Kit: STM32L151CBT6 ở giữa; USB Type-C, CH340E, cổng nạp SWD và thạch anh bên trái; OLED, flash SPI, RTC, RS485 bên phải; các cổng mở rộng phía trên; nút bấm, còi, LED phía dưới" width="860">
+</p>
+
 ### Chân nào làm việc gì
 
 <p align="center">
@@ -58,6 +64,21 @@ Sơ đồ đã đối chiếu với schematic AK MCU KIT 3.0 và khớp với c�
 
 Theo schematic AK MCU KIT 3.0, sinh bởi [`tools/connectors_svg.py`](ak-mcu-base/tools/connectors_svg.py).
 Bảng chân dạng chữ: [demo-kit.md](ak-mcu-base/docs/demo-kit.md#phần-cứng-ak-base-kit-3i0).
+
+### Cây nguồn
+
+<p align="center">
+  <img src="docs/kit/power-tree.svg" alt="Cây nguồn của bo: USB Type-C 5V qua cầu chì và diode; LDO RT9013 tạo 3V3 cho vi điều khiển và các IC; mạch tăng áp TPS61040 tạo 12,5V cho OLED; còi và nguồn ra cổng nối dùng 5V" width="860">
+</p>
+
+## Phần mềm: một mã nguồn, ba nơi chạy
+
+<p align="center">
+  <img src="ak-mcu-base/docs/diagram-layers.svg" alt="Các lớp của ak-mcu-base: ứng dụng, kernel và dịch vụ, HAL; bên dưới là ba port: chip STM32L151, máy tính chạy unit test, trình duyệt chạy WebAssembly" width="860">
+</p>
+
+Sơ đồ bộ nhớ, luồng cập nhật firmware và cách demo chạy trên kernel: xem [ak-mcu-base/README.md](ak-mcu-base/README.md)
+và [tài liệu demo](ak-mcu-base/docs/demo-kit.md).
 
 ## Repo có hai base — chọn cái nào
 

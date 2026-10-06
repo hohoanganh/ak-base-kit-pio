@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 600" width="1280" height="600" role="img" aria-labelledby="t d">
+<title id="t">Demo chạy trên kernel như thế nào</title><desc id="d">Timer của kernel gửi message khung cho task giao diện 20 lần mỗi giây; task gọi màn hình đang mở để vẽ vào bộ đệm khung, rồi chỉ gửi những trang đã đổi ra màn hình. Nút bấm và các task khác cũng gửi message theo cách đó.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8d9bab"/></marker></defs>
+<rect width="1280" height="600" fill="#0b0f14"/>
+<text x="48.0" y="64.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="30" font-weight="700" text-anchor="start">Demo chạy trên kernel như thế nào</text>
+<text x="48.0" y="96.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="400" text-anchor="start">Không có vòng lặp chờ: mọi việc là một message tới một task</text>
+<rect x="48" y="120" width="230" height="80" rx="8" fill="#111821" stroke="#b9a36b" stroke-width="1.5"/>
+<rect x="48" y="120" width="6" height="80" rx="3" fill="#b9a36b"/>
+<text x="166.0" y="158.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" text-anchor="middle">Timer 50 ms</text>
+<text x="166.0" y="179.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">UI_SIG_FRAME</text>
+<path d="M278.0 160.0 L360.0 262.0" fill="none" stroke="#b9a36b" stroke-width="2" marker-end="url(#a)"/>
+<rect x="48" y="222" width="230" height="80" rx="8" fill="#111821" stroke="#facc15" stroke-width="1.5"/>
+<rect x="48" y="222" width="6" height="80" rx="3" fill="#facc15"/>
+<text x="166.0" y="260.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" text-anchor="middle">Polling nút bấm</text>
+<text x="166.0" y="281.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">chống dội → UI_SIG_KEY_x</text>
+<path d="M278.0 262.0 L360.0 262.0" fill="none" stroke="#facc15" stroke-width="2" marker-end="url(#a)"/>
+<rect x="48" y="324" width="230" height="80" rx="8" fill="#111821" stroke="#fb7185" stroke-width="1.5"/>
+<rect x="48" y="324" width="6" height="80" rx="3" fill="#fb7185"/>
+<text x="166.0" y="362.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" text-anchor="middle">Timer một lần</text>
+<text x="166.0" y="383.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">tắt bíp · nốt nhạc kế</text>
+<path d="M278.0 364.0 L360.0 262.0" fill="none" stroke="#fb7185" stroke-width="2" marker-end="url(#a)"/>
+<rect x="360" y="212" width="170" height="100" rx="8" fill="#111821" stroke="#3a4b5e" stroke-width="1.5"/>
+<text x="445.0" y="251.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">Hàng đợi</text>
+<text x="445.0" y="272.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">message của</text>
+<text x="445.0" y="291.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">task_ui</text>
+<path d="M530.0 262.0 L590.0 262.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="590" y="202" width="190" height="120" rx="8" fill="#111821" stroke="#a8ff3e" stroke-width="1.5"/>
+<rect x="590" y="202" width="6" height="120" rx="3" fill="#a8ff3e"/>
+<text x="688.0" y="251.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="20" font-weight="700" text-anchor="middle">task_ui</text>
+<text x="688.0" y="272.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">chạy hết một</text>
+<text x="688.0" y="291.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">message rồi nhường</text>
+<path d="M780.0 262.0 L840.0 262.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="840" y="212" width="180" height="100" rx="8" fill="#111821" stroke="#22d3ee" stroke-width="1.5"/>
+<rect x="840" y="212" width="6" height="100" rx="3" fill="#22d3ee"/>
+<text x="933.0" y="251.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">Màn hình đang mở</text>
+<text x="933.0" y="272.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">frame(): cập nhật</text>
+<text x="933.0" y="291.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">rồi vẽ lại</text>
+<path d="M1020.0 262.0 L1066.0 262.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="1066" y="212" width="166" height="100" rx="8" fill="#111821" stroke="#c792ea" stroke-width="1.5"/>
+<rect x="1066" y="212" width="6" height="100" rx="3" fill="#c792ea"/>
+<text x="1152.0" y="251.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">Bộ đệm khung</text>
+<text x="1152.0" y="272.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">1024 byte</text>
+<text x="1152.0" y="291.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">8 trang × 128</text>
+<path d="M1149.0 312.0 L1149.0 400.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="1010" y="400" width="222" height="84" rx="8" fill="#111821" stroke="#f472b6" stroke-width="1.5"/>
+<rect x="1010" y="400" width="6" height="84" rx="3" fill="#f472b6"/>
+<text x="1124.0" y="431.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" text-anchor="middle">gfx_flush</text>
+<text x="1124.0" y="452.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">chỉ gửi trang đã đổi</text>
+<text x="1124.0" y="471.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">≈ 5,5 ms mỗi trang</text>
+<path d="M1010.0 442.0 L940.0 442.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<rect x="760" y="400" width="180" height="84" rx="8" fill="#111821" stroke="#22d3ee" stroke-width="1.5"/>
+<rect x="760" y="400" width="6" height="84" rx="3" fill="#22d3ee"/>
+<text x="853.0" y="440.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" text-anchor="middle">OLED</text>
+<text x="853.0" y="461.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">I2C mềm</text>
+<rect x="360" y="400" width="340" height="84" rx="8" fill="#111821" stroke="#6aa6ff" stroke-width="1.5"/>
+<rect x="360" y="400" width="6" height="84" rx="3" fill="#6aa6ff"/>
+<text x="533.0" y="440.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="700" text-anchor="middle">Shell, OTA, Modbus</text>
+<text x="533.0" y="461.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">task ưu tiên cao hơn: chen vào giữa hai khung</text>
+<path d="M530.0 400.0 L640.0 322.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<text x="48.0" y="540.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="start">Một khung phải xong trong 50 ms. Khung nào chậm hơn thì khung kế chỉ bị lùi lại: timer khung được đặt lại sau mỗi lượt,</text>
+<text x="48.0" y="564.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="start">nên message không dồn vào pool.</text>
+</svg>

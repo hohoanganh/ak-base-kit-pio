@@ -56,6 +56,8 @@ baud hoặc đảo A/B; không có byte nào thì không có tín hiệu tới b
 
 ## Cập nhật firmware qua RS485
 
+![Năm bước của một lần cập nhật firmware](diagram-ota.svg)
+
 Khối thanh ghi `0xF000`, cùng địa chỉ và trình tự với base cũ, mang ảnh `.img` của base mới.
 
 | Thanh ghi | R/W | Ý nghĩa |

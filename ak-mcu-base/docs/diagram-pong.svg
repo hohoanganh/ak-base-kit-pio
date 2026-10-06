@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 600" width="1280" height="600" role="img" aria-labelledby="t d">
+<title id="t">Pong qua RS485: hai kit trên một đôi dây</title><desc id="d">Hai kit nối A với A, B với B. Kit chủ gửi khung trạng thái 11 byte mỗi 50 ms, kit khách trả lời ngay bằng khung 6 byte; phần còn lại của 50 ms đường dây im lặng.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8d9bab"/></marker></defs>
+<rect width="1280" height="600" fill="#0b0f14"/>
+<text x="48.0" y="64.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="30" font-weight="700" text-anchor="start">Pong qua RS485: hai kit trên một đôi dây</text>
+<text x="48.0" y="96.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="400" text-anchor="start">Ai nói lúc nào trên đường dây bán song công · 9600 8N1</text>
+<rect x="48" y="140" width="300" height="130" rx="8" fill="#111821" stroke="#a8ff3e" stroke-width="1.5"/>
+<rect x="48" y="140" width="6" height="130" rx="3" fill="#a8ff3e"/>
+<text x="201.0" y="194.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="700" text-anchor="middle">Kit A · chủ (host)</text>
+<text x="201.0" y="215.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">tính đường bóng</text>
+<text x="201.0" y="234.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">gửi trạng thái 20 lần/giây</text>
+<rect x="932" y="140" width="300" height="130" rx="8" fill="#111821" stroke="#6aa6ff" stroke-width="1.5"/>
+<rect x="932" y="140" width="6" height="130" rx="3" fill="#6aa6ff"/>
+<text x="1085.0" y="194.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="700" text-anchor="middle">Kit B · khách (guest)</text>
+<text x="1085.0" y="215.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">vẽ sân lật ngược</text>
+<text x="1085.0" y="234.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">trả lời vị trí thanh đỡ</text>
+<path d="M348.0 175.0 L932.0 175.0" fill="none" stroke="#e6edf3" stroke-width="2"/>
+<rect x="608.6" y="167.0" width="62.8" height="19" rx="3" fill="#0b0f14"/>
+<text x="640.0" y="180.0" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">A nối A</text>
+<path d="M348.0 205.0 L932.0 205.0" fill="none" stroke="#e6edf3" stroke-width="2"/>
+<rect x="608.6" y="197.0" width="62.8" height="19" rx="3" fill="#0b0f14"/>
+<text x="640.0" y="210.0" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">B nối B</text>
+<path d="M348.0 235.0 L932.0 235.0" fill="none" stroke="#8d9bab" stroke-width="2" stroke-dasharray="6 5"/>
+<rect x="593.5" y="227.0" width="92.9" height="19" rx="3" fill="#0b0f14"/>
+<text x="640.0" y="240.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">GND nối GND</text>
+<text x="640.0" y="300.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">cổng J10 của mỗi kit · đổi chỗ A và B thì byte nhận về bị đảo bit</text>
+<text x="48.0" y="356.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="start">Một chu kỳ 50 ms</text>
+<text x="48.0" y="408.0" fill="#a8ff3e" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="start">Kit A gửi</text>
+<text x="48.0" y="468.0" fill="#6aa6ff" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="start">Kit B gửi</text>
+<rect x="150.0" y="380" width="218.5" height="40" rx="4" fill="#a8ff3e"/>
+<text x="259.2" y="406.0" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="15" font-weight="700" text-anchor="middle">S · 11 byte</text>
+<rect x="387.5" y="440" width="119.7" height="40" rx="4" fill="#6aa6ff"/>
+<text x="447.4" y="466.0" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="15" font-weight="700" text-anchor="middle">P · 6 byte</text>
+<rect x="520.5" y="380" width="579.5" height="100" rx="4" fill="none" stroke="#223041" stroke-dasharray="6 5"/>
+<text x="805.5" y="436.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="middle">đường dây im lặng: khoảng 31 ms</text>
+<path d="M150.0 500.0 L1120.0 500.0" fill="none" stroke="#8d9bab" stroke-width="2" marker-end="url(#a)"/>
+<path d="M150.0 494.0 L150.0 506.0" fill="none" stroke="#8d9bab" stroke-width="2"/>
+<text x="150.0" y="526.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">0 ms</text>
+<path d="M340.0 494.0 L340.0 506.0" fill="none" stroke="#8d9bab" stroke-width="2"/>
+<text x="340.0" y="526.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">10 ms</text>
+<path d="M530.0 494.0 L530.0 506.0" fill="none" stroke="#8d9bab" stroke-width="2"/>
+<text x="530.0" y="526.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">20 ms</text>
+<path d="M720.0 494.0 L720.0 506.0" fill="none" stroke="#8d9bab" stroke-width="2"/>
+<text x="720.0" y="526.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">30 ms</text>
+<path d="M910.0 494.0 L910.0 506.0" fill="none" stroke="#8d9bab" stroke-width="2"/>
+<text x="910.0" y="526.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">40 ms</text>
+<path d="M1100.0 494.0 L1100.0 506.0" fill="none" stroke="#8d9bab" stroke-width="2"/>
+<text x="1100.0" y="526.0" fill="#8d9bab" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">50 ms</text>
+<text x="48.0" y="566.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="400" text-anchor="start">Khách chỉ nói ngay sau khi chủ nói xong, nên hai bên không bao giờ phát cùng lúc. Một byte ở 9600 baud dài khoảng 1 ms.</text>
+</svg>

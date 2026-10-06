@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800" role="img" aria-labelledby="t d">
+<title id="t">AK Base Kit: trên bo có gì</title><desc id="d">Sơ đồ khối của bo: vi điều khiển STM32L151CBT6 ở giữa, quanh nó là nguồn, mạch USB-UART, cổng nạp, màn hình OLED, flash SPI, RTC, RS485, ba nút bấm, còi, LED và các cổng mở rộng.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8d9bab"/></marker></defs>
+<rect width="1280" height="800" fill="#0b0f14"/>
+<text x="48.0" y="64.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="30" font-weight="700" text-anchor="start">AK Base Kit: trên bo có gì</text>
+<text x="48.0" y="96.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="400" text-anchor="start">Mỗi khối nối với vi điều khiển bằng đường nào · theo schematic AK MCU KIT 3.0</text>
+<rect x="500" y="250" width="280" height="330" rx="12" fill="#16202b" stroke="#a8ff3e" stroke-width="2"/>
+<text x="640.0" y="389.0" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="24" font-weight="700" text-anchor="middle">STM32L151CBT6</text>
+<text x="640.0" y="417.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="400" text-anchor="middle">Cortex-M3 · 32 MHz</text>
+<text x="640.0" y="441.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="400" text-anchor="middle">flash 128K · RAM 16K</text>
+<text x="640.0" y="465.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="400" text-anchor="middle">EEPROM 4K</text>
+<rect x="60" y="251" width="260" height="68" rx="8" fill="#111821" stroke="#7c8a9a" stroke-width="1.5"/>
+<rect x="60" y="251" width="6" height="68" rx="3" fill="#7c8a9a"/>
+<text x="193.0" y="283.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">USB Type-C</text>
+<text x="193.0" y="304.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">5V vào, dữ liệu USB</text>
+<rect x="60" y="351" width="260" height="68" rx="8" fill="#111821" stroke="#a8ff3e" stroke-width="1.5"/>
+<rect x="60" y="351" width="6" height="68" rx="3" fill="#a8ff3e"/>
+<text x="193.0" y="383.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">CH340E</text>
+<text x="193.0" y="404.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">USB ↔ UART</text>
+<path d="M320.0 385.0 L500.0 385.0" fill="none" stroke="#a8ff3e" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="348.4" y="364.0" width="123.1" height="19" rx="3" fill="#0b0f14"/>
+<text x="410.0" y="377.0" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">UART1  PA9 PA10</text>
+<rect x="60" y="451" width="260" height="68" rx="8" fill="#111821" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="60" y="451" width="6" height="68" rx="3" fill="#f5a623"/>
+<text x="193.0" y="483.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">Cổng nạp J14, J15</text>
+<text x="193.0" y="504.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">SWD cho ST-Link</text>
+<path d="M320.0 485.0 L500.0 485.0" fill="none" stroke="#f5a623" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="352.2" y="464.0" width="115.6" height="19" rx="3" fill="#0b0f14"/>
+<text x="410.0" y="477.0" fill="#f5a623" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">SWD  PA13 PA14</text>
+<rect x="60" y="551" width="260" height="68" rx="8" fill="#111821" stroke="#b9a36b" stroke-width="1.5"/>
+<rect x="60" y="551" width="6" height="68" rx="3" fill="#b9a36b"/>
+<text x="193.0" y="591.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">Thạch anh 8 MHz</text>
+<path d="M320.0 585.0 L500.0 585.0" fill="none" stroke="#b9a36b" stroke-width="2" marker-end="url(#a)"/>
+<path d="M190.0 319.0 L190.0 351.0" fill="none" stroke="#a8ff3e" stroke-width="2" marker-end="url(#a)"/>
+<rect x="191.0" y="327.0" width="47.7" height="19" rx="3" fill="#0b0f14"/>
+<text x="196.0" y="340.0" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="start">D+ D−</text>
+<rect x="960" y="244" width="260" height="72" rx="8" fill="#111821" stroke="#22d3ee" stroke-width="1.5"/>
+<rect x="960" y="244" width="6" height="72" rx="3" fill="#22d3ee"/>
+<text x="1093.0" y="278.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">OLED 1,54" SSD1309</text>
+<text x="1093.0" y="299.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">128×64 · I2C 0x3C</text>
+<path d="M780.0 280.0 L960.0 280.0" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="782.1" y="259.0" width="175.9" height="19" rx="3" fill="#0b0f14"/>
+<text x="870.0" y="272.0" fill="#22d3ee" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">I2C mềm PB13 PB12 PA15</text>
+<rect x="960" y="336" width="260" height="72" rx="8" fill="#111821" stroke="#c792ea" stroke-width="1.5"/>
+<rect x="960" y="336" width="6" height="72" rx="3" fill="#c792ea"/>
+<text x="1093.0" y="370.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">Flash SPI W25Q80</text>
+<text x="1093.0" y="391.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">1 MB</text>
+<path d="M780.0 372.0 L960.0 372.0" fill="none" stroke="#c792ea" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="785.8" y="351.0" width="168.3" height="19" rx="3" fill="#0b0f14"/>
+<text x="870.0" y="364.0" fill="#c792ea" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">SPI1 PA5 PA6 PA7 PB14</text>
+<rect x="960" y="428" width="260" height="72" rx="8" fill="#111821" stroke="#f472b6" stroke-width="1.5"/>
+<rect x="960" y="428" width="6" height="72" rx="3" fill="#f472b6"/>
+<text x="1093.0" y="462.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">RTC PCF85063</text>
+<text x="1093.0" y="483.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">0x51 · pin CR1220</text>
+<path d="M780.0 464.0 L960.0 464.0" fill="none" stroke="#f472b6" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="816.0" y="443.0" width="108.0" height="19" rx="3" fill="#0b0f14"/>
+<text x="870.0" y="456.0" fill="#f472b6" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">I2C1  PB6 PB7</text>
+<rect x="960" y="520" width="260" height="72" rx="8" fill="#111821" stroke="#6aa6ff" stroke-width="1.5"/>
+<rect x="960" y="520" width="6" height="72" rx="3" fill="#6aa6ff"/>
+<text x="1093.0" y="554.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="700" text-anchor="middle">RS485 SP3485</text>
+<text x="1093.0" y="575.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">ra J10 (A, B)</text>
+<path d="M780.0 556.0 L960.0 556.0" fill="none" stroke="#6aa6ff" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="778.3" y="535.0" width="183.4" height="19" rx="3" fill="#0b0f14"/>
+<text x="870.0" y="548.0" fill="#6aa6ff" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">UART2 PA2 PA3 · DIR PA1</text>
+<rect x="140" y="120" width="300" height="82" rx="8" fill="#111821" stroke="#9fb3c8" stroke-width="1.5"/>
+<rect x="140" y="120" width="6" height="82" rx="3" fill="#9fb3c8"/>
+<text x="293.0" y="150.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">J13 · chân vi điều khiển</text>
+<text x="293.0" y="171.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">PA0 PA11 PA12 PA15 PB5 PB9</text>
+<text x="293.0" y="190.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">PB15 PC14 PC15</text>
+<path d="M290.0 202.0 L290.0 226.0 L560.0 226.0 L560.0 250.0" fill="none" stroke="#9fb3c8" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="490" y="120" width="300" height="82" rx="8" fill="#111821" stroke="#9fb3c8" stroke-width="1.5"/>
+<rect x="490" y="120" width="6" height="82" rx="3" fill="#9fb3c8"/>
+<text x="643.0" y="150.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">J6 · SPI mở rộng</text>
+<text x="643.0" y="171.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">SPI1 + PA4 PA8 PB1</text>
+<text x="643.0" y="190.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">cho nRF24L01+, W5500</text>
+<path d="M640.0 202.0 L640.0 226.0 L640.0 226.0 L640.0 250.0" fill="none" stroke="#9fb3c8" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="840" y="120" width="300" height="82" rx="8" fill="#111821" stroke="#9fb3c8" stroke-width="1.5"/>
+<rect x="840" y="120" width="6" height="82" rx="3" fill="#9fb3c8"/>
+<text x="993.0" y="150.0" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">J4 J7 J9 · UART3, I2C1</text>
+<text x="993.0" y="171.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">PB10 PB11 · PB6 PB7</text>
+<text x="993.0" y="190.0" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">chuẩn Qwiic</text>
+<path d="M990.0 202.0 L990.0 226.0 L720.0 226.0 L720.0 250.0" fill="none" stroke="#9fb3c8" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+<rect x="135" y="690" width="230" height="70" rx="8" fill="#111821" stroke="#facc15" stroke-width="1.5"/>
+<rect x="135" y="690" width="6" height="70" rx="3" fill="#facc15"/>
+<text x="253.0" y="723.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">Ba nút bấm</text>
+<text x="253.0" y="744.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">PB3 · PC13 · PB4</text>
+<path d="M250.0 690.0 L250.0 640.0 L540.0 640.0 L540.0 580.0" fill="none" stroke="#facc15" stroke-width="2" marker-end="url(#a)"/>
+<rect x="375" y="690" width="230" height="70" rx="8" fill="#111821" stroke="#7c8a9a" stroke-width="1.5"/>
+<rect x="375" y="690" width="6" height="70" rx="3" fill="#7c8a9a"/>
+<text x="493.0" y="723.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">Nút RESET, BOOT0</text>
+<text x="493.0" y="744.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">NRST · BOOT0</text>
+<path d="M490.0 690.0 L490.0 640.0 L600.0 640.0 L600.0 580.0" fill="none" stroke="#7c8a9a" stroke-width="2" marker-end="url(#a)"/>
+<rect x="675" y="690" width="230" height="70" rx="8" fill="#111821" stroke="#fb7185" stroke-width="1.5"/>
+<rect x="675" y="690" width="6" height="70" rx="3" fill="#fb7185"/>
+<text x="793.0" y="723.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">Còi</text>
+<text x="793.0" y="744.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">PB0 · PWM · qua transistor, 5V</text>
+<path d="M790.0 690.0 L790.0 640.0 L680.0 640.0 L680.0 580.0" fill="none" stroke="#fb7185" stroke-width="2" marker-end="url(#a)"/>
+<rect x="925" y="690" width="230" height="70" rx="8" fill="#111821" stroke="#fb7185" stroke-width="1.5"/>
+<rect x="925" y="690" width="6" height="70" rx="3" fill="#fb7185"/>
+<text x="1043.0" y="723.5" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="700" text-anchor="middle">LED đỏ</text>
+<text x="1043.0" y="744.5" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" text-anchor="middle">PB8 · mức thấp = sáng</text>
+<path d="M1040.0 690.0 L1040.0 640.0 L740.0 640.0 L740.0 580.0" fill="none" stroke="#fb7185" stroke-width="2" marker-end="url(#a)"/>
+</svg>

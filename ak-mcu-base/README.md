@@ -23,6 +23,8 @@ không cần board.
 
 ## Kiến trúc
 
+![Các lớp của ak-mcu-base và ba nơi cùng một mã nguồn chạy](docs/diagram-layers.svg)
+
 ```mermaid
 flowchart TD
     APP["app/ — task_system · task_console (shell) · task_fw (OTA)"]
@@ -57,6 +59,8 @@ ak-mcu-base/
 ```
 
 ## Bản đồ flash (STM32L151CB, 128K)
+
+![Bản đồ bộ nhớ: flash trong, flash SPI, EEPROM](docs/diagram-memory.svg)
 
 Mặc định (`AK_STAGING=external`): ảnh OTA chờ cài nằm trên **flash SPI ngoài W25Qxx** của board,
 nên APP dùng được toàn bộ phần flash trong còn lại.
@@ -122,6 +126,8 @@ Thử trước trên máy tính: `python3 tools/ak_fw.py --sim build/host/ak_sim
 (tạo ảnh giả: `python3 tools/mkimage.py synthetic -o demo.img --version 1.2.0`).
 
 ## Bootloader & OTA hoạt động thế nào
+
+![Năm bước của một lần cập nhật firmware, và điều gì xảy ra khi mất điện ở từng bước](docs/diagram-ota.svg)
 
 - **App nhận ảnh** (qua `fw_proto` trên console, hoặc kênh khác gọi `fw_update_*()`) và ghi vào
   STAGING. Trang flash được xóa dần khi ghi tới, nên không chặn task lâu. Xong thì verify toàn bộ:
