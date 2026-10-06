@@ -1,41 +1,39 @@
-# ak-base-kit-pio — Firmware Source Base (STM32L151CBT6)
+# ak-base-kit-pio — Firmware source base cho STM32L151
 
-Source base phát triển firmware STM32L151, dựng lại từ
-[**ak-base-kit-stm32l151**](https://github.com/the-ak-foundation/ak-base-kit-stm32l151) (bản gốc build
-bằng Makefile) theo mô hình PlatformIO đã chạy ổn định trong sản phẩm thực tế. Bare-metal, không dùng
-framework PlatformIO — SPL + CMSIS + startup + linker script nằm sẵn trong `sources/`.
+Nền firmware bare-metal cho **STM32L151CBT6** (AK Base Kit): kernel AK kiểu Active Object không cần RTOS,
+bootloader và cập nhật firmware có sẵn. Dựng lại từ
+[ak-base-kit-stm32l151](https://github.com/the-ak-foundation/ak-base-kit-stm32l151) của AK Foundation.
 
-**Vì sao dùng base này:** kernel AK Active Object không cần RTOS (RAM footprint nhỏ, task giao tiếp
-qua message, run-to-completion); bootloader + cập nhật firmware qua UART/external flash có sẵn; module
-bật/tắt bằng cờ biên dịch; kiến trúc phân lớp dễ port; build 1 lệnh, release tự động có version.
-Chi tiết: [docs/huong-dan-su-dung-source-base.md](docs/huong-dan-su-dung-source-base.md).
+Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/>
 
-**Trang giới thiệu dự án:** <https://hohoanganh.github.io/ak-base-kit-pio/> (nguồn: [`docs/index.html`](docs/index.html)).
+## Repo có hai base — chọn cái nào
 
-**Phiên bản mới nhất: `v1.3.0`** — lịch sử thay đổi: [CHANGELOG.md](CHANGELOG.md) · lỗi đã biết và
-bản sửa: [docs/known-bugs.md](docs/known-bugs.md).
+| | [`sources/`](sources/) — base chính | [`ak-mcu-base/`](ak-mcu-base/README.md) — base mới |
+|---|---|---|
+| Phiên bản | **v1.3.0**, bootloader 0.0.3 | **v1.1.0**, bootloader 1.1.0 |
+| Dùng khi | Cần Modbus, RS485, driver có sẵn (OLED, nút, còi, EEPROM…) | Cần OTA an toàn khi mất điện, có unit test, dễ chuyển sang chip khác |
+| Mức hoàn thiện | Đầy đủ, đã dùng cho sản phẩm | Lõi kernel + bootloader + OTA qua UART; driver tự viết thêm |
+| Build | PlatformIO | CMake hoặc `arm-none-eabi-gcc` (PlatformIO chưa kiểm) |
+| Cập nhật firmware | UART, RS485 (Modbus), flash SPI ngoài | UART; ảnh có CRC32, tên board, chống cài dở |
+| Kiểm thử trên máy tính | Lớp Modbus | Kernel, bootloader, OTA đầu-cuối trên giả lập |
 
-**Mới từ v1.2.0 – v1.3.0:** Modbus chuyển sang nanoMODBUS (MIT, có cả master lẫn slave) và
-**cập nhật firmware qua RS485** không cần ST-Link — tổng hợp tính năng, cách dùng và kết quả kiểm
-trên board: [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
+So sánh chi tiết, kèm những gì base mới còn thiếu: [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
 
-**Đang thử nghiệm — [`ak-mcu-base/`](ak-mcu-base/README.md):** source base đa nền tảng, độc lập
-với code trong `sources/`. Gồm AK kernel tách khỏi chip qua lớp HAL, bootloader + OTA an toàn khi
-mất điện, port STM32L151 và port host (unit test + giả lập cả hệ thống trên máy tính). Chưa chạy
-trên board thật.
+Phần còn lại của trang này nói về **base chính `sources/`**. Base mới có README riêng.
 
-## Kiến trúc & bộ nhớ
+## Bộ nhớ và kiến trúc
 
 ```mermaid
-flowchart TD
-    subgraph FLASH["FLASH 128K"]
-        B["BOOTLOADER — 8K @ 0x08000000"]
-        S["BSF share data — 4K @ 0x08002000"]
-        A["APPLICATION — 116K @ 0x08003000"]
+flowchart LR
+    subgraph FLASH["Flash trong 128K"]
+        B["BOOT<br>8K @ 0x08000000"]
+        S["BSF<br>4K @ 0x08002000"]
+        A["APP<br>116K @ 0x08003000"]
     end
-    B -- "app hợp lệ, không có lệnh update" --> A
-    B -- "có FW mới ở external flash" --> U["copy → verify checksum → jump app"]
-    U --> A
+    X["Flash SPI ngoài<br>ảnh firmware mới"]
+    B -- "app hợp lệ" --> A
+    X -- "có lệnh update:<br>chép, kiểm checksum" --> A
+    S -. "lệnh boot ↔ app" .- B
 ```
 
 ```
@@ -56,188 +54,70 @@ flowchart TD
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-Luồng chạy application:
-
-```mermaid
-flowchart LR
-    R["reset_handler()<br>clock · tick 1ms · console<br>C++ constructors"] --> M["main_app()<br>task_create · HW/SW init<br>watchdog · Modbus"] --> T["task_run() ∞<br>task_sheduler() → task_polling_run()"]
-```
-
-Sơ đồ đầy đủ (bootloader, kernel AK, timer, bảng ưu tiên task):
+Luồng chạy đầy đủ (bootloader, kernel, timer, bảng ưu tiên task):
 [docs/ak-base-kit-pio-luong-hoat-dong.md](docs/ak-base-kit-pio-luong-hoat-dong.md).
 
-## Cấu trúc
+## Bắt đầu nhanh
+
+Cần PlatformIO và ST-Link. Board trắng phải nạp cả boot lẫn app.
+
+```bash
+pio run -e boot -t upload      # 1. bootloader
+pio run -e app  -t upload      # 2. app (Modbus master, mặc định)
+pio device monitor             # console UART1, 115200
+```
+
+Biến thể Modbus slave để cập nhật qua RS485: `pio run -e app_mbslave`.
+File `.bin` thành phẩm nằm ở `release/`; `.bin` và `.elf` của mọi bản tải ở
+[Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
+
+## Tôi muốn…
+
+| Việc | Đọc |
+|---|---|
+| Tạo dự án mới từ base này | [docs/bat-dau-du-an-moi.md](docs/bat-dau-du-an-moi.md) — 7 bước, build, phát hành, các bẫy |
+| Hiểu kernel AK, viết task, port chip khác | [docs/huong-dan-su-dung-source-base.md](docs/huong-dan-su-dung-source-base.md) |
+| Cập nhật firmware qua RS485, không cần ST-Link | [docs/ota-rs485.md](docs/ota-rs485.md) — bảng thanh ghi, lệnh, tool có giao diện |
+| Biết bản nào sửa lỗi gì | [CHANGELOG.md](CHANGELOG.md) · [docs/known-bugs.md](docs/known-bugs.md) |
+| Xem tính năng Modbus mới (v1.2 – v1.3) | [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md) |
+| Dùng base mới `ak-mcu-base` | [ak-mcu-base/README.md](ak-mcu-base/README.md) |
+| Cho AI assistant tra tài liệu kernel AK | [docs/ak-mcp-docs-server.md](docs/ak-mcp-docs-server.md) — repo có sẵn [.mcp.json](.mcp.json) |
+
+## Ba điều dễ dính nhất
+
+1. **Dự án mới phải clone theo tag** (`git clone --depth 1 --branch v1.3.0 …`) và ghi version base vào README
+   của dự án. Chép tay từ một dự án khác là mất dấu các bản sửa lỗi.
+2. **`pio run` ghi đè file cùng version trong `release/`.** Build thử thì tăng version, hoặc
+   `git checkout -- release` sau khi build.
+3. **Board mang bootloader cũ hơn 0.0.2** phải nạp thêm BSF (`pio run -e app -t bsf`). Thiếu bước này board
+   đứng ở vòng chờ nháy LED, nhìn giống hệt board treo.
+
+Các ghi chú còn lại (cờ link bắt buộc, `build_dir` ngoài OneDrive, Zigbee, test host…):
+[docs/bat-dau-du-an-moi.md](docs/bat-dau-du-an-moi.md#3-ghi-chú-quan-trọng).
+
+## Cấu trúc thư mục
 
 ```
 ak-base-kit-pio/
-├── platformio.ini            # cấu hình build: env app + env boot, module bật/tắt
-├── boards/genericSTM32L151CB_bare.json
-├── pio_build_flags.py        # cờ riêng C/C++ + cờ link (nostartfiles, nano.specs...)
-├── pio_copy_release.py       # tự copy .bin/.elf về release/<env>/ sau khi build
-├── pio_bsf.py                # target `-t bsf`: nạp BSF mẫu (chỉ cần với bootloader < 0.0.2)
-├── .mcp.json                 # MCP server tra tài liệu kernel AK cho AI assistant
-├── CHANGELOG.md              # lịch sử phiên bản
-├── release/                  # firmware thành phẩm (tự sinh, kèm version)
-├── docs/                     # luồng hoạt động · hướng dẫn · lỗi đã biết · MCP
-└── sources/
-    ├── application/          # firmware ứng dụng (AK kernel, task, driver, libs)
-    │   ├── ak/               # kernel AK (fsm, tsm, task, timer, message)
-    │   ├── app/              # task ứng dụng + screens  ← code dự án viết ở đây
-    │   ├── common/           # utils, xprintf, cmd_line, container, view
-    │   ├── driver/           # button, buzzer, eeprom, flash, gpio, led, OLED
-    │   ├── libraries/        # ArduinoJson, nlohmann, QRCode
-    │   ├── networks/         # net/link (UART link), nanoMODBUS (master/slave RTU)
-    │   ├── platform/stm32l/  # io_cfg, sys_cfg, startup, SPL + CMSIS, ak.ld
-    │   └── sys/
-    └── boot/                 # bootloader 8K (cấu trúc tương tự, rút gọn)
+├── sources/
+│   ├── application/      firmware ứng dụng
+│   │   ├── ak/           kernel AK
+│   │   ├── app/          task của dự án  ← viết code ở đây
+│   │   ├── driver/       button, buzzer, eeprom, flash, led, OLED
+│   │   ├── networks/     net/link UART, nanoMODBUS
+│   │   └── platform/     io_cfg, sys_cfg, startup, SPL + CMSIS, ak.ld
+│   └── boot/             bootloader 8K
+├── ak-mcu-base/          base mới, độc lập với sources/
+├── docs/                 tài liệu
+├── release/              firmware thành phẩm (.bin)
+├── tools/                tool nạp qua RS485
+├── tests_host/           test lớp Modbus trên máy tính
+└── platformio.ini        cấu hình build: env app, app_mbslave, boot
 ```
-
-## Build & nạp
-
-```bash
-pio run -e app                 # build firmware ứng dụng (Modbus master, mặc định)
-pio run -e app_mbslave         # build biến thể Modbus SLAVE (OTA qua RS485)
-pio run -e boot                # build bootloader
-pio run -e boot -t upload      # 1. nạp boot (board trắng phải nạp cả 2)
-pio run -e app  -t upload      # 2. nạp app (ST-Link)
-pio run -e app  -t bsf         # 3. nạp BSF mẫu — chỉ cần với bootloader cũ (< 0.0.2)
-pio device monitor             # console UART1 115200
-```
-
-Thành phẩm tự copy về `release/app/` và `release/boot/`, tên kèm version từ `-DAPP_VERSION`. Git chỉ
-giữ file **`.bin`**; file `.elf` (~1,1 MB mỗi bản, cần khi debug firmware đã phát hành) không đưa vào git
-để repo khỏi phình theo từng bản. **`.bin` và `.elf` của mọi bản** (app + bootloader) tải ở trang
-[Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases). Phát hành bản mới thì đính kèm 4 file
-đó vào Release của tag:
-
-```bash
-gh release create vX.Y.Z --verify-tag --notes-file notes.md release/app/*vX.Y.Z* release/boot/*vX.Y.Z*
-```
-Mỗi env có giới hạn flash riêng (`board_upload.maximum_size`: app 116K, boot 8K) — vượt là build báo
-lỗi ngay, không để bootloader lấn sang BSF.
-
-**Bước 3 không còn bắt buộc từ bootloader 0.0.2 (base v1.1.0).** Bootloader tự kiểm bảng vector của
-app; BSF (`0x08002000`) chưa ai ghi hoặc bị xoá giữa chừng thì nó tự vá rồi chạy app. Board còn mang
-bootloader cũ thì vẫn phải chạy `-t bsf` — thiếu bước này boot rơi vào nhánh "unexpected status" và
-đứng ở `while(1)` nhấp nháy LED, nhìn từ ngoài giống hệt board treo. Chi tiết:
-[docs/known-bugs.md](docs/known-bugs.md) #3.
-
-## Cập nhật firmware qua RS485
-
-Env `[env:app_mbslave]` (Modbus SLAVE trên USART2) nhận firmware mới qua RS485 và tự nạp vào
-vùng App — không cần ST-Link. State machine nằm ở khối thanh ghi holding `0xF000`, bảng thanh ghi
-+ luật đầy đủ ở
-[docs/superpowers/specs/2026-09-25-nanomodbus-va-ota-modbus-design.md](docs/superpowers/specs/2026-09-25-nanomodbus-va-ota-modbus-design.md):
-
-| Thanh ghi | Đọc/ghi | Ý nghĩa |
-|---|---|---|
-| `0xF000` | W | CMD: 1 = BEGIN, 2 = COMMIT, 3 = ABORT |
-| `0xF001` | R | STATUS: 0 idle, 1 đang nhận, 2 đã commit (sắp reset), 0x8001/0x8002/0x8003/0x8004 = lỗi header/offset/checksum/quá cỡ |
-| `0xF002–0xF003` | R/W | `bin_len` (hi, lo) — **phải là bội số của 4** |
-| `0xF004` | R/W | checksum |
-| `0xF005–0xF006` | R/W | psk (hi, lo) — phải khớp `FIRMWARE_PSK` |
-| `0xF007–0xF008` | R | số byte đã nhận (hi, lo) |
-| `0xF010–0xF011` | W | offset khối (hi, lo) |
-| `0xF012–0xF051` | W | dữ liệu khối, tối đa 64 thanh ghi = 128 byte |
-
-Ghi chú khi dùng:
-
-- File `.bin` được **đệm thêm byte `0xFF` cho tròn bội số 4** ở phía công cụ PC trước khi truyền —
-  slave không tự làm tròn.
-- Đứt kết nối giữa chừng (trước khi CMD = COMMIT thành công): app cũ vẫn chạy bình thường, internal
-  flash chưa bị đụng tới — cứ BEGIN lại từ đầu.
-- Sau khi COMMIT thành công, state machine **khoá lại** (chỉ còn STATUS đọc được) và thiết bị tự
-  reset sau ~200 ms để bootloader nạp bản mới.
-- Phải gọi đích danh **địa chỉ slave** (unit_id) của từng board — **broadcast (unit_id 0) bị chặn
-  hoàn toàn**, không có phản hồi nên không dùng để OTA được.
-- 🔴 **Chỉ được gửi ảnh build `app_mbslave`**, đúng mẫu tên file
-  `release/app_mbslave/ak_base_kit_app_mbslave_v<x.y.z>.bin`. Gửi nhầm ảnh `env:app` (master) vẫn
-  qua được kiểm tra vector bảng (cả hai env dùng chung layout app) nhưng ảnh đó **không có task
-  Modbus slave** — nạp xong board mất luôn đường OTA qua RS485, phải quay lại nạp bằng ST-Link.
-- Công cụ PC (`epcb_applib.ota`) tự kiểm anh là vector bảng app hợp lệ trước khi gửi (từ chối
-  `.elf`/`.hex`/ảnh bootloader) và tự xác nhận phiên bản qua Modbus sau khi thiết bị khởi động lại:
-
-  ```bash
-  python -m epcb_applib.ota COMx release/app_mbslave/ak_base_kit_app_mbslave_v1.3.0.bin --slave 1 --baud 9600
-  ```
-
-### Tool nạp bằng giao diện: EPCB Modbus Flash
-
-Không cần cài Python — tải một file exe chạy thẳng trên Windows 10/11:
-[**tools/EPCB_Modbus_Flash_v1.0.0.exe**](tools/EPCB_Modbus_Flash_v1.0.0.exe) (≈ 13 MB).
-
-1. Cắm bộ chuyển USB-RS485 vào board, mở exe.
-2. Chọn cổng COM của bộ chuyển, baud `9600`, slave `1` → bấm **Kiểm tra board** (hiện phiên bản
-   firmware đang chạy).
-3. **Chọn file .bin** — lấy file `release/app_mbslave/ak_base_kit_app_mbslave_v<x.y.z>.bin`. Tool
-   kiểm file ngay khi chọn và khóa nút nạp nếu file sai loại.
-4. Bấm **⚡ NẠP FIRMWARE** (≈ 80 s cho ảnh 58 KB ở 9600 baud). Xong sẽ hiện **PASS / FAIL**, tool tự
-   đọc lại phiên bản sau khi board khởi động lại. Bấm **Hủy** giữa chừng thì board vẫn chạy app cũ.
-
-Mỗi lần nạp ghi một dòng vào log Excel trong thư mục `logs\` cạnh exe. Lần đầu mở, Windows có thể
-cảnh báo "Windows protected your PC" (exe chưa ký số) → **More info** → **Run anyway**.
-
-## Dùng cho dự án mới — 7 bước
-
-1. **Clone theo tag mới nhất** (`git clone --depth 1 --branch v1.3.0 ...`), xoá `.git`, `git init`,
-   ghi "Khởi tạo từ ak-base-kit-pio v1.3.0" vào README dự án, commit mốc "clean base". **Không** chép
-   thư mục tay hay chép nền từ một dự án khác — mất dấu bản base là mất dấu các bản sửa.
-2. **Đổi định danh** trong `platformio.ini`: `-DAPP_TITLE`, `-DAPP_VERSION` (cả `[env:app]` lẫn
-   `[env:boot]`), đổi tên `build_dir`; đổi prefix tên file trong `pio_copy_release.py`.
-3. **Chọn module** bằng define trong `[env:app]`: `TASK_MBMASTER_EN` (Modbus master, mặc định),
-   `TASK_MBSLAVE_EN` (Modbus slave — dùng env `[env:app_mbslave]` có sẵn, hoặc tự đảo cờ), `SERIAL2_EN`,
-   `IF_LINK_UART_EN`, `SSD1309_DRIVER_EN`/`SH1106_DRIVER_EN`, `TASK_ZIGBEE_EN` (tắt),
-   `IF_NETWORK_NRF24_EN` (tắt)... kèm `build_src_filter` tương ứng. USART2 chỉ có **một chủ**:
-   `TASK_MBMASTER_EN`, `TASK_MBSLAVE_EN` hoặc `SERIAL2_EN` — bật từ hai cờ trở lên là lỗi biên dịch.
-4. **Sửa phần cứng** theo schematic board mới: `sources/application/platform/stm32l/io_cfg.h/.c` (chân
-   GPIO — chỗ sửa nhiều nhất), `sys_cfg.c` (clock, console). Struct cấu hình SPL luôn qua
-   `XXX_StructInit()` trước khi gán.
-5. **Build thử cả 2 env** — phải 0 lỗi, 0 cảnh báo trước khi viết code mới; nạp boot + app, xác nhận
-   console lên log, LED life nháy.
-6. **Viết chức năng mới** theo mô hình AK: thêm task ID vào `task_list.h` → thêm dòng vào
-   `app_task_table` trong `task_list.cpp` **đúng vị trí tương ứng** → tạo `app/task_xxx.cpp` (tự vào
-   build) → post message khởi động trong `main_app()`. Kernel tra task bằng chỉ số
-   `task_table[task_id]`, nên thứ tự dòng phải khớp thứ tự enum — lệch là `FATAL("TK", 0x08)` ngay
-   lúc khởi động.
-7. **Release**: tăng `-DAPP_VERSION`, build, lấy file trong `release/` bàn giao.
-
-Chi tiết từng bước + code mẫu task + nguyên tắc kernel AK + port MCU khác:
-[docs/huong-dan-su-dung-source-base.md](docs/huong-dan-su-dung-source-base.md).
-
-## Ghi chú quan trọng
-
-- **Lỗi đã biết — đã sửa hết trong v1.1.2:** [docs/known-bugs.md](docs/known-bugs.md). Dự án tạo từ
-  bản cũ hơn còn mang các lỗi nghiêm trọng: `HardwareSerial::write()` kẹt ring TX (giết RS485 bán
-  song công), bootloader kẹt ở "uart boot" khi BSF bị xoá giữa chừng, và `io_cfg_adc1()` nạp rác vào
-  ADC làm kênh ngoài đọc ra 0 — xem file đó để chép bản sửa sang.
-- **`build_dir` nằm ở `%TEMP%`** (xem `platformio.ini`): project trong OneDrive, build tại chỗ dễ bị
-  khóa file `.o` gây lỗi "Permission denied" ngẫu nhiên.
-- **`-Wl,-z,max-page-size=4 -Wl,--nmagic` trong `pio_build_flags.py` là bắt buộc.** `-t upload` nạp
-  bằng openocd `program firmware.elf`, mà openocd đọc *program header* chứ không đọc section. Mặc định
-  `ld` căn segment theo trang 64K nên segment của app (đặt tại `0x08003000`) bị kéo `p_paddr` về
-  `0x08000000` và nuốt thêm 12K rác ở đầu — nạp app sẽ ghi đè header ELF lên bootloader và xoá BSF,
-  board chết ngay. Hai cờ này ép segment bắt đầu đúng `0x08003000`.
-- **`pio run` ghi đè file trong `release/`** cùng tên version. Build thử thì tăng version hoặc
-  `git checkout -- release` sau khi build, đừng commit nhầm bản build thử.
-- `task_zigbee.cpp` bị loại khỏi build (như bản gốc); muốn bật thêm `-DTASK_ZIGBEE_EN` và bỏ dòng loại
-  trừ trong `build_src_filter`. Zigbee tự bật `SERIAL2_EN`, nên phải tắt `TASK_MBMASTER_EN`.
-- Thư mục `doc/` nặng (~95MB PDF) của bản gốc **không copy theo** — xem ở
-  [repo gốc](https://github.com/the-ak-foundation/ak-base-kit-stm32l151). Thư viện nanoMODBUS chạy cả
-  vai master (`env:app`, mặc định) lẫn slave (`env:app_mbslave`) — loại trừ lẫn nhau qua
-  `TASK_MBMASTER_EN` / `TASK_MBSLAVE_EN`.
-- Test host cho lớp Modbus (không cần board): `bash tests_host/modbus/run_tests.sh`.
-- Các file `Makefile.mk` còn trong `sources/` chỉ để tham khảo, PlatformIO không dùng.
-
-## AI assistant — tài liệu kernel AK qua MCP
-
-Repo có sẵn [.mcp.json](.mcp.json) tích hợp [mcp-docs-server](https://github.com/the-ak-foundation/mcp-docs-server)
-của AK Foundation: Claude Code / Cursor mở repo này sẽ tự có tool tra API kernel AK, guide viết
-task/driver, phân tích log UART. Cài đặt server trên máy mới + lưu ý phạm vi tài liệu:
-[docs/ak-mcp-docs-server.md](docs/ak-mcp-docs-server.md).
 
 ## Nguồn gốc
 
 - Base: [the-ak-foundation/ak-base-kit-stm32l151](https://github.com/the-ak-foundation/ak-base-kit-stm32l151)
-  (AK Embedded Base Kit, GaoKong) — bản build Makefile.
-- Mô hình PlatformIO (build_dir ngoài repo, script cờ biên dịch, tự copy release): rút từ một dự án
-  sản phẩm trước đó (không công khai).
+  (AK Embedded Base Kit, GaoKong), bản build bằng Makefile.
+- Mô hình PlatformIO (build ngoài repo, script cờ biên dịch, tự chép release) rút từ một dự án sản phẩm
+  trước đó, không công khai.

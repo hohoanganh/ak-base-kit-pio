@@ -364,7 +364,7 @@ task_t app_task_table[] = {
       <table>
         <thead><tr><th></th><th>Base v1.3.0 — <code>sources/</code></th><th>ak-mcu-base — <code>ak-mcu-base/</code></th></tr></thead>
         <tbody>
-          <tr><td>Trạng thái</td><td class="y">Ổn định, đã kiểm trên board</td><td class="w">Thử nghiệm, chưa chạy trên board</td></tr>
+          <tr><td>Trạng thái</td><td class="y">Ổn định, đã kiểm trên board</td><td class="w">v1.1.0, đã chạy trên board; còn thiếu driver và Modbus</td></tr>
           <tr><td>Chip</td><td>STM32L151CBT6</td><td>Đa nền tảng qua lớp HAL · port STM32L151 + host (PC)</td></tr>
           <tr><td>Build</td><td>PlatformIO</td><td>CMake (đã kiểm) · PlatformIO (mới kiểm cú pháp)</td></tr>
           <tr><td>Cập nhật firmware</td><td>Modbus RS485 (env <code>app_mbslave</code>), UART bootloader</td><td>Giao thức <code>fw_proto</code> trên UART console, nhận qua bootloader hoặc app</td></tr>
@@ -527,11 +527,11 @@ task_t app_task_table[] = {
       <table>
         <thead><tr><th>Hạng mục</th><th>Kết quả</th></tr></thead>
         <tbody>
-          <tr><td>Unit test kernel (12 ca), ASan + UBSan</td><td class="y">pass</td></tr>
+          <tr><td>Unit test kernel (16 ca), ASan + UBSan</td><td class="y">pass</td></tr>
           <tr><td>Unit test bootloader/OTA, 2 kiểu staging, 6.504 điểm cắt điện</td><td class="y">pass</td></tr>
           <tr><td>OTA đầu-cuối trên trình giả lập bằng chính tool <code>ak_fw.py</code> (13 bước)</td><td class="y">pass</td></tr>
           <tr><td>Build STM32 cả hai chế độ, <code>-Wall -Wextra -Werror</code></td><td class="y">pass</td></tr>
-          <tr><td>Chạy trên board thật (UART, flash, SPI NOR, watchdog, nhảy app)</td><td class="n">chưa</td></tr>
+          <tr><td>Chạy trên board thật (UART, flash, SPI NOR, watchdog, nhảy app, OTA)</td><td class="y">đã chạy — v1.1.0, 06/10/2026</td></tr>
         </tbody>
       </table>
     </div>

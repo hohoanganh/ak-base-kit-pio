@@ -5,6 +5,8 @@ Source base firmware **tách khỏi chip**: kernel AK Active Object, bootloader 
 Kit). Port **host** (Linux/macOS) dùng để chạy unit test và giả lập cả hệ thống ngay trên máy tính,
 không cần board.
 
+> **Hơn gì, bằng gì, còn thiếu gì so với base cũ:** [docs/so-voi-base-cu.md](docs/so-voi-base-cu.md).
+>
 > Thư mục này độc lập với code cũ trong `../sources/`. Nó chỉ mượn SPL/CMSIS của STM32L1 ở
 > `../sources/application/platform/stm32l/Libraries` để không chép trùng 9 MB.
 

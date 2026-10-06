@@ -7,6 +7,23 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
+## ak-mcu-base v1.1.0 — 06/10/2026
+
+Thư mục [`ak-mcu-base/`](ak-mcu-base/README.md) đánh số riêng (tag `ak-mcu-base-v<x.y.z>`), không ảnh hưởng
+base trong `sources/`. Bản đầu tiên chạy trên board thật; bootloader **1.1.0**.
+
+- **Kernel:** timer mềm dùng mốc hết hạn tuyệt đối (không trôi, không nổ sớm, tick chỉ post khi đến hạn);
+  ngoài task thì id hiện tại là `AK_TASK_IDLE_ID`; vòng chính kiểm hàng đợi và `WFI` trong một critical section.
+- **Build:** LTO bật mặc định, boot và app nhỏ hơn khoảng 14%.
+- **App:** console TX qua ring + ngắt TXE; shell có `info` (kiểm header) và `verify` (CRC toàn ảnh); dồn lệnh
+  không còn gây FATAL.
+- **Bootloader 1.1.0:** `boot_ctrl` hai bản ghi luân phiên, watchdog 10 s, vòng chờ flash SPI có giới hạn.
+  **App từ 1.1.0 phải đi với bootloader từ 1.1.0.**
+- **Tool:** `ak_fw.py` OTA ảnh 10,5K từ 5,4 s xuống 1,6 s.
+- **So với base cũ:** [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
+- README gốc viết lại gọn; các mục dài chuyển sang [docs/bat-dau-du-an-moi.md](docs/bat-dau-du-an-moi.md) và
+  [docs/ota-rs485.md](docs/ota-rs485.md).
+
 ## v1.3.0 — 25/09/2026
 
 Bootloader **không đổi mã** (vẫn 0.0.3), chỉ nâng `-DAPP_VERSION` cho khớp base.
