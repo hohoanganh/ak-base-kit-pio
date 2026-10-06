@@ -62,6 +62,13 @@ void task_fw(ak_msg_t* msg) {
 		hal_reset();
 		break;
 
+#if APP_CRASH_TEST
+	case FW_SIG_TEST_STARVE:
+		/* always ready again: tasks below this priority get no CPU time */
+		task_post_pure_msg(TASK_FW_ID, FW_SIG_TEST_STARVE);
+		break;
+#endif
+
 	default:
 		break;
 	}

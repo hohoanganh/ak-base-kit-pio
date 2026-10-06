@@ -1,6 +1,6 @@
 # ak-mcu-base so với base cũ (`sources/`): hơn gì, bằng gì, còn thiếu gì
 
-Cập nhật: 06/10/2026 · `ak-mcu-base` v1.1.0 (bootloader 1.1.0) · so với `ak-base-kit-pio` v1.3.0 (bootloader 0.0.3)
+Cập nhật: 06/10/2026 · `ak-mcu-base` v1.2.0 (bootloader 1.2.0) · so với `ak-base-kit-pio` v1.3.0 (bootloader 0.0.3)
 · Board: AK Base Kit, STM32L151CBT6 (128K flash, 16K RAM)
 
 Bản HTML (có bản đồ flash vẽ đúng tỉ lệ, in được): <https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html> · nguồn: `docs/ak-mcu-base-so-voi-base-cu.html`.
@@ -90,6 +90,11 @@ theo [porting.md](porting.md). Hiện có hai port: `stm32l151` và `host` (máy
 
 ---
 
+### 2.6 Tiện ích thêm ở v1.2.0
+
+Nhật ký sự cố trong EEPROM, giám sát từng task, đo mức dùng stack, script xuất dự án mới, build PlatformIO và CI.
+Chi tiết: [tien-ich.md](tien-ich.md). Các hướng tối ưu còn lại, kèm nguồn: [huong-toi-uu-tiep.md](huong-toi-uu-tiep.md).
+
 ## 3. Ngang nhau
 
 - Console TX không chặn (ring + ngắt TXE): base cũ đã có, bản mới thêm ở v1.1.0.
@@ -105,10 +110,8 @@ theo [porting.md](porting.md). Hiện có hai port: `stm32l151` và `host` (máy
 |---|---|
 | Modbus RTU (nanoMODBUS master/slave) và OTA qua RS485 | Kênh mới chỉ cần gọi `fw_update_*()` rồi post `FW_SIG_INSTALL`; chưa viết |
 | Driver: nút, còi, OLED, nRF24, EEPROM ngoài, lớp Arduino | Cố ý không mang sang; viết lại theo nhu cầu từng sản phẩm |
-| Watchdog mềm và ghi lỗi FATAL vào flash | Hiện chỉ có IWDG 8 s; HardFault lưu PC/LR vào RAM `.noinit`, FATAL chỉ in ra console |
 | Rollback về ảnh trước | Chỉ có cài lại từ staging |
 | Ký số ảnh | Chỉ có CRC: chống hỏng dữ liệu, không chống giả mạo |
-| Build PlatformIO và target CMake cho STM32 | Mới kiểm cú pháp; bản phát hành build bằng `arm-none-eabi-gcc` trực tiếp với cùng bộ cờ |
 | Dự án con | Chưa dự án nào chuyển sang; các dự án hiện có vẫn theo base cũ |
 
 **App và bootloader phải cùng đời:** bootloader 1.0.0 chỉ đọc bản ghi trạng thái thứ nhất nên bỏ sót lệnh

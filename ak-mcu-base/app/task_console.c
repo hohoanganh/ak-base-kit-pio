@@ -21,6 +21,7 @@
 #include "fw_image.h"
 #include "fw_update.h"
 #include "fw_proto.h"
+#include "crash_log.h"
 
 #include "app.h"
 #include "task_list.h"
@@ -110,6 +111,79 @@ static void cmd_stat(const char* args) {
 	xprintf("common   %4u %4u\n", get_common_msg_pool_used(), get_common_msg_pool_used_max());
 	xprintf("dynamic  %4u %4u\n", get_dynamic_msg_pool_used(), get_dynamic_msg_pool_used_max());
 	xprintf("timer    %4u %4u\n", get_timer_msg_pool_used(), get_timer_msg_pool_used_max());
+	xprintf("stack: %u B never used, crash log: %d record(s)\n", hal_stack_unused(), crash_log_count());
+}
+
+static void cmd_crash(const char* args) {
+	crash_rec_t r;
+	uint8_t n;
+
+	if (strcmp(args, "clear") == 0) {
+		crash_log_clear();
+		xprintf("crash log cleared\n");
+		return;
+	}
+#if APP_CRASH_TEST
+	if (strcmp(args, "test fault") == 0) {
+		((void (*)(void))0xFFFFFFFFUL)();		/* HardFault */
+	}
+	if (strcmp(args, "test fatal") == 0) {
+		FATAL("TEST", 0x55);
+	}
+	if (strcmp(args, "test hang") == 0) {
+		xprintf("hanging in this handler, the watchdog resets in %d ms\n", APP_WDT_TIMEOUT_MS);
+		for (;;) {
+		}
+	}
+	if (strcmp(args, "test starve") == 0) {
+		xprintf("starving the tasks below task_fw\n");
+		task_post_pure_msg(TASK_FW_ID, FW_SIG_TEST_STARVE);
+		return;
+	}
+#endif
+	if (*args) {
+		xprintf("usage: crash | crash clear"
+#if APP_CRASH_TEST
+				" | crash test fault|fatal|hang|starve"
+#endif
+				"\n");
+		return;
+	}
+
+	if (crash_log_count() == 0) {
+		xprintf("crash log empty\n");
+		return;
+	}
+	for (n = 0; crash_log_read(n, &r); n++) {
+		xprintf("#%d %-12s", n, crash_kind_str(r.kind));
+		if (r.kind != CRASH_KIND_TASK_STALLED) {
+			/* what the scheduler was running when it happened */
+			if (r.task == AK_TASK_IDLE_ID) {
+				xprintf(" idle/polling");
+			}
+			else {
+				xprintf(" task %d sig %d", r.task, r.sig);
+			}
+		}
+		switch (r.kind) {
+		case CRASH_KIND_HARDFAULT:
+			xprintf("  pc 0x%08X lr 0x%08X cfsr 0x%08X", r.pc, r.lr, r.info);
+			break;
+		case CRASH_KIND_FATAL: {
+			char tag[5];
+			memcpy(tag, &r.info, 4);
+			tag[4] = 0;
+			xprintf("  %s 0x%02X", tag, r.code);
+		}
+			break;
+		case CRASH_KIND_TASK_STALLED:
+			xprintf(" task %d got no CPU time", r.code);
+			break;
+		default:
+			break;
+		}
+		xprintf("\n");
+	}
 }
 
 static void cmd_reboot(const char* args) {
@@ -127,7 +201,8 @@ static const shell_cmd_t shell_cmds[] = {
 	{ "ver",	"firmware version",				cmd_ver		},
 	{ "info",	"partitions + boot state",		cmd_info	},
 	{ "verify",	"full CRC of app + staging",	cmd_verify	},
-	{ "stat",	"kernel pool usage",			cmd_stat	},
+	{ "stat",	"pools, stack, crash count",	cmd_stat	},
+	{ "crash",	"crash log (crash clear)",		cmd_crash	},
 	{ "reboot",	"software reset",				cmd_reboot	},
 	{ "loader",	"reset into bootloader loader",	cmd_loader	},
 };

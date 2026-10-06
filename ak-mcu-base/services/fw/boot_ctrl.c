@@ -5,7 +5,9 @@
 #include "hal.h"
 
 #define BOOT_CTRL_SLOT_NUM		(2)
-#define BOOT_CTRL_SLOT_SIZE		(HAL_NVM_SIZE / BOOT_CTRL_SLOT_NUM)
+/* NVM [0, 64). Fixed: the bootloader in the field and every later app must
+ * agree on it. The rest of the NVM belongs to other services (crash log). */
+#define BOOT_CTRL_SLOT_SIZE		(32)
 #define BOOT_CTRL_NO_SLOT		(0xFF)
 
 typedef char boot_ctrl_size_check[(sizeof(boot_ctrl_t) <= BOOT_CTRL_SLOT_SIZE) ? 1 : -1];

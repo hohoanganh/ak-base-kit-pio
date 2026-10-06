@@ -315,6 +315,43 @@ static void test_src_task_id_idle_and_isr(void) {
 	CHECK_EQ(log_buf[2].src, AK_TASK_IDLE_ID);
 }
 
+/* The scheduler reports what it runs (watchdog post-mortem) and which tasks
+ * got CPU time (liveness check with AK_SIG_PING). */
+static uint8_t seen_task, seen_sig;
+
+static void task_probe(ak_msg_t* m) {
+	rec(TASK_HIGH_ID, m);
+	seen_task = host_cur_task();
+	seen_sig = host_cur_sig();
+}
+
+static void test_dispatch_note_and_alive(void) {
+	static task_t probe_tbl[] = {
+		{TASK_TIMER_TICK_ID,	TASK_PRI_LEVEL_7,	task_timer_tick	},
+		{TASK_LOW_ID,			TASK_PRI_LEVEL_1,	task_low		},
+		{TASK_MID_ID,			TASK_PRI_LEVEL_3,	task_mid		},
+		{TASK_HIGH_ID,			TASK_PRI_LEVEL_6,	task_probe		},
+		{AK_TASK_EOT_ID,		TASK_PRI_LEVEL_0,	(pf_task)0		},
+	};
+
+	setup();
+	task_create(probe_tbl);
+	CHECK_EQ(task_alive_take(), 0);
+	CHECK_EQ(host_cur_task(), AK_TASK_IDLE_ID);
+
+	task_post_pure_msg(TASK_HIGH_ID, SIG_B);
+	task_post_pure_msg(TASK_LOW_ID, AK_SIG_PING);
+	run_all();
+	/* inside the handler the port knew task + signal; idle again afterwards */
+	CHECK_EQ(seen_task, TASK_HIGH_ID);
+	CHECK_EQ(seen_sig, SIG_B);
+	CHECK_EQ(host_cur_task(), AK_TASK_IDLE_ID);
+
+	/* both tasks ran, MID did not; reading clears the set */
+	CHECK_EQ(task_alive_take(), (1UL << TASK_HIGH_ID) | (1UL << TASK_LOW_ID));
+	CHECK_EQ(task_alive_take(), 0);
+}
+
 static void test_remove_msg(void) {
 	setup();
 	task_post_pure_msg(TASK_LOW_ID, SIG_A);
@@ -404,6 +441,7 @@ TT_MAIN_BEGIN("test_kernel")
 	RUN_TEST(test_timer_set_after_blocking);
 	RUN_TEST(test_timer_tick_only_when_due);
 	RUN_TEST(test_src_task_id_idle_and_isr);
+	RUN_TEST(test_dispatch_note_and_alive);
 	RUN_TEST(test_remove_msg);
 	RUN_TEST(test_fatal_bad_table);
 	RUN_TEST(test_fatal_pool_exhausted);

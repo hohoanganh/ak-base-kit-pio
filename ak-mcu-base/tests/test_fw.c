@@ -8,6 +8,7 @@
 #include "hal.h"
 #include "crc.h"
 #include "boot_ctrl.h"
+#include "crash_log.h"
 #include "boot_core.h"
 #include "fw_image.h"
 #include "fw_update.h"
@@ -325,6 +326,127 @@ static void test_boot_ctrl_many_saves(void) {
 	CHECK_EQ(wrong, 0);
 }
 
+/* Crash log: ring of 8 records, newest first, survives wrap of the ring and
+ * of the sequence counter, and never touches boot_ctrl. */
+static void test_crash_log_ring(void) {
+	crash_rec_t r;
+	boot_ctrl_t c;
+	int wrong = 0;
+
+	setup(0xFF);
+	CHECK_EQ(crash_log_count(), 0);
+	CHECK_EQ(crash_log_read(0, &r), 0);
+	CHECK_EQ(boot_ctrl_set_cmd(BOOT_CMD_UPDATE), 0);
+
+	for (uint32_t i = 1; i <= 300; i++) {
+		memset(&r, 0, sizeof(r));
+		r.kind = CRASH_KIND_FATAL;
+		r.pc = i;
+		if (crash_log_add(&r) != 0) {
+			wrong++;
+		}
+		/* newest first, as many as have been written (max 8) */
+		uint32_t expect = (i < CRASH_LOG_SLOTS) ? i : CRASH_LOG_SLOTS;
+		if (crash_log_count() != expect) {
+			wrong++;
+		}
+		for (uint32_t n = 0; n < expect; n++) {
+			if (!crash_log_read((uint8_t)n, &r) || r.pc != i - n) {
+				wrong++;
+			}
+		}
+	}
+	CHECK_EQ(wrong, 0);
+
+	boot_ctrl_load(&c);
+	CHECK_EQ(c.cmd, BOOT_CMD_UPDATE);
+
+	crash_log_clear();
+	CHECK_EQ(crash_log_count(), 0);
+	boot_ctrl_load(&c);
+	CHECK_EQ(c.cmd, BOOT_CMD_UPDATE);
+}
+
+/* A record cut by a power loss (prefix of the new bytes) is skipped: the
+ * log shows the older records, never garbage. */
+static void test_crash_log_torn_write(void) {
+	uint8_t before[HAL_NVM_SIZE];
+	uint8_t after[HAL_NVM_SIZE];
+	crash_rec_t r;
+	int bad = 0;
+
+	setup(0xFF);
+	for (uint32_t i = 1; i <= 11; i++) {		/* ring already wrapped */
+		memset(&r, 0, sizeof(r));
+		r.kind = CRASH_KIND_HARDFAULT;
+		r.pc = i;
+		crash_log_add(&r);
+	}
+	memcpy(before, host_nvm_mem(), HAL_NVM_SIZE);
+	memset(&r, 0, sizeof(r));
+	r.kind = CRASH_KIND_HARDFAULT;
+	r.pc = 12;
+	crash_log_add(&r);
+	memcpy(after, host_nvm_mem(), HAL_NVM_SIZE);
+
+	for (uint32_t k = 0; k <= HAL_NVM_SIZE; k++) {
+		memcpy(host_nvm_mem(), before, HAL_NVM_SIZE);
+		memcpy(host_nvm_mem(), after, k);
+		if (!crash_log_read(0, &r) || (r.pc != 11 && r.pc != 12)) {
+			bad++;
+		}
+		/* every record that is listed is a real one, in order */
+		for (uint8_t n = 1; n < crash_log_count(); n++) {
+			crash_rec_t o;
+			if (!crash_log_read(n, &o) || o.pc != r.pc - n) {
+				bad++;
+			}
+		}
+	}
+	CHECK_EQ(bad, 0);
+}
+
+/* crash_log_capture(): what the previous run left behind becomes one record. */
+static void test_crash_log_capture(void) {
+	crash_rec_t r;
+
+	setup(0xFF);
+	/* normal software reset: nothing to store */
+	CHECK_EQ(crash_log_capture(), CRASH_KIND_NONE);
+	CHECK_EQ(crash_log_count(), 0);
+
+	/* HardFault while task 2 handled signal 11 */
+	host_crash_inject(HAL_CRASH_HARDFAULT, 0, 0x08004321, 0x08001235, 0x00008200);
+	host_set_last_dispatch(2, 11);
+	CHECK_EQ(crash_log_capture(), CRASH_KIND_HARDFAULT);
+	CHECK_EQ(crash_log_read(0, &r), 1);
+	CHECK_EQ(r.kind, CRASH_KIND_HARDFAULT);
+	CHECK_EQ(r.pc, 0x08004321);
+	CHECK_EQ(r.lr, 0x08001235);
+	CHECK_EQ(r.info, 0x00008200);
+	CHECK_EQ(r.task, 2);
+	CHECK_EQ(r.sig, 11);
+	/* taken once */
+	CHECK_EQ(crash_log_capture(), CRASH_KIND_NONE);
+
+	/* FATAL("MF", 0x31) */
+	host_crash_inject(HAL_CRASH_FATAL, 0x31, 0, 0, 0x0000464D);
+	CHECK_EQ(crash_log_capture(), CRASH_KIND_FATAL);
+	CHECK_EQ(crash_log_read(0, &r), 1);
+	CHECK_EQ(r.code, 0x31);
+	CHECK_EQ(r.info, 0x0000464D);
+
+	/* watchdog reset while task 3 was stuck in signal 12 */
+	host_set_reset_reason(HAL_RESET_REASON_WATCHDOG);
+	host_set_last_dispatch(3, 12);
+	CHECK_EQ(crash_log_capture(), CRASH_KIND_WATCHDOG);
+	CHECK_EQ(crash_log_read(0, &r), 1);
+	CHECK_EQ(r.kind, CRASH_KIND_WATCHDOG);
+	CHECK_EQ(r.task, 3);
+	CHECK_EQ(r.sig, 12);
+	CHECK_EQ(crash_log_count(), 3);
+}
+
 static void test_boot_runs_valid_app(void) {
 	uint32_t n;
 
@@ -635,6 +757,9 @@ TT_MAIN_BEGIN("test_fw")
 		RUN_TEST(test_boot_ctrl);
 		RUN_TEST(test_boot_ctrl_torn_write);
 		RUN_TEST(test_boot_ctrl_many_saves);
+		RUN_TEST(test_crash_log_ring);
+		RUN_TEST(test_crash_log_torn_write);
+		RUN_TEST(test_crash_log_capture);
 		RUN_TEST(test_boot_runs_valid_app);
 		RUN_TEST(test_boot_skips_staging_when_app_ok);
 		RUN_TEST(test_boot_update_flow);

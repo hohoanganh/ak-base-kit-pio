@@ -5,7 +5,11 @@ Source base firmware **tách khỏi chip**: kernel AK Active Object, bootloader 
 Kit). Port **host** (Linux/macOS) dùng để chạy unit test và giả lập cả hệ thống ngay trên máy tính,
 không cần board.
 
-> **Hơn gì, bằng gì, còn thiếu gì so với base cũ:** [docs/so-voi-base-cu.md](docs/so-voi-base-cu.md).
+> **Dự án mới:** `python tools/new_project.py <thư-mục> --board <tên-board>` xuất một dự án độc lập.
+> Tiện ích có sẵn (nhật ký sự cố, giám sát task, đo stack, CI): [docs/tien-ich.md](docs/tien-ich.md).
+>
+> **Hơn gì, bằng gì, còn thiếu gì so với base cũ:** [docs/so-voi-base-cu.md](docs/so-voi-base-cu.md) ·
+> hướng tối ưu tiếp theo: [docs/huong-toi-uu-tiep.md](docs/huong-toi-uu-tiep.md).
 >
 > Thư mục này độc lập với code cũ trong `../sources/`. Nó chỉ mượn SPL/CMSIS của STM32L1 ở
 > `../sources/application/platform/stm32l/Libraries` để không chép trùng 9 MB.
@@ -56,6 +60,7 @@ nên APP dùng được toàn bộ phần flash trong còn lại.
 | APP | `0x08003000` | **116K** | `[header 256 B][app]`, vector table ở `0x08003100` |
 | STAGING | SPI NOR `0x80000` | 116K | ảnh OTA chờ cài (sector 4K), cùng địa chỉ với base cũ |
 | boot_ctrl | `0x08080000` | 2 × 32 B | data EEPROM: lệnh boot ↔ app, hai bản ghi luân phiên |
+| crash log | `0x08080040` | 8 × 20 B | data EEPROM: tám sự cố gần nhất |
 
 Board không gắn chip SPI thì build với `AK_STAGING=internal` (`make stm32-internal`): APP 58K tại
 `0x08003000`, STAGING 58K tại `0x08011800` trong flash trong.
@@ -90,8 +95,8 @@ pio run -e boot -t upload      # bootloader
 pio run -e app  -t upload      # app; .elf đã mang header hợp lệ
 ```
 
-> `platformio.ini` mới được kiểm cú pháp (`pio project config`), **chưa build thật** vì môi trường
-> cloud chặn registry PlatformIO. Build tham chiếu là CMake (đã build và test).
+> Build PlatformIO đã chạy thật và ảnh đã nạp lên board (06/10/2026, toolchain gcc 7.2.1 của PlatformIO).
+> CMake dùng cho Linux/macOS và CI.
 
 ### Nạp lần đầu và OTA
 
@@ -186,7 +191,7 @@ log queue debug của bản gốc.
 
 | Hạng mục | Trạng thái |
 |---|---|
-| Unit test kernel (16 ca) — ASan + UBSan | ✅ pass |
+| Unit test kernel (17 ca) — ASan + UBSan | ✅ pass |
 | Unit test fw/boot (14 ca; 11 ca chạy trên cả 2 kiểu staging: SPI NOR giả lập và flash trong), gồm 6.504 điểm cắt điện — ASan + UBSan | ✅ pass |
 | Đầu-cuối trên ak_sim bằng chính `ak_fw.py` + `mkimage.py` (13 bước) | ✅ pass |
 | Build STM32 (boot + app) cả hai chế độ staging, `-Wall -Wextra -Werror`; ASSERT kích thước APP chặn được app quá lớn | ✅ |
@@ -196,7 +201,8 @@ log queue debug của bản gốc.
 | Bootloader 1.1.0 trên board: OTA liên tiếp qua `boot_ctrl` hai bản ghi, ở loader 16 s không reset, dừng lõi 13 s bằng debugger thì IWDG của boot reset (lý do reset 4) và quay lại loader | ✅ |
 | Timeout SPI của flash ngoài; mất điện giữa lúc ghi `boot_ctrl` trên board | ❌ chưa — mới qua unit test |
 | Rút điện giữa lúc boot đang cài; OTA ảnh lớn gần 116K; đo thời gian ghi half-page | ❌ chưa |
-| Build bằng PlatformIO | ❌ chưa — registry bị chặn trên cloud |
+| Build bằng PlatformIO, ảnh nạp và OTA trên board | ✅ |
+| Nhật ký sự cố trên board: HardFault, FATAL, task bị bỏ đói, handler treo đều ghi đúng loại và đúng task | ✅ |
 
 Khi thử trên board, nên kiểm theo thứ tự: log boot qua UART → `info` → OTA một ảnh →
 rút điện giữa lúc boot đang cài (log `installing...`) → cắm lại phải cài tiếp và chạy.

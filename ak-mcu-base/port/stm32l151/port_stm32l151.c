@@ -226,6 +226,12 @@ static void console_init(void) {
  *--------------------------------------------------------------------------*/
 static void staging_init(void);
 
+#define PORT_TASK_IDLE		(0xEF)		/* AK_TASK_IDLE_ID */
+#if !defined(AK_BOOTLOADER)
+static uint8_t prev_task = PORT_TASK_IDLE;
+static uint8_t prev_sig;
+#endif
+
 static void port_xputc(uint8_t c) {
 	hal_console_putc(c);
 }
@@ -256,11 +262,54 @@ void hal_init(void) {
 
 	staging_init();
 
+#if !defined(AK_BOOTLOADER)
+	/* what the previous run was doing; the bootloader leaves it for the app */
+	if (port_noinit.run_magic == PORT_RUN_MAGIC) {
+		prev_task = (uint8_t)(port_noinit.run_task_sig >> 8);
+		prev_sig = (uint8_t)port_noinit.run_task_sig;
+	}
+	port_noinit.run_task_sig = (uint32_t)PORT_TASK_IDLE << 8;
+	port_noinit.run_magic = PORT_RUN_MAGIC;
+#endif
+}
+
+/*----------------------------------------------------------------------------
+ * crash facts of the previous run (.noinit RAM survives the reset)
+ *--------------------------------------------------------------------------*/
+void ak_port_note_dispatch(uint8_t task_id, uint8_t sig) {
+	port_noinit.run_task_sig = ((uint32_t)task_id << 8) | sig;
+}
+
+void hal_last_dispatch(uint8_t* task_id, uint8_t* sig) {
+#if !defined(AK_BOOTLOADER)
+	*task_id = prev_task;
+	*sig = prev_sig;
+#else
+	*task_id = PORT_TASK_IDLE;
+	*sig = 0;
+#endif
+}
+
+uint8_t hal_crash_take(hal_crash_t* out) {
+	memset(out, 0, sizeof(*out));
+
 	if (port_noinit.fault_magic == PORT_FAULT_MAGIC) {
 		port_noinit.fault_magic = 0;
-		xprintf("[port] last HardFault: pc 0x%08X lr 0x%08X cfsr 0x%08X\n",
-				port_noinit.fault_pc, port_noinit.fault_lr, port_noinit.fault_cfsr);
+		port_noinit.fatal_magic = 0;
+		out->kind = HAL_CRASH_HARDFAULT;
+		out->pc = port_noinit.fault_pc;
+		out->lr = port_noinit.fault_lr;
+		out->info = port_noinit.fault_cfsr;
+		return 1;
 	}
+	if (port_noinit.fatal_magic == PORT_FATAL_MAGIC) {
+		port_noinit.fatal_magic = 0;
+		out->kind = HAL_CRASH_FATAL;
+		out->code = (uint8_t)port_noinit.fatal_code;
+		out->info = port_noinit.fatal_tag;
+		return 1;
+	}
+	return 0;
 }
 
 uint8_t hal_reset_reason(void) {
@@ -293,6 +342,10 @@ uint8_t hal_vector_ok(uint32_t initial_sp, uint32_t reset_handler) {
 
 void ak_port_fatal(const char* s, uint8_t c) {
 	__disable_irq();
+	port_noinit.fatal_tag = 0;
+	strncpy((char*)&port_noinit.fatal_tag, s, 4);
+	port_noinit.fatal_code = c;
+	port_noinit.fatal_magic = PORT_FATAL_MAGIC;
 	xprintf("\n[FATAL] %s 0x%02X\n", s, c);
 	hal_console_flush();
 	/* give time to read the log, then reset */
@@ -608,14 +661,29 @@ int hal_flash_read(flash_part_t part, uint32_t off, void* buf, uint32_t len) {
  *--------------------------------------------------------------------------*/
 extern uint8_t _heap_start, _heap_end;
 
-void* _sbrk(ptrdiff_t incr) {
-	static uint8_t* brk = &_heap_start;
-	uint8_t* prev = brk;
+static uint8_t* heap_brk = &_heap_start;
 
-	if (brk + incr > &_heap_end) {
+void* _sbrk(ptrdiff_t incr) {
+	uint8_t* prev = heap_brk;
+
+	if (heap_brk + incr > &_heap_end) {
 		errno = ENOMEM;
 		return (void*)-1;
 	}
-	brk += incr;
+	heap_brk += incr;
 	return prev;
+}
+
+/* reset_handler filled the RAM above the heap start with PORT_STACK_FILL:
+ * count what is still untouched above the current heap top. */
+uint32_t hal_stack_unused(void) {
+	const uint32_t* p = (const uint32_t*)(((uint32_t)heap_brk + 3U) & ~3U);
+	const uint32_t* end = (const uint32_t*)__get_MSP();
+	uint32_t n = 0;
+
+	while (p < end && *p == PORT_STACK_FILL) {
+		p++;
+		n += 4;
+	}
+	return n;
 }

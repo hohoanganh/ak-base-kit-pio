@@ -14,6 +14,7 @@
 #include "hal.h"
 #include "ak_log.h"
 #include "fw_image.h"
+#include "crash_log.h"
 
 #include "app.h"
 #include "task_list.h"
@@ -33,6 +34,7 @@ void hal_tick_hook(uint32_t elapsed_ms) {
 
 int app_main(void) {
 	fw_image_hdr_t hdr;
+	uint8_t crash_kind;
 
 	if (hal_flash_read(FLASH_PART_APP, 0, &hdr, sizeof(hdr)) == HAL_FLASH_OK &&
 			fw_image_check_hdr(&hdr, hal_flash_info(FLASH_PART_APP)->size) == FW_OK) {
@@ -42,6 +44,12 @@ int app_main(void) {
 	LOG_I("APP", "ak-mcu-base app v%d.%d.%d build %u, board %s\n",
 		  running_version.major, running_version.minor, running_version.patch,
 		  running_version.build, hal_board_name());
+
+	/* store what the previous run left behind (HardFault, FATAL, watchdog) */
+	crash_kind = crash_log_capture();
+	if (crash_kind != CRASH_KIND_NONE) {
+		LOG_W("APP", "previous run ended in %s - see 'crash'\n", crash_kind_str(crash_kind));
+	}
 
 	task_init();
 	task_create(app_task_table);

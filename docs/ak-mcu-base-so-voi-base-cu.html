@@ -148,7 +148,7 @@ li{margin:3px 0}
   <main>
 
     <dl class="meta">
-      <dt>Base mới</dt><dd><code>ak-mcu-base</code> v1.1.0, bootloader 1.1.0</dd>
+      <dt>Base mới</dt><dd><code>ak-mcu-base</code> v1.2.0, bootloader 1.2.0</dd>
       <dt>Base cũ</dt><dd><code>sources/</code> của ak-base-kit-pio v1.3.0, bootloader 0.0.3</dd>
       <dt>Board</dt><dd>AK Base Kit, STM32L151CBT6 (128K flash, 16K RAM)</dd>
       <dt>Ngày lập</dt><dd>06/10/2026</dd>
@@ -166,9 +166,9 @@ li{margin:3px 0}
         <div class="d">Những thứ base cũ đã làm tốt sẵn</div>
       </a>
       <a class="less" href="#thieu">
-        <div class="n num">7</div>
+        <div class="n num">5</div>
         <div class="k">điểm còn thiếu</div>
-        <div class="d">Modbus, RS485, driver, build PlatformIO</div>
+        <div class="d">Modbus, RS485, driver, rollback, ký số</div>
       </a>
     </div>
 
@@ -259,6 +259,13 @@ li{margin:3px 0}
     </table>
     <p>Không so trực tiếp được với OTA qua RS485 9600 của base cũ (khoảng 78 s mỗi lượt) vì khác đường truyền và khác cỡ ảnh.</p>
 
+    <div class="note">
+      <span class="h">Thêm ở v1.2.0</span>
+      Nhật ký sự cố trong EEPROM (HardFault, FATAL, watchdog, task bị bỏ đói), giám sát từng task, đo mức dùng stack,
+      script xuất dự án mới, build PlatformIO và CI.
+      Chi tiết: <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/docs/tien-ich.md">tien-ich.md</a>.
+    </div>
+
     <h2 id="bang">3. Ngang nhau</h2>
     <p>Bốn thứ dưới đây dễ bị tưởng là điểm mới, nhưng base cũ đã có.</p>
     <ul>
@@ -274,10 +281,8 @@ li{margin:3px 0}
       <tbody>
         <tr><td class="lbl">Modbus RTU và OTA qua RS485</td><td>Kênh mới chỉ cần gọi <code>fw_update_*()</code> rồi post <code>FW_SIG_INSTALL</code>; chưa viết</td></tr>
         <tr><td class="lbl">Driver: nút, còi, OLED, nRF24, EEPROM ngoài, lớp Arduino</td><td>Cố ý không mang sang; viết lại theo nhu cầu từng sản phẩm</td></tr>
-        <tr><td class="lbl">Watchdog mềm và ghi lỗi FATAL vào flash</td><td>Hiện chỉ có IWDG 8 s; HardFault lưu PC/LR vào RAM, FATAL chỉ in ra console</td></tr>
         <tr><td class="lbl">Rollback về ảnh trước</td><td>Chỉ có cài lại từ staging</td></tr>
         <tr><td class="lbl">Ký số ảnh</td><td>Chỉ có CRC: chống hỏng dữ liệu, không chống giả mạo</td></tr>
-        <tr><td class="lbl">Build PlatformIO và target CMake cho STM32</td><td>Mới kiểm cú pháp; bản phát hành build trực tiếp bằng <code>arm-none-eabi-gcc</code> với cùng bộ cờ</td></tr>
         <tr><td class="lbl">Dự án con</td><td>Chưa dự án nào chuyển sang; các dự án hiện có vẫn theo base cũ</td></tr>
       </tbody>
     </table>

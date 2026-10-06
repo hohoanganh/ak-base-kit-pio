@@ -48,6 +48,10 @@ extern int task_init();
 extern int task_run(); /* endless loop: task_run_once() + ak_port_idle() */
 extern uint8_t task_run_once(); /* drain pending messages + one polling pass; returns messages handled */
 
+/* Bit n set = task id n (0..31) handled at least one message since the last
+ * call. Reading clears the set. */
+extern uint32_t task_alive_take();
+
 extern void task_polling_create(task_polling_t* task_polling_tbl);
 extern void task_polling_set_ability(task_id_t task_polling_id, uint8_t ability);
 extern void task_polling_run();

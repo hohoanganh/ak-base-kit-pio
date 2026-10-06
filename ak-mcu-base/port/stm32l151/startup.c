@@ -19,6 +19,7 @@
 #include "hal.h"
 
 extern uint32_t _sidata, _sdata, _edata, _sbss, _ebss, _estack;
+extern uint8_t _heap_start;
 
 extern int main(void);
 extern void SystemInit(void);
@@ -163,6 +164,12 @@ void reset_handler(void) {
 	}
 	for (dst = &_sbss; dst < &_ebss;) {
 		*dst++ = 0;
+	}
+
+	/* stack watermark: mark the free RAM (heap + stack area) up to a margin
+	 * below the current stack pointer, see hal_stack_unused() */
+	for (dst = (uint32_t*)&_heap_start, src = (uint32_t*)__get_MSP() - 16; dst < src;) {
+		*dst++ = PORT_STACK_FILL;
 	}
 
 	hal_init();

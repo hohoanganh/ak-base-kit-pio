@@ -58,6 +58,11 @@ static uint32_t tx_len;
 
 static uint32_t crit_nest;
 
+static uint8_t reset_reason = HAL_RESET_REASON_SOFTWARE;
+static hal_crash_t crash_prev;
+static uint8_t prev_task = 0xEF, prev_sig;
+static uint8_t cur_task = 0xEF, cur_sig;
+
 static void host_xputc(uint8_t c) {
 	hal_console_putc(c);
 }
@@ -81,6 +86,10 @@ void host_reset_state(uint8_t erased_val) {
 	crit_nest = 0;
 	virtual_ms = 0;
 	last_service_ms = 0;
+	reset_reason = HAL_RESET_REASON_SOFTWARE;
+	memset(&crash_prev, 0, sizeof(crash_prev));
+	prev_task = cur_task = 0xEF;
+	prev_sig = cur_sig = 0;
 }
 
 /*----------------------------------------------------------------------------
@@ -178,7 +187,52 @@ void hal_delay_ms(uint32_t ms) {
 }
 
 uint8_t hal_reset_reason(void) {
-	return HAL_RESET_REASON_SOFTWARE;
+	return reset_reason;
+}
+
+void host_set_reset_reason(uint8_t reason) {
+	reset_reason = reason;
+}
+
+void host_crash_inject(uint8_t kind, uint8_t code, uint32_t pc, uint32_t lr, uint32_t info) {
+	crash_prev.kind = kind;
+	crash_prev.code = code;
+	crash_prev.pc = pc;
+	crash_prev.lr = lr;
+	crash_prev.info = info;
+}
+
+void host_set_last_dispatch(uint8_t task_id, uint8_t sig) {
+	prev_task = task_id;
+	prev_sig = sig;
+}
+
+uint8_t hal_crash_take(hal_crash_t* out) {
+	*out = crash_prev;
+	crash_prev.kind = HAL_CRASH_NONE;
+	return out->kind != HAL_CRASH_NONE;
+}
+
+void hal_last_dispatch(uint8_t* task_id, uint8_t* sig) {
+	*task_id = prev_task;
+	*sig = prev_sig;
+}
+
+void ak_port_note_dispatch(uint8_t task_id, uint8_t sig) {
+	cur_task = task_id;
+	cur_sig = sig;
+}
+
+uint8_t host_cur_task(void) {
+	return cur_task;
+}
+
+uint8_t host_cur_sig(void) {
+	return cur_sig;
+}
+
+uint32_t hal_stack_unused(void) {
+	return 0;
 }
 
 void hal_reset(void) {

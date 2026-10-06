@@ -72,6 +72,14 @@ extern uint32_t host_console_take_tx(uint8_t* out, uint32_t max);
 extern void (*host_reset_handler)(void);
 extern void (*host_jump_handler)(uint32_t vector_addr);
 
+/* Crash facts "left by the previous run" (see hal.h), set by tests. */
+extern void host_crash_inject(uint8_t kind, uint8_t code, uint32_t pc, uint32_t lr, uint32_t info);
+extern void host_set_reset_reason(uint8_t reason);
+extern void host_set_last_dispatch(uint8_t task_id, uint8_t sig);
+/* What the kernel reported through ak_port_note_dispatch(). */
+extern uint8_t host_cur_task(void);
+extern uint8_t host_cur_sig(void);
+
 /* Periodic service: feeds elapsed ms to hal_tick_hook(). */
 extern void host_service(void);
 

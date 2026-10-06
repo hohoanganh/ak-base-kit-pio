@@ -1,8 +1,14 @@
 # Port STM32L151CB: builds boot.elf/.bin, app.elf/.bin and app.img (OTA image).
 set(PORT_DIR ${ROOT}/port/stm32l151)
 
-# SPL + CMSIS are reused from the parent ak-base-kit-pio tree (not duplicated).
-set(STM32L1_LIB_DIR ${ROOT}/../sources/application/platform/stm32l/Libraries
+# SPL + CMSIS: vendor/stm32l1 in a project exported by tools/new_project.py,
+# otherwise reused from the parent ak-base-kit-pio tree (not duplicated).
+if(EXISTS ${ROOT}/vendor/stm32l1/STM32L1xx_StdPeriph_Driver)
+	set(_spl_default ${ROOT}/vendor/stm32l1)
+else()
+	set(_spl_default ${ROOT}/../sources/application/platform/stm32l/Libraries)
+endif()
+set(STM32L1_LIB_DIR ${_spl_default}
 	CACHE PATH "Directory containing STM32L1xx_StdPeriph_Driver and CMSIS")
 if(NOT EXISTS ${STM32L1_LIB_DIR}/STM32L1xx_StdPeriph_Driver)
 	message(FATAL_ERROR "SPL not found: ${STM32L1_LIB_DIR} (set -DSTM32L1_LIB_DIR=...)")
@@ -57,7 +63,7 @@ option(AK_KIT_NRF24 "Hold the nRF24 CSN (PB9) high" OFF)
 option(AK_BOOT_ALLOW_RAW_APP "Bootloader runs images without header" OFF)
 set(BOARD_DEFS PORT_KIT_NRF24_CSN=$<BOOL:${AK_KIT_NRF24}> BOOT_ALLOW_RAW_APP=$<BOOL:${AK_BOOT_ALLOW_RAW_APP}>)
 set(MCU_DEFS USE_STDPERIPH_DRIVER STM32L1XX_MD)
-set(MCU_WARN -Wall -Wextra -Wno-unused-parameter)
+set(MCU_WARN -Wall -Wextra -Wno-unused-parameter -Wshadow -Wundef -Wdouble-promotion)
 
 # SPL compiled once, without our warning set (vendor code).
 add_library(spl STATIC ${SPL_SRC})
@@ -94,7 +100,7 @@ ak_firmware(app app.ld
 	SOURCES
 		${PORT_DIR}/startup.c ${PORT_DIR}/port_stm32l151.c ${PORT_DIR}/system_stm32l1xx.c
 		${PORT_DIR}/fw_header.c ${STAGING_SRC}
-		${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${APP_SRC}
+		${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${SYS_SRC} ${APP_SRC}
 	INCS ${ROOT}/app
 )
 # Fill header CRC/size into app.bin -> app.img, and patch .fw_header in app.elf

@@ -41,6 +41,11 @@ extern "C"
 #define AK_SYS_DEFINE_SIG				(0)
 #define AK_USER_DEFINE_SIG				(10)
 
+/* Liveness ping (below AK_USER_DEFINE_SIG, handlers ignore it). Posting it to
+ * a task and checking task_alive_take() later tells whether the task still
+ * gets CPU time. */
+#define AK_SIG_PING						(2)
+
 /*****************************************************************************
  * DEFINITION: tasking
  *

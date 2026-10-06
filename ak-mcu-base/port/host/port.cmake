@@ -18,7 +18,7 @@ add_test(NAME kernel COMMAND test_kernel)
 # --- firmware update + bootloader tests ---
 add_executable(test_fw
 	${ROOT}/tests/test_fw.c
-	${COMMON_SRC} ${FW_SRC} ${BOOT_SRC}
+	${COMMON_SRC} ${FW_SRC} ${SYS_SRC} ${BOOT_SRC}
 	${HOST_DIR}/port_host.c
 )
 target_include_directories(test_fw PRIVATE ${ROOT}/tests ${BASE_INC} ${HOST_DIR})
@@ -31,7 +31,7 @@ add_test(NAME fw COMMAND test_fw)
 add_executable(ak_sim
 	${HOST_DIR}/sim_main.c
 	${HOST_DIR}/port_host.c
-	${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${BOOT_SRC} ${APP_SRC}
+	${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${SYS_SRC} ${BOOT_SRC} ${APP_SRC}
 )
 target_include_directories(ak_sim PRIVATE ${ROOT}/app ${BASE_INC} ${HOST_DIR})
 target_compile_definitions(ak_sim PRIVATE AK_SIM ${VERSION_DEFS})

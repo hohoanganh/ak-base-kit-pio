@@ -19,10 +19,12 @@ env.Append(LINKFLAGS=[
     "-L" + os.path.join(proj, "port", "stm32l151"),
 ])
 
-# SPL sources from the parent tree (outside src_dir -> built explicitly)
-spl_src = os.path.normpath(os.path.join(
-    proj, "..", "sources", "application", "platform", "stm32l", "Libraries",
-    "STM32L1xx_StdPeriph_Driver", "src"))
+# SPL sources (outside src_dir -> built explicitly). Location: [common] spl in
+# platformio.ini - the parent tree here, vendor/stm32l1 in an exported project.
+spl_dir = env.GetProjectConfig().get("common", "spl").strip()
+spl_src = os.path.normpath(os.path.join(proj, spl_dir, "STM32L1xx_StdPeriph_Driver", "src"))
+if not os.path.isdir(spl_src):
+    raise SystemExit("SPL not found: %s (check [common] spl in platformio.ini)" % spl_src)
 env.BuildSources(os.path.join("$BUILD_DIR", "spl"), spl_src, src_filter=[
     "-<*>", "+<misc.c>", "+<stm32l1xx_rcc.c>", "+<stm32l1xx_gpio.c>",
     "+<stm32l1xx_usart.c>", "+<stm32l1xx_flash.c>", "+<stm32l1xx_iwdg.c>",

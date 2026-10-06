@@ -8,7 +8,7 @@
 
 #ifndef APP_VER_MAJOR
 #define APP_VER_MAJOR		1
-#define APP_VER_MINOR		1
+#define APP_VER_MINOR		2
 #define APP_VER_PATCH		0
 #endif
 
@@ -18,6 +18,17 @@
 
 #define APP_WDT_TIMEOUT_MS		(8000)
 #define APP_HEARTBEAT_MS		(1000)
+
+/* A task that handles nothing (not even the ping) for this many heartbeats is
+ * reported as stalled: crash log entry + reset. Must stay well below
+ * APP_WDT_TIMEOUT_MS / APP_HEARTBEAT_MS. */
+#define APP_TASK_STALL_ROUNDS	(3)
+
+/* 1: shell command "crash test ..." that provokes each kind of crash, to check
+ * the crash log on a board. Set 0 in a product. */
+#ifndef APP_CRASH_TEST
+#define APP_CRASH_TEST			(1)
+#endif
 
 /* TASK_SYSTEM_ID */
 enum {
@@ -37,6 +48,7 @@ enum {
 	FW_SIG_LOADER,							/* reset into bootloader */
 	FW_SIG_RESET,
 	FW_SIG_DO_RESET,						/* timer: reset once logs are flushed */
+	FW_SIG_TEST_STARVE,						/* crash test: keeps the CPU, starves lower tasks */
 };
 
 /* Running version: APP header in flash if valid, else the compiled version.

@@ -7,6 +7,24 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
+## ak-mcu-base v1.2.0 — 06/10/2026
+
+Bootloader **1.2.0**. Từ bản này `ak-mcu-base` là base cho các dự án mới.
+
+- **Tạo dự án mới:** `tools/new_project.py` xuất một dự án độc lập (base + SPL/CMSIS + file board), ghi `BASE_VERSION`,
+  đặt tên board riêng cho sản phẩm.
+- **Build PlatformIO chạy được** (trước đó hỏng ngay bước đầu: script build chạy sai thời điểm). Ảnh build bằng
+  PlatformIO đã nạp và OTA trên board.
+- **Nhật ký sự cố** trong EEPROM (8 bản ghi): HardFault, FATAL, watchdog, task bị bỏ đói; kèm task và signal đang
+  chạy. Lệnh shell `crash`, `crash clear`, `crash test …`. **Cần bootloader từ 1.2.0.**
+- **Giám sát task:** `task_system` ping mọi task mỗi giây; task không được chạy 3 nhịp thì ghi nhật ký và reset.
+  Kernel thêm `task_alive_take()`, `AK_SIG_PING`, và báo port handler sắp chạy (`ak_port_note_dispatch`).
+- **Đo mức dùng stack:** lệnh `stat` in số byte RAM chưa từng dùng.
+- **CI:** GitHub Actions chạy test host và build STM32, giới hạn bootloader 10.240 B.
+- **NVM:** `HAL_NVM_SIZE` tăng lên 256; `boot_ctrl` giữ nguyên chỗ (hai bản ghi 32 B ở đầu).
+- Tài liệu: [ak-mcu-base/docs/tien-ich.md](ak-mcu-base/docs/tien-ich.md) ·
+  [ak-mcu-base/docs/huong-toi-uu-tiep.md](ak-mcu-base/docs/huong-toi-uu-tiep.md) (các hướng tra cứu được, kèm nguồn).
+
 ## ak-mcu-base v1.1.0 — 06/10/2026
 
 Thư mục [`ak-mcu-base/`](ak-mcu-base/README.md) đánh số riêng (tag `ak-mcu-base-v<x.y.z>`), không ảnh hưởng

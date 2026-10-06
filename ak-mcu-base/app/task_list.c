@@ -10,7 +10,8 @@ task_t app_task_table[] = {
 	/*************************************************************************/
 	/* APP TASK */
 	/*************************************************************************/
-	{TASK_SYSTEM_ID,		TASK_PRI_LEVEL_2,		task_system		},
+	/* above every app task: it must still run when one of them hogs the CPU */
+	{TASK_SYSTEM_ID,		TASK_PRI_LEVEL_6,		task_system		},
 	{TASK_CONSOLE_ID,		TASK_PRI_LEVEL_3,		task_console	},
 	{TASK_FW_ID,			TASK_PRI_LEVEL_4,		task_fw			},
 

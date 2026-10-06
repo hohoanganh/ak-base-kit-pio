@@ -42,6 +42,11 @@ extern void ak_port_fatal(const char* s, uint8_t c) __attribute__((noreturn));
  * interrupt still wakes it (Cortex-M WFI does, also with PRIMASK set). */
 extern void ak_port_idle(void);
 
+/* The scheduler is about to run a handler (or went idle: AK_TASK_IDLE_ID).
+ * The port remembers it across a reset: a watchdog reset can then be traced
+ * to the handler that was stuck. Called inside a critical section. */
+extern void ak_port_note_dispatch(uint8_t task_id, uint8_t sig);
+
 #define ENTRY_CRITICAL()		ak_port_enter_critical()
 #define EXIT_CRITICAL()			ak_port_exit_critical()
 #define FATAL(s, c)				ak_port_fatal((s), (uint8_t)(c))

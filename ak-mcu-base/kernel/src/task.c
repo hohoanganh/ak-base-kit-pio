@@ -41,6 +41,7 @@ static task_t*	task_table = (task_t*)0;
 static uint8_t	task_table_size = 0;
 static uint8_t	task_current = 0;
 static uint8_t	task_ready = 0;
+static uint32_t	task_alive = 0;
 
 static task_polling_t* task_polling_table = (task_polling_t*)0;
 static uint8_t	task_polling_table_size = 0;
@@ -239,6 +240,7 @@ int task_init() {
 	/* init task manager variable */
 	task_current = 0;
 	task_ready = 0;
+	task_alive = 0;
 	current_task_id = AK_TASK_IDLE_ID;
 	memset(&current_task_info, 0, sizeof(current_task_info));
 	current_task_info.id = AK_TASK_IDLE_ID;
@@ -280,6 +282,17 @@ int task_run() {
 			EXIT_CRITICAL();
 		}
 	}
+}
+
+uint32_t task_alive_take() {
+	uint32_t alive;
+
+	ENTRY_CRITICAL();
+	alive = task_alive;
+	task_alive = 0;
+	EXIT_CRITICAL();
+
+	return alive;
 }
 
 void task_polling_set_ability(task_id_t task_polling_id, uint8_t ability) {
@@ -361,6 +374,9 @@ static uint8_t task_sheduler() {
 		/* NOTE: switches to AK_TASK_INTERRUPT_ID while inside an ISR */
 		current_task_id = t_msg->des_task_id;
 
+		task_alive |= (uint32_t)1 << (t_msg->des_task_id & 31);
+		ak_port_note_dispatch(t_msg->des_task_id, t_msg->sig);
+
 		/* execute task */
 		EXIT_CRITICAL();
 
@@ -384,6 +400,7 @@ static uint8_t task_sheduler() {
 
 	current_task_info.id = AK_TASK_IDLE_ID;
 	current_task_id = AK_TASK_IDLE_ID;
+	ak_port_note_dispatch(AK_TASK_IDLE_ID, 0);
 
 	EXIT_CRITICAL();
 
