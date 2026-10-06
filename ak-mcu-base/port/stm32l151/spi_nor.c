@@ -2,7 +2,8 @@
  ******************************************************************************
  * @brief:  W25Qxx SPI NOR on SPI1 (PA5 SCK, PA6 MISO, PA7 MOSI), CS = PB14.
  *          Same wiring/SPI settings as the original ak-base-kit flash driver
- *          (mode 0, PCLK2/8). nRF24 CSN (PB9) shares SPI1 and is driven high.
+ *          (mode 0, PCLK2/8). PORT_KIT_NRF24_CSN = 1 also holds the CSN of an
+ *          nRF24 module on the same bus high (AK Base Kit socket).
  ******************************************************************************
 **/
 
@@ -28,7 +29,12 @@
 #define TIMEOUT_PROGRAM_MS		(20U)
 #define TIMEOUT_ERASE_MS		(1000U)
 
+/* One byte takes 2 us at 4 MHz; this is some ms. Only a dead SPI peripheral
+ * gets here, and then the loops must still end. */
+#define XFER_SPIN_MAX			(20000U)
+
 static uint32_t chip_size;
+static uint8_t bus_fault;		/* set by xfer() on timeout, cleared per operation */
 
 static inline void cs_low(void) {
 	PORT_NOR_CS_PORT->BSRRH = PORT_NOR_CS_PIN;
@@ -39,10 +45,20 @@ static inline void cs_high(void) {
 }
 
 static uint8_t xfer(uint8_t b) {
+	uint32_t spin = XFER_SPIN_MAX;
+
 	while (!(SPI1->SR & SPI_SR_TXE)) {
+		if (--spin == 0) {
+			bus_fault = 1;
+			return 0xFF;
+		}
 	}
 	SPI1->DR = b;
 	while (!(SPI1->SR & SPI_SR_RXNE)) {
+		if (--spin == 0) {
+			bus_fault = 1;
+			return 0xFF;
+		}
 	}
 	return (uint8_t)SPI1->DR;
 }
@@ -96,7 +112,7 @@ uint32_t spi_nor_init(void) {
 	uint32_t id;
 	uint8_t cap;
 
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA | PORT_NOR_CS_CLK | PORT_NRF_CSN_CLK, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA | PORT_NOR_CS_CLK, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
 
 	/* chip selects: output, idle high */
@@ -108,9 +124,12 @@ uint32_t spi_nor_init(void) {
 	gpio.GPIO_Pin = PORT_NOR_CS_PIN;
 	GPIO_Init(PORT_NOR_CS_PORT, &gpio);
 	cs_high();
+#if PORT_KIT_NRF24_CSN
+	RCC_AHBPeriphClockCmd(PORT_NRF_CSN_CLK, ENABLE);
 	gpio.GPIO_Pin = PORT_NRF_CSN_PIN;
 	GPIO_Init(PORT_NRF_CSN_PORT, &gpio);
 	GPIO_SetBits(PORT_NRF_CSN_PORT, PORT_NRF_CSN_PIN);
+#endif
 
 	/* SCK/MISO/MOSI */
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource5, GPIO_AF_SPI1);
@@ -158,13 +177,14 @@ int spi_nor_read(uint32_t addr, void* buf, uint32_t len) {
 	if (!chip_size) {
 		return SPI_NOR_ERR_ABSENT;
 	}
+	bus_fault = 0;
 	cs_low();
 	send_addr(CMD_READ_DATA, addr);
-	while (len--) {
+	while (len-- && !bus_fault) {
 		*p++ = xfer(0xFF);
 	}
 	cs_high();
-	return SPI_NOR_OK;
+	return bus_fault ? SPI_NOR_ERR_TIMEOUT : SPI_NOR_OK;
 }
 
 int spi_nor_write(uint32_t addr, const void* data, uint32_t len) {
@@ -173,6 +193,7 @@ int spi_nor_write(uint32_t addr, const void* data, uint32_t len) {
 	if (!chip_size) {
 		return SPI_NOR_ERR_ABSENT;
 	}
+	bus_fault = 0;
 	while (len) {
 		/* page program wraps inside a 256 B page: never cross a boundary */
 		uint32_t n = SPI_NOR_PAGE_SIZE - (addr % SPI_NOR_PAGE_SIZE);
@@ -186,7 +207,7 @@ int spi_nor_write(uint32_t addr, const void* data, uint32_t len) {
 			xfer(p[i]);
 		}
 		cs_high();
-		if (wait_ready(TIMEOUT_PROGRAM_MS) != SPI_NOR_OK) {
+		if (wait_ready(TIMEOUT_PROGRAM_MS) != SPI_NOR_OK || bus_fault) {
 			return SPI_NOR_ERR_TIMEOUT;
 		}
 		addr += n;
@@ -200,9 +221,13 @@ int spi_nor_erase_sector(uint32_t addr) {
 	if (!chip_size) {
 		return SPI_NOR_ERR_ABSENT;
 	}
+	bus_fault = 0;
 	write_enable();
 	cs_low();
 	send_addr(CMD_SECTOR_ERASE, addr);
 	cs_high();
-	return wait_ready(TIMEOUT_ERASE_MS);
+	if (wait_ready(TIMEOUT_ERASE_MS) != SPI_NOR_OK || bus_fault) {
+		return SPI_NOR_ERR_TIMEOUT;
+	}
+	return SPI_NOR_OK;
 }

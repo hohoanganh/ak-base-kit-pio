@@ -65,7 +65,9 @@ class SerialLink:
         self.s.write(data)
 
     def read(self):
-        return self.s.read(4096)
+        # return what has arrived; read(4096) would sit out the whole port
+        # timeout on every short response (50 ms per DATA chunk)
+        return self.s.read(self.s.in_waiting or 1)
 
     def close(self):
         self.s.close()

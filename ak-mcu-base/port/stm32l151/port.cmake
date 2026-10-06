@@ -44,6 +44,18 @@ set(PORT_INC
 )
 
 set(MCU_FLAGS -mcpu=cortex-m3 -mthumb -mfloat-abi=soft)
+
+# Link-time optimization: about 14% smaller boot and app.
+option(AK_LTO "Build boot/app with -flto" ON)
+if(AK_LTO)
+	list(APPEND MCU_FLAGS -flto)
+endif()
+
+# AK Base Kit with an nRF24 module in the socket (shares SPI1 with the SPI NOR)
+option(AK_KIT_NRF24 "Hold the nRF24 CSN (PB9) high" OFF)
+# Bootloader also runs an APP without image header (raw SWD flash, debug only)
+option(AK_BOOT_ALLOW_RAW_APP "Bootloader runs images without header" OFF)
+set(BOARD_DEFS PORT_KIT_NRF24_CSN=$<BOOL:${AK_KIT_NRF24}> BOOT_ALLOW_RAW_APP=$<BOOL:${AK_BOOT_ALLOW_RAW_APP}>)
 set(MCU_DEFS USE_STDPERIPH_DRIVER STM32L1XX_MD)
 set(MCU_WARN -Wall -Wextra -Wno-unused-parameter)
 
@@ -58,7 +70,7 @@ function(ak_firmware name ldscript)
 	add_executable(${name} ${FW_SOURCES})
 	set_target_properties(${name} PROPERTIES SUFFIX ".elf")
 	target_include_directories(${name} PRIVATE ${FW_INCS} ${BASE_INC} ${PORT_INC})
-	target_compile_definitions(${name} PRIVATE ${MCU_DEFS} ${VERSION_DEFS} ${STAGING_DEFS} ${FW_DEFS})
+	target_compile_definitions(${name} PRIVATE ${MCU_DEFS} ${VERSION_DEFS} ${STAGING_DEFS} ${BOARD_DEFS} ${FW_DEFS})
 	target_compile_options(${name} PRIVATE ${MCU_FLAGS} -Os -g -ffunction-sections -fdata-sections ${MCU_WARN} -Werror)
 	target_link_options(${name} PRIVATE ${MCU_FLAGS}
 		-T${PORT_DIR}/${ldscript} -L${PORT_DIR} -Wl,--defsym=__app_part_size=${APP_PART_SIZE}

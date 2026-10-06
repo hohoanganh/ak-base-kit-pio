@@ -228,6 +228,93 @@ static void test_timer_reset_existing(void) {
 	CHECK_EQ(log_n, 1);
 }
 
+static int count_sig(uint8_t sig) {
+	int n = 0;
+	for (int i = 0; i < log_n; i++) {
+		if (log_buf[i].sig == sig) {
+			n++;
+		}
+	}
+	return n;
+}
+
+/* A late tick (handler hogged the CPU) must not shift the following periods. */
+static void test_timer_periodic_no_drift(void) {
+	setup();
+	timer_set(TASK_MID_ID, SIG_B, 10, TIMER_PERIODIC);
+	for (int i = 0; i < 9; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(log_n, 0);
+	timer_tick(5);		/* t = 14: first period handled 4 ms late */
+	run_all();
+	CHECK_EQ(log_n, 1);
+	for (int i = 0; i < 5; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(log_n, 1);	/* t = 19 */
+	timer_tick(1);		/* t = 20: second period on schedule */
+	run_all();
+	CHECK_EQ(log_n, 2);
+}
+
+/* Ticks that piled up before timer_set() must not shorten the new timer. */
+static void test_timer_set_after_blocking(void) {
+	setup();
+	timer_set(TASK_MID_ID, SIG_B, 1000, TIMER_PERIODIC);
+	timer_tick(50);		/* 50 ms pass while a handler blocks the scheduler */
+	timer_set(TASK_LOW_ID, SIG_A, 100, TIMER_ONE_SHOT);
+	run_all();
+	for (int i = 0; i < 99; i++) {
+		timer_tick(1);
+		run_all();
+	}
+	CHECK_EQ(count_sig(SIG_A), 0);
+	timer_tick(1);
+	run_all();
+	CHECK_EQ(count_sig(SIG_A), 1);
+}
+
+/* The tick ISR only wakes the timer task when a timer is due. */
+static void test_timer_tick_only_when_due(void) {
+	int handled = 0;
+
+	setup();
+	timer_set(TASK_LOW_ID, SIG_A, 100, TIMER_ONE_SHOT);
+	for (int i = 0; i < 99; i++) {
+		timer_tick(1);
+		handled += task_run_once();
+	}
+	CHECK_EQ(handled, 0);
+	CHECK_EQ(get_pure_msg_pool_used(), 0);
+	timer_tick(1);
+	run_all();
+	CHECK_EQ(log_n, 1);
+}
+
+/* Outside any task the current id is IDLE, inside an ISR it is INTERRUPT. */
+static void test_src_task_id_idle_and_isr(void) {
+	setup();
+	CHECK_EQ(get_current_task_id(), AK_TASK_IDLE_ID);
+	task_post_pure_msg(TASK_MID_ID, SIG_A);
+	run_all();
+	CHECK_EQ(get_current_task_id(), AK_TASK_IDLE_ID);
+	CHECK_EQ(task_self(), AK_TASK_IDLE_ID);
+
+	task_entry_interrupt();
+	task_post_pure_msg(TASK_LOW_ID, SIG_B);
+	task_exit_interrupt();
+	/* back in idle context (polling task): must not inherit the last task */
+	CHECK_EQ(get_current_task_id(), AK_TASK_IDLE_ID);
+	task_post_pure_msg(TASK_LOW_ID, SIG_C);
+	run_all();
+	CHECK_EQ(log_n, 3);
+	CHECK_EQ(log_buf[1].src, AK_TASK_INTERRUPT_ID);
+	CHECK_EQ(log_buf[2].src, AK_TASK_IDLE_ID);
+}
+
 static void test_remove_msg(void) {
 	setup();
 	task_post_pure_msg(TASK_LOW_ID, SIG_A);
@@ -313,6 +400,10 @@ TT_MAIN_BEGIN("test_kernel")
 	RUN_TEST(test_timer_one_shot);
 	RUN_TEST(test_timer_periodic_and_remove);
 	RUN_TEST(test_timer_reset_existing);
+	RUN_TEST(test_timer_periodic_no_drift);
+	RUN_TEST(test_timer_set_after_blocking);
+	RUN_TEST(test_timer_tick_only_when_due);
+	RUN_TEST(test_src_task_id_idle_and_isr);
 	RUN_TEST(test_remove_msg);
 	RUN_TEST(test_fatal_bad_table);
 	RUN_TEST(test_fatal_pool_exhausted);

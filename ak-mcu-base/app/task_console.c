@@ -56,10 +56,22 @@ static void cmd_ver(const char* args) {
 			v->major, v->minor, v->patch, v->build, AK_VERSION, hal_board_name());
 }
 
-static void print_part(const char* name, flash_part_t part) {
+/* full = 0: header only (fast). full = 1: CRC of the whole image, which
+ * reads all of it (up to 116K over SPI for STAGING) while no task runs. */
+static void print_part(const char* name, flash_part_t part, uint8_t full) {
 	const flash_part_info_t* p = hal_flash_info(part);
 	fw_image_hdr_t hdr;
-	fw_err_t err = fw_image_verify(part, &hdr);
+	fw_err_t err;
+
+	if (full) {
+		err = fw_image_verify(part, &hdr);
+	}
+	else if (hal_flash_read(part, 0, &hdr, sizeof(hdr)) != HAL_FLASH_OK) {
+		err = FW_ERR_FLASH;
+	}
+	else {
+		err = fw_image_check_hdr(&hdr, p->size);
+	}
 
 	xprintf("  %-8s 0x%08X %6u B  ", name, p->addr, p->size);
 	if (err == FW_OK) {
@@ -75,15 +87,20 @@ static void cmd_info(const char* args) {
 	boot_ctrl_t ctrl;
 	(void)args;
 
-	xprintf("partitions:\n");
-	print_part("boot", FLASH_PART_BOOT);
-	print_part("app", FLASH_PART_APP);
-	print_part("staging", FLASH_PART_STAGING);
+	xprintf("partitions (header check, 'verify' for the full CRC):\n");
+	print_part("app", FLASH_PART_APP, 0);
+	print_part("staging", FLASH_PART_STAGING, 0);
 
 	boot_ctrl_load(&ctrl);
 	xprintf("boot_ctrl: cmd %d, attempts %d, last %s, installs %u\n", ctrl.cmd,
 			ctrl.install_attempts, fw_err_str((fw_err_t)ctrl.last_result), ctrl.install_count);
 	xprintf("reset reason %d, uptime %u ms\n", hal_reset_reason(), hal_millis());
+}
+
+static void cmd_verify(const char* args) {
+	(void)args;
+	print_part("app", FLASH_PART_APP, 1);
+	print_part("staging", FLASH_PART_STAGING, 1);
 }
 
 static void cmd_stat(const char* args) {
@@ -109,6 +126,7 @@ static const shell_cmd_t shell_cmds[] = {
 	{ "help",	"list commands",				cmd_help	},
 	{ "ver",	"firmware version",				cmd_ver		},
 	{ "info",	"partitions + boot state",		cmd_info	},
+	{ "verify",	"full CRC of app + staging",	cmd_verify	},
 	{ "stat",	"kernel pool usage",			cmd_stat	},
 	{ "reboot",	"software reset",				cmd_reboot	},
 	{ "loader",	"reset into bootloader loader",	cmd_loader	},
@@ -192,7 +210,15 @@ void task_poll_console(void) {
 		if (c == '\r' || c == '\n') {
 			if (line_len) {
 				xprintf("\n");
-				task_post_common_msg(TASK_CONSOLE_ID, CONSOLE_SIG_LINE, (uint8_t*)line_buf, line_len);
+				/* Lines pasted faster than they are executed (or line noise)
+				 * must not exhaust the pool: that is a FATAL reset. Keep one
+				 * message spare for a post from an ISR. */
+				if (get_common_msg_pool_used() + 2 <= AK_COMMON_MSG_POOL_SIZE) {
+					task_post_common_msg(TASK_CONSOLE_ID, CONSOLE_SIG_LINE, (uint8_t*)line_buf, line_len);
+				}
+				else {
+					xprintf("console busy, line dropped\n");
+				}
 				line_len = 0;
 			}
 		}

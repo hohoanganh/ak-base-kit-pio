@@ -277,6 +277,54 @@ static void test_boot_ctrl(void) {
 	CHECK_EQ(c.cmd, BOOT_CMD_NONE);
 }
 
+/* Power loss inside boot_ctrl_save(): NVM bytes are written one by one, so
+ * the NVM holds a prefix of the new bytes over the old ones. Whatever the cut
+ * point, load must return the old or the new state, never lose both. */
+static void test_boot_ctrl_torn_write(void) {
+	uint8_t before[HAL_NVM_SIZE];
+	uint8_t after[HAL_NVM_SIZE];
+	boot_ctrl_t c;
+	int lost = 0;
+
+	setup(0xFF);
+	CHECK_EQ(boot_ctrl_set_cmd(BOOT_CMD_UPDATE), 0);
+	memcpy(before, host_nvm_mem(), HAL_NVM_SIZE);
+	CHECK_EQ(boot_ctrl_set_cmd(BOOT_CMD_LOADER), 0);
+	memcpy(after, host_nvm_mem(), HAL_NVM_SIZE);
+
+	for (uint32_t k = 0; k <= HAL_NVM_SIZE; k++) {
+		memcpy(host_nvm_mem(), before, HAL_NVM_SIZE);
+		memcpy(host_nvm_mem(), after, k);
+		boot_ctrl_load(&c);
+		if (c.cmd != BOOT_CMD_UPDATE && c.cmd != BOOT_CMD_LOADER) {
+			lost++;
+		}
+	}
+	CHECK_EQ(lost, 0);
+}
+
+/* The record alternates between two slots; the newest one always wins, also
+ * after the sequence counter wraps. */
+static void test_boot_ctrl_many_saves(void) {
+	boot_ctrl_t c;
+	int wrong = 0;
+
+	setup(0xFF);
+	for (uint32_t i = 1; i <= 600; i++) {
+		boot_ctrl_load(&c);
+		c.install_count = i;
+		c.cmd = (uint8_t)(i % 3);
+		if (boot_ctrl_save(&c) != 0) {
+			wrong++;
+		}
+		boot_ctrl_load(&c);
+		if (c.install_count != i || c.cmd != (uint8_t)(i % 3)) {
+			wrong++;
+		}
+	}
+	CHECK_EQ(wrong, 0);
+}
+
 static void test_boot_runs_valid_app(void) {
 	uint32_t n;
 
@@ -585,6 +633,8 @@ TT_MAIN_BEGIN("test_fw")
 		RUN_TEST(test_upload_ok);
 		RUN_TEST(test_upload_errors);
 		RUN_TEST(test_boot_ctrl);
+		RUN_TEST(test_boot_ctrl_torn_write);
+		RUN_TEST(test_boot_ctrl_many_saves);
 		RUN_TEST(test_boot_runs_valid_app);
 		RUN_TEST(test_boot_skips_staging_when_app_ok);
 		RUN_TEST(test_boot_update_flow);

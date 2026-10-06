@@ -53,14 +53,24 @@
 /* Console USART1: PA9 TX, PA10 RX */
 #define PORT_CONSOLE_BAUD		(115200)
 #define PORT_CONSOLE_RX_BUF		(256)		/* power of 2 */
+#define PORT_CONSOLE_TX_BUF		(256)		/* power of 2, app only (boot TX is polled) */
 
-/* SPI NOR: SPI1 PA5/PA6/PA7, CS PB14. nRF24 CSN (PB9) shares SPI1. */
+/* SPI NOR: SPI1 PA5/PA6/PA7, CS PB14. */
 #define PORT_NOR_CS_PORT		GPIOB
 #define PORT_NOR_CS_PIN			GPIO_Pin_14
 #define PORT_NOR_CS_CLK			RCC_AHBPeriph_GPIOB
+
+/* AK Base Kit only: an nRF24 module in the kit socket shares SPI1, its CSN
+ * (PB9) must be held high or it answers on MISO. A product board has no such
+ * device: leave 0 and PB9 stays untouched. */
+#ifndef PORT_KIT_NRF24_CSN
+#define PORT_KIT_NRF24_CSN		(0)
+#endif
+#if PORT_KIT_NRF24_CSN
 #define PORT_NRF_CSN_PORT		GPIOB
 #define PORT_NRF_CSN_PIN		GPIO_Pin_9
 #define PORT_NRF_CSN_CLK		RCC_AHBPeriph_GPIOB
+#endif
 #define PORT_NOR_SPI_PRESCALER	SPI_BaudRatePrescaler_8	/* 32 MHz / 8 = 4 MHz, as ak-base-kit */
 
 /* LED life PB8, active high */

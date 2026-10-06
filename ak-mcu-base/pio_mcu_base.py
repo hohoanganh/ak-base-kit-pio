@@ -12,7 +12,7 @@ staging_external = env.GetProjectConfig().get("common", "staging_external", "1")
 app_part_size = "0x1D000" if staging_external else "0xE800"
 
 env.Append(LINKFLAGS=[
-    "-mcpu=cortex-m3", "-mthumb", "-mfloat-abi=soft",
+    "-mcpu=cortex-m3", "-mthumb", "-mfloat-abi=soft", "-Os", "-flto",
     "-Wl,--defsym=__app_part_size=" + app_part_size,
     "-nostartfiles", "--specs=nano.specs",
     "-Wl,--gc-sections", "-Wl,--print-memory-usage",

@@ -25,10 +25,19 @@
 #define BOOT_VER_PATCH		0
 #endif
 
-/* 1: allow running an APP without header (debug SWD flash). Set 0 in
- * production to run CRC-checked images only. */
+/* 0 (default): run CRC-checked images only. 1: also run an APP without
+ * header (raw .bin flashed over SWD while debugging). */
 #ifndef BOOT_ALLOW_RAW_APP
-#define BOOT_ALLOW_RAW_APP	1
+#define BOOT_ALLOW_RAW_APP	0
+#endif
+
+/* Bootloader watchdog: a hang (bus, flash) ends in a reset instead of a dead
+ * board; repeated failed installs are then stopped by the attempt counter.
+ * Kicked per copied page, per SPI NOR wait and in the loader loop. The
+ * longest stretch without a kick is a full image verify (well below 1 s).
+ * The app gets a stopped watchdog again: the jump goes through a reset. */
+#ifndef BOOT_WDT_TIMEOUT_MS
+#define BOOT_WDT_TIMEOUT_MS	(10000)
 #endif
 
 #define TAG "BOOT"
@@ -117,9 +126,12 @@ void boot_main(void) {
 	LOG_I(TAG, "ak-mcu-base bootloader v%d.%d.%d, board %s, reset reason %d\n",
 		  BOOT_VER_MAJOR, BOOT_VER_MINOR, BOOT_VER_PATCH, hal_board_name(), hal_reset_reason());
 
+	hal_wdt_start(BOOT_WDT_TIMEOUT_MS);
+
 	boot_ctrl_load(&ctrl);
 
 	for (;;) {
+		hal_wdt_kick();
 		app_err = fw_image_verify(FLASH_PART_APP, &app_hdr);
 
 		/* STAGING only matters for an update request or a broken app; skip

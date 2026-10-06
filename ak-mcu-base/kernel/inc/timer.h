@@ -44,7 +44,7 @@ typedef struct ak_timer_t {
 	task_id_t			des_task_id;	/* destination task id */
 	timer_sig_t			sig;			/* signal for application */
 
-	uint32_t			counter;		/* decrease each timer stick */
+	uint32_t			expire;			/* absolute kernel time (ms) of the next expiry */
 	uint32_t			period;			/* case one-shot timer, this field is equa 0 */
 } ak_timer_t;
 
@@ -52,6 +52,7 @@ extern void timer_init();
 extern void timer_tick(uint32_t t);
 extern void task_timer_tick(ak_msg_t* msg);
 
+/* duty (ms) must be below 2^31 (~24 days): expiry compares are wrap-safe. */
 extern uint8_t timer_set(task_id_t des_task_id, timer_sig_t sig, uint32_t duty, timer_type_t type);
 extern uint8_t timer_remove_attr(task_id_t des_task_id, timer_sig_t sig);
 

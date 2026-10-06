@@ -7,6 +7,10 @@
  *  clear cmd -> run app. Power loss midway: cmd is still set and STAGING is
  *  intact -> next boot copies again. NVM is NOT written on every boot
  *  (endurance).
+ *
+ *  The block is kept in two NVM slots written alternately. A save that is cut
+ *  by a power loss damages only the slot being written: the previous state is
+ *  still there, instead of everything falling back to defaults.
  ******************************************************************************
 **/
 
@@ -31,14 +35,15 @@ typedef struct {
 	uint8_t  cmd;
 	uint8_t  install_attempts;	/* consecutive unfinished install attempts */
 	uint8_t  last_result;		/* fw_err_t of the last install */
-	uint8_t  reserved;
+	uint8_t  seq;				/* slot sequence, set by boot_ctrl_save() */
 	uint32_t install_count;		/* total successful installs */
 	uint32_t crc32;
 } boot_ctrl_t;
 
-/* Load; blank/corrupt NVM yields defaults (cmd NONE). */
+/* Load the newest valid slot; blank/corrupt NVM yields defaults (cmd NONE). */
 extern void boot_ctrl_load(boot_ctrl_t* ctrl);
-/* Update crc and write. Returns 0 on success. */
+/* Update seq + crc and write to the slot not holding the newest state.
+ * Returns 0 on success. */
 extern int boot_ctrl_save(boot_ctrl_t* ctrl);
 /* Helper for the app: load, change cmd, save. */
 extern int boot_ctrl_set_cmd(uint8_t cmd);

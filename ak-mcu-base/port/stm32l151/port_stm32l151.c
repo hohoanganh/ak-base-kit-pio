@@ -76,10 +76,17 @@ void ak_port_idle(void) {
 }
 
 /*----------------------------------------------------------------------------
- * console USART1 (PA9/PA10): RX interrupt -> ring, TX polled
+ * console USART1 (PA9/PA10): RX interrupt -> ring.
+ * TX: app = ring + TXE interrupt (a log line does not hold the task for its
+ * whole transmit time), bootloader = polled (single loop, smaller).
  *--------------------------------------------------------------------------*/
 static volatile uint8_t rx_buf[PORT_CONSOLE_RX_BUF];
 static volatile uint16_t rx_head, rx_tail;
+
+#if !defined(AK_BOOTLOADER)
+static volatile uint8_t tx_buf[PORT_CONSOLE_TX_BUF];
+static volatile uint16_t tx_head, tx_tail;
+#endif
 
 void usart1_irq_handler(void) {
 	if (USART1->SR & (USART_SR_RXNE | USART_SR_ORE)) {
@@ -90,6 +97,22 @@ void usart1_irq_handler(void) {
 			rx_head = next;
 		}
 	}
+
+#if !defined(AK_BOOTLOADER)
+	/* masked: hal_console_putc() from a higher priority ISR also touches
+	 * the ring and CR1 */
+	__disable_irq();
+	if ((USART1->CR1 & USART_CR1_TXEIE) && (USART1->SR & USART_SR_TXE)) {
+		if (tx_tail != tx_head) {
+			USART1->DR = tx_buf[tx_tail];
+			tx_tail = (uint16_t)((tx_tail + 1) & (PORT_CONSOLE_TX_BUF - 1));
+		}
+		else {
+			USART1->CR1 &= (uint16_t)~USART_CR1_TXEIE;
+		}
+	}
+	__enable_irq();
+#endif
 }
 
 int hal_console_getc(void) {
@@ -103,6 +126,7 @@ int hal_console_getc(void) {
 	return c;
 }
 
+#if defined(AK_BOOTLOADER)
 void hal_console_putc(uint8_t c) {
 	while (!(USART1->SR & USART_SR_TXE)) {
 	}
@@ -113,6 +137,55 @@ void hal_console_flush(void) {
 	while (!(USART1->SR & USART_SR_TC)) {
 	}
 }
+#else
+/* Send the oldest queued byte without the interrupt. Interrupts masked. */
+static void tx_drain_one(void) {
+	while (!(USART1->SR & USART_SR_TXE)) {
+	}
+	USART1->DR = tx_buf[tx_tail];
+	tx_tail = (uint16_t)((tx_tail + 1) & (PORT_CONSOLE_TX_BUF - 1));
+}
+
+/* Never drops a byte. Ring full: a task waits for the TXE interrupt to make
+ * room; with interrupts masked or inside an ISR (FATAL, critical section)
+ * the oldest byte is sent polled instead, so it works in every context. */
+void hal_console_putc(uint8_t c) {
+	uint32_t primask = __get_PRIMASK();
+	uint16_t next;
+
+	for (;;) {
+		__disable_irq();
+		next = (uint16_t)((tx_head + 1) & (PORT_CONSOLE_TX_BUF - 1));
+		if (next != tx_tail) {
+			break;
+		}
+		if (primask == 0 && (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) == 0) {
+			__enable_irq();		/* let the TXE interrupt drain */
+		}
+		else {
+			tx_drain_one();
+		}
+	}
+
+	tx_buf[tx_head] = c;
+	tx_head = next;
+	USART1->CR1 |= USART_CR1_TXEIE;
+	__set_PRIMASK(primask);
+}
+
+/* Called before reset / in FATAL: push everything out polled. */
+void hal_console_flush(void) {
+	uint32_t primask = __get_PRIMASK();
+
+	__disable_irq();
+	while (tx_tail != tx_head) {
+		tx_drain_one();
+	}
+	while (!(USART1->SR & USART_SR_TC)) {
+	}
+	__set_PRIMASK(primask);
+}
+#endif
 
 static void console_init(void) {
 	GPIO_InitTypeDef gpio;
@@ -230,8 +303,9 @@ void ak_port_fatal(const char* s, uint8_t c) {
 	}
 }
 
-/* HardFault: save PC/LR in .noinit, report on next boot, reset. */
-void hard_fault_c(uint32_t* frame) {
+/* HardFault: save PC/LR in .noinit, report on next boot, reset.
+ * used: only referenced from the asm below, LTO would drop it. */
+__attribute__((used)) void hard_fault_c(uint32_t* frame) {
 	port_noinit.fault_pc = frame[6];
 	port_noinit.fault_lr = frame[5];
 	port_noinit.fault_cfsr = SCB->CFSR;

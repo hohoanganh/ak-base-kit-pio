@@ -10,6 +10,10 @@
  *     returned if_des_task_id -> wrong src_task_id on messages sent by tasks).
  *   - LOG2LKUP(0) guarded (UB on host).
  *   - task_run_once() added for host tests / simulation.
+ *   - outside a task the current id is AK_TASK_IDLE_ID (original kept the
+ *     last task after the first interrupt -> wrong src_task_id from polling).
+ *   - task_run() checks the ready set and idles with interrupts masked, so a
+ *     message posted by an ISR in between is not left waiting for the next IRQ.
  ******************************************************************************
 **/
 
@@ -237,6 +241,7 @@ int task_init() {
 	task_ready = 0;
 	current_task_id = AK_TASK_IDLE_ID;
 	memset(&current_task_info, 0, sizeof(current_task_info));
+	current_task_info.id = AK_TASK_IDLE_ID;
 
 	/* init kernel queue */
 	for (pri = 1; pri <= TASK_PRI_MAX_SIZE; pri++) {
@@ -267,7 +272,12 @@ int task_run() {
 
 	for (;;) {
 		if (task_run_once() == 0) {
-			ak_port_idle();
+			/* interrupts stay masked from the check until the port sleeps */
+			ENTRY_CRITICAL();
+			if (task_ready == 0) {
+				ak_port_idle();
+			}
+			EXIT_CRITICAL();
 		}
 	}
 }
@@ -345,8 +355,8 @@ static uint8_t task_sheduler() {
 		task_current = t_task_new;
 
 		/* update current ak object */
-		memcpy(&current_task_info, &task_table[t_msg->des_task_id], sizeof(task_t));
-		memcpy(&current_active_object, t_msg, sizeof(ak_msg_t));
+		current_task_info = task_table[t_msg->des_task_id];
+		current_active_object = *t_msg;
 
 		/* NOTE: switches to AK_TASK_INTERRUPT_ID while inside an ISR */
 		current_task_id = t_msg->des_task_id;
@@ -372,6 +382,7 @@ static uint8_t task_sheduler() {
 
 	task_current = t_task_current;
 
+	current_task_info.id = AK_TASK_IDLE_ID;
 	current_task_id = AK_TASK_IDLE_ID;
 
 	EXIT_CRITICAL();

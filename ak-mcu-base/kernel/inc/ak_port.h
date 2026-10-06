@@ -37,7 +37,9 @@ extern uint32_t ak_port_millis(void);
  * Never returns. */
 extern void ak_port_fatal(const char* s, uint8_t c) __attribute__((noreturn));
 
-/* Called by the scheduler loop when no message is pending (WFI / sleep). */
+/* Called by the scheduler loop when no message is pending (WFI / sleep).
+ * Runs inside a critical section: the port must sleep in a way that a pending
+ * interrupt still wakes it (Cortex-M WFI does, also with PRIMASK set). */
 extern void ak_port_idle(void);
 
 #define ENTRY_CRITICAL()		ak_port_enter_critical()
