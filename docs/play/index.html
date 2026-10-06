@@ -120,11 +120,13 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
         <button type="button" data-btn="4">B3<small>phím 3 · giữ = về menu</small></button>
       </div>
       <div class="opts">
-        <button type="button" id="sound" aria-pressed="false">Âm thanh: tắt</button>
+        <button type="button" id="sound" aria-pressed="false" title="Bật để nghe còi của kit; khi bật sẽ có một tiếng bíp thử">Âm thanh: tắt</button>
         <button type="button" id="auto" aria-pressed="false">Tự chơi: tắt</button>
         <label class="file">Nạp clip .akv<input type="file" id="clip" accept=".akv"></label>
       </div>
-      <p class="hint">Dòng cuối màn hình ghi chức năng của từng nút. Trong menu: B1 xuống, B2 lên, B3 mở.</p>
+      <p class="hint">Dòng cuối màn hình ghi chức năng của từng nút. Trong menu: B1 xuống, B2 lên, B3 mở.<br>
+      Còi của kit mặc định tắt: bấm <b>Âm thanh</b> để bật, sẽ có một tiếng bíp thử. Trên iPhone, gạt công tắc im lặng
+      về chế độ có chuông thì mới nghe được.</p>
     </section>
 
     <section class="side">
@@ -171,7 +173,8 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
   var image = ctx.createImageData(W, H);
   var kit = null, panel = 0, io = 0;
   var mask = 0, last = 0, lastPanel = new Uint8Array(W * 8);
-  var audio = null, osc = null, gain = null, soundOn = false, lastHz = -1;
+  var audio = null, osc = null, gain = null, soundOn = false, lastHz = -1, testUntil = 0;
+  var VOLUME = 0.2;
   var wire = ("BroadcastChannel" in window) ? new BroadcastChannel("ak-kit-rs485") : null;
   var pendingRx = [], timer = 0;
 
@@ -225,11 +228,12 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
 
   function buzzer() {
     var hz = kit._web_buzzer();
+    if (performance.now() < testUntil) { return; }      /* the test beep is sounding */
     if (hz === lastHz || !soundOn || !audio) { return; }
     lastHz = hz;
     if (hz >= 20) {
       osc.frequency.setValueAtTime(hz, audio.currentTime);
-      gain.gain.setValueAtTime(0.04, audio.currentTime);
+      gain.gain.setValueAtTime(VOLUME, audio.currentTime);
     } else {
       gain.gain.setValueAtTime(0, audio.currentTime);
     }
@@ -276,6 +280,7 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
   /* ---- buttons: pointer and keyboard both just set the mask the firmware polls ---- */
   var MIN_PRESS_MS = 70, downAt = {};
   function press(bit, down, late) {
+    if (down && soundOn && audio && audio.state !== "running") { audio.resume(); }
     /* the firmware debounces its buttons: a tap shorter than that would be lost */
     if (down) {
       downAt[bit] = performance.now();
@@ -321,7 +326,18 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
       osc.start();
     }
     if (audio) {
-      if (soundOn) { audio.resume(); } else { gain.gain.setValueAtTime(0, audio.currentTime); }
+      if (soundOn) {
+        /* a short beep right away: the listener knows at once whether sound gets through
+         * (phone volume, silent switch) without having to find a screen that makes noise */
+        audio.resume();
+        osc.frequency.setValueAtTime(1760, audio.currentTime);
+        gain.gain.setValueAtTime(VOLUME, audio.currentTime);
+        gain.gain.setValueAtTime(0, audio.currentTime + 0.15);
+        testUntil = performance.now() + 200;
+      } else {
+        gain.gain.cancelScheduledValues(audio.currentTime);
+        gain.gain.setValueAtTime(0, audio.currentTime);
+      }
     }
     lastHz = -1;
     setToggle("sound", "Âm thanh", soundOn);
