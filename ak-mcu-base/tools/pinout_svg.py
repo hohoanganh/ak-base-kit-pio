@@ -6,8 +6,10 @@ the AK Base Kit, as an SVG for the documentation.
   python tools/pinout_svg.py ../docs/kit/stm32l151-pinout.svg
 
 The table below is the single place where the pins are written down for the
-picture. Pins the firmware drives come from port/stm32l151 (port_cfg.h,
-kit.c, rs485.c); header pins come from the silkscreen of the board.
+picture. It was checked against the schematic "AK MCU KIT 3.0" (sheet 7 MCU,
+sheet 5 LCD, sheet 6 Connectors, 12 May 2026) and agrees with what the
+firmware configures in port/stm32l151 (port_cfg.h, kit.c, rs485.c).
+The connectors of the board are drawn by connectors_svg.py.
 """
 
 import sys
@@ -22,61 +24,60 @@ GROUPS = {
     "rs485":   ("#6aa6ff", "RS485 trên UART2: Modbus, OTA, Pong"),
     "flash":   ("#c792ea", "Flash SPI: vùng chờ OTA, clip video"),
     "oled":    ("#22d3ee", "Màn hình OLED 128×64 (I2C mềm)"),
-    "i2c":     ("#f472b6", "I2C: RTC, cảm biến SHT45, cổng nối"),
+    "i2c":     ("#f472b6", "I2C1: RTC và các cổng I2C"),
     "button":  ("#facc15", "Ba nút bấm"),
     "out":     ("#fb7185", "Còi, LED"),
-    "header":  ("#9fb3c8", "Ra chân cắm, firmware chưa dùng"),
-    "free":    ("#4b5a6b", "Firmware không dùng"),
+    "header":  ("#9fb3c8", "Ra cổng mở rộng, firmware chưa dùng"),
 }
 
 # pin number -> (name, what it does on the kit, group); LQFP-48, counter-clockwise from pin 1
 PINS = {
     1: ("VLCD", "nguồn", "power"),
     2: ("PC13", "nút B2", "button"),
-    3: ("PC14", "chân cắm J13", "header"),
-    4: ("PC15", "chân cắm J13", "header"),
+    3: ("PC14", "J13", "header"),
+    4: ("PC15", "J13", "header"),
     5: ("PH0", "OSC_IN", "clock"),
     6: ("PH1", "OSC_OUT", "clock"),
-    7: ("NRST", "nút RESET", "power"),
+    7: ("NRST", "nút RESET, J6", "power"),
     8: ("VSSA", "GND", "power"),
     9: ("VDDA", "3V3", "power"),
-    10: ("PA0", "chân cắm J13", "header"),
+    10: ("PA0", "J13", "header"),
     11: ("PA1", "RS485 DIR", "rs485"),
     12: ("PA2", "RS485 TX (USART2)", "rs485"),
     13: ("PA3", "RS485 RX", "rs485"),
-    14: ("PA4", "", "free"),
+    14: ("PA4", "J6 (CSN)", "header"),
     15: ("PA5", "flash SCK", "flash"),
     16: ("PA6", "flash MISO", "flash"),
     17: ("PA7", "flash MOSI", "flash"),
     18: ("PB0", "còi (PWM)", "out"),
-    19: ("PB1", "", "free"),
+    19: ("PB1", "J6 (IRQ)", "header"),
     20: ("PB2", "BOOT1", "power"),
-    21: ("PB10", "UART3 TX (J5)", "header"),
-    22: ("PB11", "UART3 RX (J5)", "header"),
+    21: ("PB10", "UART3 TX", "header"),
+    22: ("PB11", "UART3 RX", "header"),
     23: ("VSS", "GND", "power"),
     24: ("VDD", "3V3", "power"),
     25: ("PB12", "OLED SDA", "oled"),
     26: ("PB13", "OLED SCL", "oled"),
     27: ("PB14", "flash CS", "flash"),
-    28: ("PB15", "chân cắm J13", "header"),
-    29: ("PA8", "", "free"),
+    28: ("PB15", "J13", "header"),
+    29: ("PA8", "J6 (CE)", "header"),
     30: ("PA9", "console TX (USART1)", "console"),
     31: ("PA10", "console RX (USART1)", "console"),
-    32: ("PA11", "chân cắm J13", "header"),
-    33: ("PA12", "chân cắm J13", "header"),
+    32: ("PA11", "J13", "header"),
+    33: ("PA12", "J13", "header"),
     34: ("PA13", "SWDIO", "debug"),
     35: ("VSS", "GND", "power"),
     36: ("VDD", "3V3", "power"),
     37: ("PA14", "SWCLK", "debug"),
-    38: ("PA15", "OLED RES", "oled"),
+    38: ("PA15", "OLED RES, J13", "oled"),
     39: ("PB3", "nút B1", "button"),
     40: ("PB4", "nút B3", "button"),
-    41: ("PB5", "chân cắm J13", "header"),
+    41: ("PB5", "J13", "header"),
     42: ("PB6", "I2C SCL", "i2c"),
     43: ("PB7", "I2C SDA", "i2c"),
-    44: ("BOOT0", "", "power"),
-    45: ("PB8", "LED nhịp tim", "out"),
-    46: ("PB9", "chân cắm J13", "header"),
+    44: ("BOOT0", "nút BOOT0", "power"),
+    45: ("PB8", "LED đỏ (thấp = sáng)", "out"),
+    46: ("PB9", "J13", "header"),
     47: ("VSS", "GND", "power"),
     48: ("VDD", "3V3", "power"),
 }
@@ -108,7 +109,7 @@ def main():
     # title, top left corner
     a('<text x="48" y="64" fill="%s" font-family="%s" font-size="30" font-weight="700">STM32L151CBT6 trên AK Base Kit</text>'
       % (TEXT, SANS))
-    a('<text x="48" y="96" fill="%s" font-family="%s" font-size="17">Chân nào làm việc gì trong firmware ak-mcu-base</text>'
+    a('<text x="48" y="96" fill="%s" font-family="%s" font-size="17">Chân nào làm việc gì trong firmware ak-mcu-base · đã đối chiếu với schematic AK MCU KIT 3.0</text>'
       % (MUTED, SANS))
 
     # the package
@@ -128,8 +129,8 @@ def main():
         name, what, group = PINS[n]
         colour = GROUPS[group][0]
         side, k = (n - 1) // 12, (n - 1) % 12
-        quiet = group in ("free", "power", "clock")
-        name_fill = MUTED if group == "free" else TEXT
+        quiet = group in ("power", "clock")
+        name_fill = TEXT
         label = '<tspan fill="%s" font-weight="700">%s</tspan>' % (name_fill, escape(name))
         if what:
             label += '<tspan fill="%s" dx="10">%s</tspan>' % (colour, escape(what))

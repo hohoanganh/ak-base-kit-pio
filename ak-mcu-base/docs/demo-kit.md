@@ -2,7 +2,7 @@
 
 **Không có kit? [Chạy thử ngay trên trình duyệt](https://hohoanganh.github.io/ak-base-kit-pio/play/)**: chính firmware này, biên dịch sang WebAssembly.
 
-Bộ demo chạy trên nền `ak-mcu-base`, dùng màn hình OLED 128×64, ba nút bấm, còi, cảm biến SHT45 và flash SPI của kit.
+Bộ demo chạy trên nền `ak-mcu-base`, dùng màn hình OLED 128×64, ba nút bấm, còi và flash SPI của kit, cùng một mô-đun cảm biến SHT45 cắm vào cổng I2C.
 Nó vẫn giữ nguyên mọi thứ của app mẫu: shell, OTA qua UART, Modbus slave, nhật ký sự cố.
 
 ![Demo trên AK Base Kit: một vòng qua tất cả màn hình](demo-tour.gif)
@@ -90,7 +90,7 @@ Ba nút dưới màn hình, từ trái sang phải: B1, B2, B3. Dòng cuối mà
 - **Mê cung 3D** vẽ bằng ray casting: mỗi cột màn hình bắn một tia qua lưới bản đồ, khoảng cách tới tường cho ra chiều cao
   lát tường. Bấm hoặc giữ B1/B2 để quay, B3 để đi; tới cửa có sọc là xong, màn hình báo số giây.
 - **Video** phát clip nằm trong flash SPI, lặp lại khi hết. Chưa nạp clip thì màn hình nhắc cách nạp (xem mục dưới).
-- **Trạm thời tiết** đọc SHT45 mỗi giây, kể cả khi đang mở màn hình khác. Đồ thị có 96 điểm; B2 chọn mỗi điểm cách nhau
+- **Trạm thời tiết** cần một mô-đun SHT45 cắm vào cổng I2C (J7 hoặc J9); cảm biến này không nằm trên bo. Nó đọc SHT45 mỗi giây, kể cả khi đang mở màn hình khác. Đồ thị có 96 điểm; B2 chọn mỗi điểm cách nhau
   1 giây, 1 phút hoặc 15 phút (96 điểm × 15 phút = 24 giờ). Đổi nhịp là xoá đồ thị. Số liệu nằm trong RAM, mất khi reset.
 - **Hệ thống** hiện uptime, mức dùng pool message, RAM chưa từng dùng, số bản ghi sự cố, thời gian vẽ khung trước.
 
@@ -258,8 +258,19 @@ Mã màn hình không đụng tới chip (`demo/kit.h` là ranh giới), nên th
 
 ![Sơ đồ chân STM32L151CBT6 trên AK Base Kit](../../docs/kit/stm32l151-pinout.svg)
 
-Sơ đồ chân sinh bởi `tools/pinout_svg.py` từ đúng cấu hình trong `port/stm32l151`. Các chân ghi "chân cắm J13" và UART3
-được đưa ra chân cắm trên bo nhưng firmware này chưa dùng.
+Sơ đồ chân sinh bởi `tools/pinout_svg.py`, đã đối chiếu với schematic AK MCU KIT 3.0 (trang MCU, LCD, Connectors) và khớp
+với cấu hình trong `port/stm32l151`. Các chân ghi J13, J6 và UART3 ra cổng mở rộng, firmware này chưa dùng.
+
+![Các cổng nối của AK Base Kit 3.0](../../docs/kit/connectors.svg)
+
+Sơ đồ cổng nối sinh bởi `tools/connectors_svg.py` theo trang Connectors và LCD của schematic.
+
+Hai điều schematic cho thấy mà firmware chưa theo:
+
+- **LED đỏ (PB8) sáng khi chân ở mức thấp** (net `LED_DBG_N`), còn `hal_led_set(1)` lại kéo chân lên cao. Nhịp tim vẫn
+  nháy, chỉ là ngược pha: "bật" trong firmware là tắt trên bo.
+- **Chân chọn chip của mô-đun SPI ở J6 là PA4**; tuỳ chọn `PORT_KIT_NRF24_CSN` trong `port_cfg.h` (mặc định tắt) vẫn trỏ PB9
+  theo kit đời trước.
 
 <details><summary>Bản dựng 3D của bo mạch (không phải ảnh chụp)</summary>
 
@@ -273,7 +284,7 @@ Sơ đồ chân sinh bởi `tools/pinout_svg.py` từ đúng cấu hình trong `
 | Nút B1, B2, B3 | PB3, PC13, PB4 | Nối GND, kéo lên trong chip |
 | Còi | PB0 (TIM3_CH3) | PWM |
 | RTC PCF85063 | SCL PB6, SDA PB7 | I2C `0x51`, bit-bang |
-| SHT45 | SCL PB6, SDA PB7 | I2C `0x44`, chung bus với RTC |
+| SHT45 (mô-đun cắm ngoài) | SCL PB6, SDA PB7 | I2C `0x44`, cắm vào J7 hoặc J9; không có trong schematic và BOM của bo |
 | Flash SPI (W25Q) | SPI1 PA5/PA6/PA7, CS PB14 | 0–512 KB: kho clip của demo; từ 512 KB: vùng chờ của OTA |
 
 PA15, PB3, PB4 là chân JTAG; demo dùng chúng làm GPIO nên JTAG mất, SWD vẫn dùng được.

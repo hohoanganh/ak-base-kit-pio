@@ -38,8 +38,8 @@ cập nhật firmware qua UART và RS485. Dựng lại từ
   <img src="docs/kit/board-view-top.png" alt="Sơ đồ mặt trên của bo: màn hình ở giữa, ba nút S1 S2 S3 phía dưới, các hàng chân RS485, UART3, I2C bên phải, SWD và console bên trái" width="49%">
 </p>
 
-STM32L151CBT6, màn hình OLED 1,54 inch 128×64, ba nút bấm, còi, RTC có pin, cảm biến nhiệt độ và độ ẩm, flash SPI,
-RS485, UART, I2C, USB Type-C. Ảnh và sơ đồ bo: [AK Foundation](https://github.com/the-ak-foundation/ak-base-kit-stm32l151/tree/main/hardware/images) (giấy phép MIT).
+STM32L151CBT6, màn hình OLED 1,54 inch 128×64, ba nút bấm, còi, RTC có pin, flash SPI 1 MB, RS485, UART, I2C,
+USB Type-C có sẵn mạch USB–UART. Ảnh và sơ đồ bo: [AK Foundation](https://github.com/the-ak-foundation/ak-base-kit-stm32l151/tree/main/hardware/images) (giấy phép MIT).
 
 ### Chân nào làm việc gì
 
@@ -47,8 +47,17 @@ RS485, UART, I2C, USB Type-C. Ảnh và sơ đồ bo: [AK Foundation](https://gi
   <img src="docs/kit/stm32l151-pinout.svg" alt="Sơ đồ chân STM32L151CBT6 trên AK Base Kit: console UART1 ở PA9 PA10, RS485 ở PA1 PA2 PA3, flash SPI ở PA5 PA6 PA7 PB14, OLED ở PB12 PB13 PA15, I2C ở PB6 PB7, ba nút ở PB3 PC13 PB4, còi PB0, LED PB8, SWD ở PA13 PA14" width="860">
 </p>
 
-Sơ đồ vẽ theo đúng cấu hình chân trong firmware (`ak-mcu-base/port/stm32l151`), sinh bởi
-[`tools/pinout_svg.py`](ak-mcu-base/tools/pinout_svg.py). Bảng chân dạng chữ: [demo-kit.md](ak-mcu-base/docs/demo-kit.md#phần-cứng-ak-base-kit-3i0).
+Sơ đồ đã đối chiếu với schematic AK MCU KIT 3.0 và khớp với cấu hình chân trong firmware
+(`ak-mcu-base/port/stm32l151`). Sinh bởi [`tools/pinout_svg.py`](ak-mcu-base/tools/pinout_svg.py).
+
+### Các cổng nối
+
+<p align="center">
+  <img src="docs/kit/connectors.svg" alt="Mười cổng nối của AK Base Kit 3.0 và tín hiệu trên từng chân: J14 nạp và console, J15 SWD, J12 console UART1, J10 RS485, J4 UART3, J7 I2C1, J13 chân vi điều khiển, J6 SPI mở rộng, J9 I2C và UART mở rộng, J3 màn hình OLED" width="860">
+</p>
+
+Theo schematic AK MCU KIT 3.0, sinh bởi [`tools/connectors_svg.py`](ak-mcu-base/tools/connectors_svg.py).
+Bảng chân dạng chữ: [demo-kit.md](ak-mcu-base/docs/demo-kit.md#phần-cứng-ak-base-kit-3i0).
 
 ## Repo có hai base — chọn cái nào
 

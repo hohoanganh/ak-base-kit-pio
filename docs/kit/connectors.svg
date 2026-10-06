@@ -1,0 +1,294 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1502" width="1280" height="1502" role="img" aria-labelledby="t d">
+<title id="t">Các cổng nối của AK Base Kit 3.0</title>
+<desc id="d">Mười cổng nối của bo, mỗi cổng liệt kê từng chân: tín hiệu và chân vi điều khiển tương ứng.</desc>
+<rect width="1280" height="1502" fill="#0b0f14"/>
+<text x="48" y="64" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="30" font-weight="700">Các cổng nối của AK Base Kit</text>
+<text x="48" y="96" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17">Chân nào mang tín hiệu gì, nối về chân nào của vi điều khiển · theo schematic AK MCU KIT 3.0</text>
+<rect x="48" y="128" width="384" height="294" rx="10" fill="#111821" stroke="#223041"/>
+<text x="66" y="160" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J14</text>
+<text x="118" y="160" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">Nạp và console</text>
+<text x="66" y="184" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">hàng chân 2,54 mm · 1×7</text>
+<rect x="66" y="204" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="219" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="110" y="219" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">3V3</text>
+<rect x="66" y="230" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="245" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="110" y="245" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="66" y="256" width="30" height="20" rx="3" fill="#f5a623"/>
+<text x="81" y="271" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="110" y="271" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SWCLK</text>
+<text x="414" y="271" text-anchor="end" fill="#f5a623" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA14</text>
+<rect x="66" y="282" width="30" height="20" rx="3" fill="#f5a623"/>
+<text x="81" y="297" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="110" y="297" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SWDIO</text>
+<text x="414" y="297" text-anchor="end" fill="#f5a623" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA13</text>
+<rect x="66" y="308" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="323" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">5</text>
+<text x="110" y="323" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="66" y="334" width="30" height="20" rx="3" fill="#a8ff3e"/>
+<text x="81" y="349" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">6</text>
+<text x="110" y="349" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">TX1</text>
+<text x="414" y="349" text-anchor="end" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA9</text>
+<rect x="66" y="360" width="30" height="20" rx="3" fill="#a8ff3e"/>
+<text x="81" y="375" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">7</text>
+<text x="110" y="375" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">RX1</text>
+<text x="414" y="375" text-anchor="end" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA10</text>
+<text x="66" y="408" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Chân 1 có 3V3 khi cầu hàn SB8 đóng (mặc định)</text>
+<rect x="456" y="128" width="384" height="216" rx="10" fill="#111821" stroke="#223041"/>
+<text x="474" y="160" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J15</text>
+<text x="526" y="160" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">Nạp SWD</text>
+<text x="474" y="184" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">JST-SH 1,0 mm · 4 chân</text>
+<rect x="474" y="204" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="489" y="219" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="518" y="219" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="474" y="230" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="489" y="245" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="518" y="245" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">3V3</text>
+<rect x="474" y="256" width="30" height="20" rx="3" fill="#f5a623"/>
+<text x="489" y="271" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="518" y="271" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SWCLK</text>
+<text x="822" y="271" text-anchor="end" fill="#f5a623" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA14</text>
+<rect x="474" y="282" width="30" height="20" rx="3" fill="#f5a623"/>
+<text x="489" y="297" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="518" y="297" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SWDIO</text>
+<text x="822" y="297" text-anchor="end" fill="#f5a623" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA13</text>
+<text x="474" y="330" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Chân 2 chỉ có 3V3 khi đóng SB9 (mặc định hở)</text>
+<rect x="864" y="128" width="384" height="216" rx="10" fill="#111821" stroke="#223041"/>
+<text x="882" y="160" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J12</text>
+<text x="934" y="160" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">Console UART1</text>
+<text x="882" y="184" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">JST-SH 1,0 mm · 4 chân</text>
+<rect x="882" y="204" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="219" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="926" y="219" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="882" y="230" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="245" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="926" y="245" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">5V</text>
+<rect x="882" y="256" width="30" height="20" rx="3" fill="#a8ff3e"/>
+<text x="897" y="271" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="926" y="271" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">TX1</text>
+<text x="1230" y="271" text-anchor="end" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA9</text>
+<rect x="882" y="282" width="30" height="20" rx="3" fill="#a8ff3e"/>
+<text x="897" y="297" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="926" y="297" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">RX1</text>
+<text x="1230" y="297" text-anchor="end" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA10</text>
+<text x="882" y="330" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Chân 2 có 5V khi SB7 đóng (mặc định)</text>
+<rect x="456" y="368" width="384" height="216" rx="10" fill="#111821" stroke="#223041"/>
+<text x="474" y="400" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J10</text>
+<text x="526" y="400" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">RS485</text>
+<text x="474" y="424" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">JST-SH 1,0 mm · 4 chân</text>
+<rect x="474" y="444" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="489" y="459" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="518" y="459" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="474" y="470" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="489" y="485" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="518" y="485" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">V_RS485</text>
+<rect x="474" y="496" width="30" height="20" rx="3" fill="#6aa6ff"/>
+<text x="489" y="511" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="518" y="511" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">B</text>
+<rect x="474" y="522" width="30" height="20" rx="3" fill="#6aa6ff"/>
+<text x="489" y="537" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="518" y="537" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">A</text>
+<text x="474" y="570" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Chân 2 chỉ có 5V khi đóng SB6 (mặc định hở)</text>
+<rect x="864" y="368" width="384" height="216" rx="10" fill="#111821" stroke="#223041"/>
+<text x="882" y="400" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J4</text>
+<text x="920" y="400" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">UART3</text>
+<text x="882" y="424" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">JST-SH 1,0 mm · 4 chân (Qwiic)</text>
+<rect x="882" y="444" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="459" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="926" y="459" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="882" y="470" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="485" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="926" y="485" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">V_UART3</text>
+<rect x="882" y="496" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="897" y="511" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="926" y="511" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">TX3</text>
+<text x="1230" y="511" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB10</text>
+<rect x="882" y="522" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="897" y="537" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="926" y="537" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">RX3</text>
+<text x="1230" y="537" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB11</text>
+<text x="882" y="570" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Nguồn chân 2: 3V3 mặc định, đổi sang 5V bằng SB4</text>
+<rect x="48" y="446" width="384" height="216" rx="10" fill="#111821" stroke="#223041"/>
+<text x="66" y="478" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J7</text>
+<text x="104" y="478" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">I2C1</text>
+<text x="66" y="502" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">JST-SH 1,0 mm · 4 chân (Qwiic)</text>
+<rect x="66" y="522" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="537" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="110" y="537" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="66" y="548" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="563" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="110" y="563" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">V_I2C</text>
+<rect x="66" y="574" width="30" height="20" rx="3" fill="#f472b6"/>
+<text x="81" y="589" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="110" y="589" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SDA</text>
+<text x="414" y="589" text-anchor="end" fill="#f472b6" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB7</text>
+<rect x="66" y="600" width="30" height="20" rx="3" fill="#f472b6"/>
+<text x="81" y="615" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="110" y="615" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SCL</text>
+<text x="414" y="615" text-anchor="end" fill="#f472b6" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB6</text>
+<text x="66" y="648" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Nguồn chân 2: 3V3 mặc định, đổi sang 5V bằng SB5</text>
+<rect x="456" y="608" width="384" height="424" rx="10" fill="#111821" stroke="#223041"/>
+<text x="474" y="640" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J13</text>
+<text x="526" y="640" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">Chân vi điều khiển</text>
+<text x="474" y="664" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">hàng chân 2,54 mm · 2×6</text>
+<rect x="474" y="684" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="489" y="699" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="518" y="699" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="474" y="710" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="489" y="725" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="518" y="725" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">3V3</text>
+<rect x="474" y="736" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="489" y="751" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="518" y="751" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PA0</text>
+<text x="822" y="751" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA0</text>
+<rect x="474" y="762" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="489" y="777" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="518" y="777" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PC14</text>
+<text x="822" y="777" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PC14</text>
+<rect x="474" y="788" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="489" y="803" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">5</text>
+<text x="518" y="803" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PA11</text>
+<text x="822" y="803" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA11</text>
+<rect x="474" y="814" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="489" y="829" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">6</text>
+<text x="518" y="829" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PC15</text>
+<text x="822" y="829" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PC15</text>
+<rect x="474" y="840" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="489" y="855" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">7</text>
+<text x="518" y="855" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PA12</text>
+<text x="822" y="855" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA12</text>
+<rect x="474" y="866" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="489" y="881" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">8</text>
+<text x="518" y="881" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PB5</text>
+<text x="822" y="881" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB5</text>
+<rect x="474" y="892" width="30" height="20" rx="3" fill="#22d3ee"/>
+<text x="489" y="907" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">9</text>
+<text x="518" y="907" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PA15</text>
+<text x="822" y="907" text-anchor="end" fill="#22d3ee" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA15</text>
+<rect x="474" y="918" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="489" y="933" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">10</text>
+<text x="518" y="933" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PB9</text>
+<text x="822" y="933" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB9</text>
+<rect x="474" y="944" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="489" y="959" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">11</text>
+<text x="518" y="959" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="474" y="970" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="489" y="985" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">12</text>
+<text x="518" y="985" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">PB15</text>
+<text x="822" y="985" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB15</text>
+<text x="474" y="1018" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">PC14, PC15 tới đây qua cầu hàn SB13, SB14 (mặc định đóng)</text>
+<rect x="864" y="608" width="384" height="372" rx="10" fill="#111821" stroke="#223041"/>
+<text x="882" y="640" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J6</text>
+<text x="920" y="640" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">SPI mở rộng</text>
+<text x="882" y="664" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">hàng chân 2,54 mm · 2×5</text>
+<rect x="882" y="684" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="699" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="926" y="699" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="882" y="710" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="725" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="926" y="725" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">3V3</text>
+<rect x="882" y="736" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="897" y="751" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="926" y="751" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">CE</text>
+<text x="1230" y="751" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA8</text>
+<rect x="882" y="762" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="897" y="777" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="926" y="777" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">CSN</text>
+<text x="1230" y="777" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA4</text>
+<rect x="882" y="788" width="30" height="20" rx="3" fill="#c792ea"/>
+<text x="897" y="803" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">5</text>
+<text x="926" y="803" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SCK</text>
+<text x="1230" y="803" text-anchor="end" fill="#c792ea" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA5</text>
+<rect x="882" y="814" width="30" height="20" rx="3" fill="#c792ea"/>
+<text x="897" y="829" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">6</text>
+<text x="926" y="829" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">MOSI</text>
+<text x="1230" y="829" text-anchor="end" fill="#c792ea" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA7</text>
+<rect x="882" y="840" width="30" height="20" rx="3" fill="#c792ea"/>
+<text x="897" y="855" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">7</text>
+<text x="926" y="855" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">MISO</text>
+<text x="1230" y="855" text-anchor="end" fill="#c792ea" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA6</text>
+<rect x="882" y="866" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="897" y="881" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">8</text>
+<text x="926" y="881" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">IRQ</text>
+<text x="1230" y="881" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB1</text>
+<rect x="882" y="892" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="907" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">9</text>
+<text x="926" y="907" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="882" y="918" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="933" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">10</text>
+<text x="926" y="933" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">NRST</text>
+<text x="1230" y="933" text-anchor="end" fill="#7c8a9a" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">NRST</text>
+<text x="882" y="966" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Xếp chân như mô-đun nRF24L01+; cũng dùng cho W5500</text>
+<rect x="48" y="686" width="384" height="352" rx="10" fill="#111821" stroke="#223041"/>
+<text x="66" y="718" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J9</text>
+<text x="104" y="718" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">I2C và UART mở rộng</text>
+<text x="66" y="742" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">hàng chân 2,54 mm · 2×5</text>
+<rect x="66" y="762" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="777" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="110" y="777" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="66" y="788" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="803" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="110" y="803" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">3V3</text>
+<rect x="66" y="814" width="30" height="20" rx="3" fill="#f472b6"/>
+<text x="81" y="829" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="110" y="829" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SCL</text>
+<text x="414" y="829" text-anchor="end" fill="#f472b6" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB6</text>
+<rect x="66" y="840" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="855" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="110" y="855" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="66" y="866" width="30" height="20" rx="3" fill="#f472b6"/>
+<text x="81" y="881" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">5</text>
+<text x="110" y="881" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SDA</text>
+<text x="414" y="881" text-anchor="end" fill="#f472b6" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB7</text>
+<rect x="66" y="892" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="907" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">6</text>
+<text x="110" y="907" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="66" y="918" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="81" y="933" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">7</text>
+<text x="110" y="933" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">TX3</text>
+<text x="414" y="933" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB10</text>
+<rect x="66" y="944" width="30" height="20" rx="3" fill="#9fb3c8"/>
+<text x="81" y="959" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">8</text>
+<text x="110" y="959" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">RX3</text>
+<text x="414" y="959" text-anchor="end" fill="#9fb3c8" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB11</text>
+<rect x="66" y="970" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="985" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">9</text>
+<text x="110" y="985" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="66" y="996" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="81" y="1011" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">10</text>
+<text x="110" y="1011" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">5V</text>
+<rect x="864" y="1004" width="384" height="294" rx="10" fill="#111821" stroke="#223041"/>
+<text x="882" y="1036" fill="#a8ff3e" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="21" font-weight="700">J3</text>
+<text x="920" y="1036" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="19" font-weight="600">Màn hình OLED</text>
+<text x="882" y="1060" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">hàng chân 2,54 mm · 1×7</text>
+<rect x="882" y="1080" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="1095" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">1</text>
+<text x="926" y="1095" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">GND</text>
+<rect x="882" y="1106" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="1121" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">2</text>
+<text x="926" y="1121" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">3V3</text>
+<rect x="882" y="1132" width="30" height="20" rx="3" fill="#22d3ee"/>
+<text x="897" y="1147" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">3</text>
+<text x="926" y="1147" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SCL</text>
+<text x="1230" y="1147" text-anchor="end" fill="#22d3ee" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB13</text>
+<rect x="882" y="1158" width="30" height="20" rx="3" fill="#22d3ee"/>
+<text x="897" y="1173" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">4</text>
+<text x="926" y="1173" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">SDA</text>
+<text x="1230" y="1173" text-anchor="end" fill="#22d3ee" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PB12</text>
+<rect x="882" y="1184" width="30" height="20" rx="3" fill="#22d3ee"/>
+<text x="897" y="1199" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">5</text>
+<text x="926" y="1199" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">RES</text>
+<text x="1230" y="1199" text-anchor="end" fill="#22d3ee" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16">PA15</text>
+<rect x="882" y="1210" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="1225" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">6</text>
+<text x="926" y="1225" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">DC</text>
+<rect x="882" y="1236" width="30" height="20" rx="3" fill="#7c8a9a"/>
+<text x="897" y="1251" text-anchor="middle" fill="#0b0f14" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700">7</text>
+<text x="926" y="1251" fill="#e6edf3" font-family="ui-monospace, 'Cascadia Mono', Consolas, Menlo, monospace" font-size="16" font-weight="700">CS</text>
+<text x="882" y="1284" fill="#8d9bab" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">CS, DC không nối vi điều khiển; màn hình chạy I2C (0x3C)</text>
+<line x1="48" y1="1322" x2="1232" y2="1322" stroke="#223041"/>
+<text x="48" y="1350" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16">USB Type-C (J1): cấp nguồn 5V và nối console UART1 với máy tính qua CH340E. Theo schematic, cầu hàn SB1, SB2 mặc định nối TX1, RX1</text>
+<text x="48" y="1374" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16">vào CH340E; đổi sang vị trí kia thì console ra J12 và J14.</text>
+<text x="48" y="1410" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16">Ba cổng Grove 2,0 mm (J5 UART3, J8 I2C1, J11 RS485) mang cùng tín hiệu với J4, J7, J10; schematic bản PVT ghi chúng không lắp.</text>
+<text x="48" y="1446" fill="#e6edf3" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16">Flash SPI trên bo dùng chung SCK, MOSI, MISO với J6: mô-đun cắm vào J6 phải có chân chọn chip riêng (CSN ở PA4).</text>
+</svg>

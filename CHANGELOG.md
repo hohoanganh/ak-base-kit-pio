@@ -7,6 +7,16 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
+## Tài liệu — sau v1.3.5
+
+- **Sơ đồ chân đã đối chiếu với schematic AK MCU KIT 3.0.** Mọi chân firmware dùng đều khớp. Sửa theo schematic: PA4,
+  PA8, PB1 không phải chân trống mà ra cổng SPI mở rộng J6 (CSN, CE, IRQ); PA15 vừa là reset màn hình vừa có trên J13;
+  BOOT0 có nút bấm; LED đỏ sáng ở mức thấp.
+- **Sơ đồ các cổng nối** (`docs/kit/connectors.svg`, `tools/connectors_svg.py`): 10 cổng, từng chân một.
+- **SHT45 không nằm trên bo**: không có trong schematic và BOM bản 3.0. Tài liệu trước đây gọi nó là cảm biến của kit;
+  đã sửa thành mô-đun cắm ngoài qua cổng I2C.
+- Ghi lại hai chỗ firmware chưa theo schematic (LED ngược pha, chân CSN của J6) trong tài liệu demo.
+
 ## ak-mcu-base v1.3.5 — 06/10/2026
 
 App **1.3.5**, bootloader không đổi (1.2.0). Mã firmware không đổi so với v1.3.4 ngoài số phiên bản; bản này thêm ảnh và sơ đồ chân vào tài liệu.
