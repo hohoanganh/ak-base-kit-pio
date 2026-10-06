@@ -7,6 +7,13 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
+## ak-mcu-base v1.3.1 — chưa phát hành
+
+- **Demo tự chơi:** lệnh shell `ui auto` cho Snake và Flappy tự chạy; bấm nút là giành lại quyền điều khiển.
+- **Ảnh động cho tài liệu:** `tests/test_demo <thư mục> record` ghi từng khung từ mã vẽ thật, `tools/demo_gif.py`
+  dựng thành GIF (README, [ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md)).
+- **Ý tưởng demo tiếp theo**, kèm nguồn tham khảo: [ak-mcu-base/docs/y-tuong-demo.md](ak-mcu-base/docs/y-tuong-demo.md).
+
 ## ak-mcu-base v1.3.0 — 06/10/2026
 
 App **1.3.0**, bootloader không đổi (1.2.0).

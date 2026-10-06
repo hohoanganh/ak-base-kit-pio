@@ -24,6 +24,7 @@ static int8_t turn;				/* -1 left, +1 right, applied at the next step */
 static cell_t food;
 static uint16_t score, best;
 static uint8_t frames, paused, dead;
+static uint8_t dead_frames;
 
 static cell_t seg(uint16_t i) {		/* i = 0 is the head */
 	return body[(head + MAX_LEN - i) % MAX_LEN];
@@ -60,7 +61,51 @@ static void snake_enter(void) {
 	frames = 0;
 	paused = 0;
 	dead = 0;
+	dead_frames = 0;
 	place_food();
+}
+
+static uint8_t cell_free(int8_t x, int8_t y) {
+	return x >= 0 && x < GRID_W && y >= 0 && y < GRID_H && !on_snake(x, y);
+}
+
+/* Autoplay: of the three moves (straight, left, right) take the one that
+ * stays alive, does not enter a dead end and gets closer to the food. Good
+ * for a minute of play, not a perfect player. */
+static int8_t autopilot(void) {
+	static const int8_t turns[3] = { 0, -1, 1 };
+	cell_t h = seg(0);
+	int best_cost = 0x7FFF;
+	int8_t best_turn = 0;
+
+	for (uint8_t i = 0; i < 3; i++) {
+		int8_t ndx = dx, ndy = dy;
+		int8_t nx, ny;
+		int cost, room;
+
+		if (turns[i] < 0) {
+			ndx = dy; ndy = (int8_t)-dx;
+		}
+		else if (turns[i] > 0) {
+			ndx = (int8_t)-dy; ndy = dx;
+		}
+		nx = (int8_t)(h.x + ndx);
+		ny = (int8_t)(h.y + ndy);
+		if (!cell_free(nx, ny)) {
+			continue;
+		}
+		room = cell_free((int8_t)(nx + 1), ny) + cell_free((int8_t)(nx - 1), ny) +
+			   cell_free(nx, (int8_t)(ny + 1)) + cell_free(nx, (int8_t)(ny - 1));
+		cost = (nx > food.x ? nx - food.x : food.x - nx) + (ny > food.y ? ny - food.y : food.y - ny);
+		if (room == 0 && cost != 0) {
+			cost += 100;		/* a dead end, unless the food is right there */
+		}
+		if (cost < best_cost) {
+			best_cost = cost;
+			best_turn = turns[i];
+		}
+	}
+	return best_turn;
 }
 
 static void snake_key(uint8_t btn) {
@@ -123,6 +168,16 @@ static void snake_frame(uint32_t now_ms) {
 	uint8_t period = (uint8_t)(score >= 20 ? 2 : 6 - score / 5);
 
 	(void)now_ms;
+	if (ui_autoplay) {
+		if (dead) {
+			if (++dead_frames >= 40) {		/* show the score for two seconds, then again */
+				snake_enter();
+			}
+		}
+		else if (!paused && frames + 1 >= period) {
+			turn = autopilot();
+		}
+	}
 	if (!paused && !dead && ++frames >= period) {
 		frames = 0;
 		step();

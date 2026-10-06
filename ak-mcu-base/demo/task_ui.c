@@ -56,6 +56,9 @@ void task_poll_buttons(void) {
 	pressed = (uint8_t)(sample & ~stable);
 	released = (uint8_t)(stable & ~sample);
 	stable = sample;
+	if (pressed & (KIT_BTN_1 | KIT_BTN_2)) {
+		ui_autoplay = 0;		/* a player took over */
+	}
 
 	if (pressed & KIT_BTN_1) {
 		task_post_pure_msg(TASK_UI_ID, UI_SIG_KEY_1);
@@ -85,6 +88,10 @@ void cmd_ui(const char* args) {
 	}
 	else if (args[0] == 'b') {
 		task_post_pure_msg(TASK_UI_ID, UI_SIG_BACK);
+	}
+	else if (args[0] == 'a') {
+		ui_autoplay = !ui_autoplay;
+		xprintf("autoplay %s\n", ui_autoplay ? "on: open a game, it plays itself" : "off");
 	}
 	else {
 		xprintf("display %s, screen: %s, last frame %d ms, %d of %d pages sent, buttons 0x%02X\n",

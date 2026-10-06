@@ -5,6 +5,10 @@ Source base firmware **tách khỏi chip**: kernel AK Active Object, bootloader 
 Kit). Port **host** (Linux/macOS) dùng để chạy unit test và giả lập cả hệ thống ngay trên máy tính,
 không cần board.
 
+![Demo chạy trên AK Base Kit, dựng từ chính mã vẽ của firmware](docs/demo-tour.gif)
+
+*Demo trên kit: đồng hồ số, Snake và Flappy (đang tự chơi), màn hình hệ thống. Chi tiết: [docs/demo-kit.md](docs/demo-kit.md).*
+
 > **Dự án mới:** `python tools/new_project.py <thư-mục> --board <tên-board>` xuất một dự án độc lập.
 > Tiện ích có sẵn (nhật ký sự cố, giám sát task, đo stack, CI): [docs/tien-ich.md](docs/tien-ich.md).
 > Modbus RTU trên RS485 (slave, master, OTA): [docs/modbus.md](docs/modbus.md).

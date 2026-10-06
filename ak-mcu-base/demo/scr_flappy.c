@@ -27,6 +27,7 @@ static pipe_t pipes[PIPE_NUM];
 static int16_t bird_y16, bird_v;	/* 1/16 pixel */
 static uint16_t score, best;
 static uint8_t state;				/* 0 ready, 1 flying, 2 crashed */
+static uint8_t idle_frames;
 
 static int16_t random_gap(void) {
 	return (int16_t)(FIELD_TOP + 3 + ui_rand() % (FIELD_BOTTOM - FIELD_TOP - GAP_H - 6));
@@ -42,6 +43,7 @@ static void flappy_enter(void) {
 	bird_v = 0;
 	score = 0;
 	state = 0;
+	idle_frames = 0;
 }
 
 static void flappy_key(uint8_t btn) {
@@ -116,6 +118,28 @@ static void flappy_frame(uint32_t now_ms) {
 	int y;
 
 	(void)now_ms;
+	if (ui_autoplay) {
+		if (state != 1) {
+			if (++idle_frames >= (state == 0 ? 15 : 40)) {
+				flappy_key(KIT_BTN_1);		/* start, or again after showing the score */
+			}
+		}
+		else {
+			/* flap when falling below a line near the bottom of the next gap */
+			const pipe_t* next = 0;
+			int16_t line;
+
+			for (uint8_t i = 0; i < PIPE_NUM; i++) {
+				if (pipes[i].x + PIPE_W >= BIRD_X && (!next || pipes[i].x < next->x)) {
+					next = &pipes[i];
+				}
+			}
+			line = (int16_t)((next ? next->gap_y + GAP_H - 4 : (FIELD_TOP + FIELD_BOTTOM) / 2 + 8) - BIRD_SIZE);
+			if (bird_v >= 0 && bird_y16 / 16 >= line - 3) {
+				flappy_key(KIT_BTN_1);
+			}
+		}
+	}
 	if (state == 1) {
 		update();
 	}

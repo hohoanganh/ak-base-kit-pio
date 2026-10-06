@@ -70,11 +70,16 @@ extern uint32_t ui_rand(void);
 extern void ui_footer(const char* b1, const char* b2, const char* b3);
 extern void ui_title(const char* left, const char* right);
 
+/* 1: the games play themselves (shell "ui auto", also used to record the
+ * pictures in the documentation). Any button gives control back. */
+extern uint8_t ui_autoplay;
+
 /* frame statistics of the last flush, shown by the system screen */
 extern uint8_t ui_last_pages;
 extern uint16_t ui_last_frame_ms;
 
-/* shell: "ui" = status, "ui 1|2|3" = press a button, "ui back" = hold B3 */
+/* shell: "ui" = status, "ui 1|2|3" = press a button, "ui back" = hold B3,
+ * "ui auto" = games play themselves */
 extern void cmd_ui(const char* args);
 
 extern void task_ui(ak_msg_t* msg);

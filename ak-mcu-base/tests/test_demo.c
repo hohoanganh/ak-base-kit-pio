@@ -2,6 +2,11 @@
  * Demo UI on host: the screens draw into the frame buffer exactly as on the
  * kit; this test plays them with scripted buttons, checks the game logic and
  * writes what the display would show as PBM pictures (argv[1] = folder).
+ *
+ *   test_demo <folder> record   instead of the tests: play scripted scenes and
+ *                               write every frame to <folder>/<scene>.frames
+ *                               (1024 bytes per frame, display page order).
+ *                               tools/demo_gif.py turns them into GIFs.
  */
 #include <stdio.h>
 #include <string.h>
@@ -20,6 +25,8 @@
 static uint8_t panel[KIT_LCD_PAGES][KIT_LCD_W];		/* what the display shows */
 static int pages_written;
 static uint8_t rtc_present, rtc_h, rtc_m, rtc_s;
+static uint32_t rtc_base_ms;		/* now_ms when rtc_h:m:s was set */
+static uint32_t now_ms;
 static int beeps;
 
 uint8_t ui_last_pages;
@@ -36,10 +43,15 @@ uint8_t kit_lcd_write_page(uint8_t page, const uint8_t* data) {
 }
 
 uint8_t kit_rtc_get(uint8_t* hh, uint8_t* mm, uint8_t* ss) {
+	uint32_t t;
+
 	if (!rtc_present) {
 		return 0;
 	}
-	*hh = rtc_h; *mm = rtc_m; *ss = rtc_s;
+	t = ((uint32_t)rtc_h * 3600UL + (uint32_t)rtc_m * 60UL + rtc_s + (now_ms - rtc_base_ms) / 1000UL) % 86400UL;
+	*hh = (uint8_t)(t / 3600UL);
+	*mm = (uint8_t)((t / 60UL) % 60UL);
+	*ss = (uint8_t)(t % 60UL);
 	return 1;
 }
 
@@ -48,6 +60,7 @@ uint8_t kit_rtc_set(uint8_t hh, uint8_t mm, uint8_t ss) {
 		return 0;
 	}
 	rtc_h = hh; rtc_m = mm; rtc_s = ss;
+	rtc_base_ms = now_ms;
 	return 1;
 }
 
@@ -61,7 +74,6 @@ void ui_beep(uint16_t freq_hz, uint16_t ms) {
  * helpers
  *--------------------------------------------------------------------------*/
 static const char* out_dir;
-static uint32_t now_ms;
 
 static void frames(const ui_screen_t* s, int n) {
 	while (n--) {
@@ -75,6 +87,91 @@ static void frames(const ui_screen_t* s, int n) {
 		}
 		gfx_flush(0);
 	}
+}
+
+/*----------------------------------------------------------------------------
+ * recording: scripted scenes, one file of raw frames each
+ *--------------------------------------------------------------------------*/
+static FILE* rec_file;
+
+static void rec_open(const char* scene) {
+	char path[300];
+
+	snprintf(path, sizeof(path), "%s/%s.frames", out_dir, scene);
+	rec_file = fopen(path, "wb");
+}
+
+static void rec_close(void) {
+	if (rec_file) {
+		fclose(rec_file);
+		rec_file = 0;
+	}
+}
+
+/* n frames of screen s (0 = menu), each one written out */
+static void play(const ui_screen_t* s, int n) {
+	while (n--) {
+		frames(s, 1);
+		if (rec_file) {
+			fwrite(panel, 1, sizeof(panel), rec_file);
+		}
+	}
+}
+
+static void menu_press(uint8_t btn, int hold_frames) {
+	menu_key(btn);
+	play(0, hold_frames);
+}
+
+static void record(void) {
+	rtc_present = 1; rtc_h = 10; rtc_m = 9; rtc_s = 52;
+	ui_autoplay = 1;
+
+	/* the tour: menu, clock, both games playing themselves, system monitor */
+	rec_open("tour");
+	menu_enter();
+	play(0, 16);
+	scr_clock.enter();
+	play(&scr_clock, 70);
+	scr_clock.key(KIT_BTN_1);				/* set hours */
+	play(&scr_clock, 14);
+	scr_clock.key(KIT_BTN_2);
+	play(&scr_clock, 14);
+	scr_clock.key(KIT_BTN_1);
+	scr_clock.key(KIT_BTN_1);
+	play(&scr_clock, 16);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_snake.enter();
+	play(&scr_snake, 360);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_flappy.enter();
+	play(&scr_flappy, 300);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_system.enter();
+	play(&scr_system, 50);
+	play(0, 6);
+	menu_press(KIT_BTN_1, 10);				/* wraps to the first entry: the GIF loops cleanly */
+	rec_close();
+
+	rec_open("snake");
+	scr_snake.enter();
+	play(&scr_snake, 520);
+	rec_close();
+
+	rec_open("flappy");
+	scr_flappy.enter();
+	play(&scr_flappy, 420);
+	rec_close();
+
+	rec_open("clock");
+	rtc_h = 23; rtc_m = 59; rtc_s = 55;
+	rtc_base_ms = now_ms;
+	scr_clock.enter();
+	play(&scr_clock, 200);					/* rolls over midnight */
+	rec_close();
 }
 
 static void snapshot(const char* name) {
@@ -165,6 +262,7 @@ static void test_menu(void) {
 static void test_clock(void) {
 	/* with an RTC: shows its time, setting writes it back */
 	rtc_present = 1; rtc_h = 12; rtc_m = 34; rtc_s = 57;
+	rtc_base_ms = now_ms;
 	scr_clock.enter();
 	frames(&scr_clock, 6);
 	snapshot("2_clock_rtc");
@@ -270,6 +368,12 @@ int main(int argc, char** argv) {
 	host_reset_state(0xFF);
 	host_use_virtual_time(1);
 	task_init();
+
+	if (argc > 2 && strcmp(argv[2], "record") == 0) {
+		record();
+		printf("recorded %u frames of virtual time\n", now_ms / UI_FRAME_MS);
+		return 0;
+	}
 
 	printf("test_demo\n");
 	RUN_TEST(test_gfx_flush_only_changes);

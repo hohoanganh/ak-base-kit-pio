@@ -3,9 +3,23 @@
 Bộ demo chạy trên nền `ak-mcu-base`, dùng màn hình OLED 128×64, ba nút bấm và còi của kit.
 Nó vẫn giữ nguyên mọi thứ của app mẫu: shell, OTA qua UART, Modbus slave, nhật ký sự cố.
 
-![Các màn hình của demo, dựng từ chính mã vẽ của firmware](demo-screens.png)
+![Demo trên AK Base Kit: menu, đồng hồ, Snake và Flappy tự chơi, màn hình hệ thống](demo-tour.gif)
 
-Ảnh trên do `tests/test_demo.c` dựng trên máy tính từ đúng mã vẽ chạy trên kit.
+| Snake | Flappy | Đồng hồ qua nửa đêm |
+|---|---|---|
+| ![Snake tự chơi](demo-snake.gif) | ![Flappy tự chơi](demo-flappy.gif) | ![Đồng hồ số](demo-clock.gif) |
+
+Các ảnh động trên **không phải ảnh chụp**: `tests/test_demo.c` chạy đúng mã vẽ và mã game của firmware trên máy tính,
+ghi lại từng khung, rồi `tools/demo_gif.py` dựng thành GIF. Trong ảnh, hai game đang ở chế độ tự chơi.
+Ảnh tĩnh của mọi màn hình: [demo-screens.png](demo-screens.png).
+
+Dựng lại ảnh sau khi sửa mã:
+
+```bash
+cmake -S . -B build/host && cmake --build build/host --target test_demo
+mkdir -p build/rec && build/host/test_demo build/rec record
+python tools/demo_gif.py build/rec docs
+```
 
 ## Build và nạp
 
@@ -44,6 +58,7 @@ Không cần đứng cạnh kit vẫn thử được:
 display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 > ui 1        (bấm B1; ui 2, ui 3 tương tự)
 > ui back     (giữ B3: về menu)
+> ui auto     (bật/tắt tự chơi: mở Snake hoặc Flappy, game tự chạy; bấm B1 hoặc B2 để giành lại quyền điều khiển)
 ```
 
 ## Demo này cho thấy gì ở base
@@ -57,6 +72,9 @@ display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 | Vẫn phản hồi | Shell, Modbus và OTA chạy song song; `task_ui` ưu tiên thấp hơn chúng |
 
 Số đo trên kit: dựng một khung mất 4–6 ms, mỗi trang gửi ra màn hình mất khoảng 5 ms (I2C bit-bang).
+
+Ý tưởng cho các demo tiếp theo (3D, Dino, nhạc chiptune, Bad Apple, trạm thời tiết…), kèm nguồn tham khảo:
+[y-tuong-demo.md](y-tuong-demo.md).
 
 ## Thêm một màn hình
 
