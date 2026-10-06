@@ -47,7 +47,7 @@ ak-mcu-base/
 
 | Vùng | Địa chỉ | Kích thước | Nội dung |
 |---|---|---|---|
-| BOOT | `0x08000000` | 12K | bootloader (đang dùng 8,4K) |
+| BOOT | `0x08000000` | 12K | bootloader (đang dùng 8,5K) |
 | APP | `0x08003000` | 58K | `[header 256 B][app]`, vector table ở `0x08003100` |
 | STAGING | `0x08011800` | 58K | ảnh OTA chờ cài |
 | boot_ctrl | `0x08080000` | 20 B | data EEPROM: lệnh boot ↔ app |
@@ -120,6 +120,12 @@ Thử trước trên máy tính: `python3 tools/ak_fw.py --sim build/host/ak_sim
 - Nhảy sang app bằng cách **reset rồi nhảy ngay trong `reset_handler`**, trước khi khởi tạo ngoại vi,
   nên app luôn bắt đầu từ chip sạch. Nguyên nhân reset thật được chuyển cho app qua RAM `.noinit`.
 - HardFault: PC/LR/CFSR được lưu vào `.noinit` và in ra ở lần khởi động sau.
+- **Ghi flash theo half-page (STM32L1):** mỗi khối 128 B (32 word) được ghi trong một lần thay vì
+  32 lần. Hàm ghi chạy từ RAM, tắt ngắt trong lúc ghi (vì đang ghi thì cấm đọc flash, mà vector
+  table/ISR đều nằm trong flash), dữ liệu luôn được chép vào buffer RAM trước khi ghi, ghi xong thì
+  đọc lại để so. Đoạn lẻ không căn 128 B vẫn ghi từng word. Chunk OTA và buffer chép của boot đều
+  là 128 B nên luôn đi đường nhanh. Mỗi lần tắt ngắt kéo dài cỡ một chu kỳ ghi flash (vài ms):
+  byte UART tới đúng lúc đó có thể bị mất, nhưng giao thức nạp là hỏi-đáp nên không ảnh hưởng.
 
 Giao thức (`services/fw/fw_proto.h`): khung `A5 | cmd | seq | len | payload | crc16`, gồm các lệnh
 INFO / BEGIN / DATA / END / INSTALL / LOADER / RESET / RUN. Byte `0xA5` không phải ASCII nên giao
@@ -148,7 +154,8 @@ log queue debug của bản gốc.
 | Đầu-cuối trên ak_sim bằng chính `ak_fw.py` + `mkimage.py` (13 bước) | ✅ pass |
 | Build STM32 (boot + app), `-Wall -Wextra -Werror` | ✅ |
 | Kiểm layout ảnh STM32 (header @ `0x08003000`, vector @ `0x08003100`, `.elf` == `.img`) | ✅ |
-| **Chạy trên board thật** (UART, flash/EEPROM, IWDG, nhảy app) | ❌ chưa — cloud không có phần cứng |
+| Ghi half-page: hàm nằm trong RAM, không gọi sang flash, tắt/bật ngắt đúng (đọc lại mã máy) | ✅ |
+| **Chạy trên board thật** (UART, flash/EEPROM, half-page, IWDG, nhảy app) | ❌ chưa — cloud không có phần cứng |
 | Build bằng PlatformIO | ❌ chưa — registry bị chặn trên cloud |
 
 Khi thử trên board, nên kiểm theo thứ tự: log boot qua UART → `info` → OTA một ảnh →
@@ -156,9 +163,9 @@ rút điện giữa lúc boot đang cài (log `installing...`) → cắm lại p
 
 ## Giới hạn & bước tiếp theo
 
-- **Tốc độ ghi flash STM32L1:** port đang ghi từng word (`FLASH_FastProgramWord`). Flash L1 ghi một
-  word mất cỡ vài ms, nên cài ảnh 13 KB có thể mất khoảng chục giây — **cần đo trên board**. Ghi theo
-  half-page (32 word/lần, chạy từ RAM) sẽ nhanh hơn nhiều; đây là việc nên làm tiếp.
+- **Tốc độ ghi flash STM32L1:** đã chuyển sang half-page. Về lý thuyết nhanh khoảng 32 lần so với
+  ghi từng word (một chu kỳ ghi cho 32 word), nhưng **chưa đo trên board**. Khi thử, xem thời gian
+  `ak_fw.py flash` in ra và khoảng giữa log `installing...` với `install ok`.
 - STAGING trên flash SPI ngoài (board có sẵn chip flash) để app dùng gần trọn 116K.
 - Rollback (giữ ảnh cũ để quay lại nếu app mới không xác nhận chạy tốt) — hiện chỉ có cài lại từ STAGING.
 - Ký số ảnh (hiện chỉ có CRC, đủ chống hỏng dữ liệu nhưng không chống giả mạo).

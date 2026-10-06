@@ -33,7 +33,8 @@ ISR), `ak_port_millis`, `ak_port_fatal` (không trả về), `ak_port_idle`.
 - **Căn lề vector table:** trên Cortex-M3/M4, VTOR phải căn theo kích thước bảng (lũy thừa 2).
   Header 256 B chỉ đủ khi bảng ≤ 64 vector. Chip nhiều IRQ hơn thì tăng `ALIGN` trong `sections.ld`
   và địa chỉ app trong `fw_image.h` / mkimage cho khớp.
-- **Kích thước trang:** `boot_install()` cần trang ≥ 256 B và là bội của 64. STAGING và APP phải
+- **Kích thước trang:** `boot_install()` cần trang ≥ 256 B và là bội của 128 (buffer chép 128 B,
+  bằng một half-page của STM32L1). STAGING và APP phải
   cùng `erase_size`. Chip có sector lớn (16–128K, ví dụ STM32F4) thì phải chia lại partition theo sector.
 - **NVM:** chip không có EEPROM thì dùng một trang flash riêng cho `boot_ctrl`. Nên ghi kiểu
   append (nhiều bản ghi trong trang, bản ghi cuối hợp lệ là bản đang dùng) để đỡ hao mòn flash.
