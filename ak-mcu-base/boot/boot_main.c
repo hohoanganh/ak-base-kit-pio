@@ -47,8 +47,14 @@ static const fw_proto_cfg_t proto_cfg = {
 	console_tx,
 };
 
+/* Marker for "not verified" (STAGING is skipped when the app is fine). */
+#define FW_NOT_CHECKED		((fw_err_t)0xFF)
+
 static void print_ver(const char* name, const fw_image_hdr_t* hdr, fw_err_t err) {
-	if (err == FW_OK) {
+	if (err == FW_NOT_CHECKED) {
+		LOG_I(TAG, "%s: not checked\n", name);
+	}
+	else if (err == FW_OK) {
 		LOG_I(TAG, "%s: v%d.%d.%d build %u, %u bytes\n", name,
 			  hdr->version.major, hdr->version.minor, hdr->version.patch,
 			  hdr->version.build, hdr->img_size);
@@ -115,7 +121,15 @@ void boot_main(void) {
 
 	for (;;) {
 		app_err = fw_image_verify(FLASH_PART_APP, &app_hdr);
-		stg_err = fw_image_verify(FLASH_PART_STAGING, &stg_hdr);
+
+		/* STAGING only matters for an update request or a broken app; skip
+		 * the full read otherwise (slow on SPI NOR, done on every boot). */
+		if (ctrl.cmd == BOOT_CMD_UPDATE || app_err != FW_OK) {
+			stg_err = fw_image_verify(FLASH_PART_STAGING, &stg_hdr);
+		}
+		else {
+			stg_err = FW_NOT_CHECKED;
+		}
 
 		memset(&st, 0, sizeof(st));
 		st.cmd = ctrl.cmd;

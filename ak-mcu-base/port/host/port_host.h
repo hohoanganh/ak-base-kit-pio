@@ -17,6 +17,8 @@ extern "C"
 #include <stdint.h>
 #include <setjmp.h>
 
+#include "hal_flash.h"
+
 /* Emulated flash map (same as STM32L151CB so images are interchangeable) */
 #define HOST_FLASH_BASE			(0x08000000UL)
 #define HOST_FLASH_SIZE			(128UL * 1024UL)
@@ -25,8 +27,18 @@ extern "C"
 #define HOST_RAM_END			(0x20004000UL)
 #define HOST_BOARD_NAME			"ak-host"
 
+/* Emulated external SPI NOR staging (same as stm32l151 external mode) */
+#define HOST_EXT_STAGING_ADDR	(0x00080000UL)
+#define HOST_EXT_STAGING_SIZE	(0x1D000UL)
+#define HOST_EXT_SECTOR			(4096UL)
+
 /* Reset all port state (flash erased, NVM blank). */
 extern void host_reset_state(uint8_t erased_val);
+
+/* Partition layout: 1 = staging on emulated SPI NOR (default, like the
+ * board), 0 = staging in internal flash. Resets all state. */
+extern void host_set_layout(uint8_t external_staging);
+extern uint8_t host_layout_external(void);
 
 /* Time source: 0 = real clock (simulation), 1 = virtual time (tests). */
 extern void host_use_virtual_time(uint8_t on);
@@ -44,6 +56,7 @@ extern uint32_t host_flash_ops(void);
 
 /* Raw access to emulated memory (tests place images directly). */
 extern uint8_t* host_flash_mem(void);
+extern uint8_t* host_part_mem(flash_part_t part);	/* start of a partition */
 extern uint8_t* host_nvm_mem(void);
 
 /* Save / load flash + NVM to a file (firmware persists across sim runs). */

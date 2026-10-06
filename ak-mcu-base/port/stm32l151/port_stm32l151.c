@@ -16,6 +16,9 @@
 #include "hal.h"
 #include "port_cfg.h"
 #include "port_stm32.h"
+#if PORT_STAGING_EXTERNAL
+#include "spi_nor.h"
+#endif
 
 /*----------------------------------------------------------------------------
  * critical section (nestable, ISR safe)
@@ -148,6 +151,8 @@ static void console_init(void) {
 /*----------------------------------------------------------------------------
  * system
  *--------------------------------------------------------------------------*/
+static void staging_init(void);
+
 static void port_xputc(uint8_t c) {
 	hal_console_putc(c);
 }
@@ -175,6 +180,8 @@ void hal_init(void) {
 	SysTick_Config(SystemCoreClock / 1000U);
 	NVIC_SetPriority(SysTick_IRQn, 3);
 	__enable_irq();
+
+	staging_init();
 
 	if (port_noinit.fault_magic == PORT_FAULT_MAGIC) {
 		port_noinit.fault_magic = 0;
@@ -319,11 +326,37 @@ int hal_nvm_write(uint32_t offset, const void* buf, uint32_t len) {
 /*----------------------------------------------------------------------------
  * internal flash (program memory)
  *--------------------------------------------------------------------------*/
-static const flash_part_info_t parts[FLASH_PART_NUM] = {
+static flash_part_info_t parts[FLASH_PART_NUM] = {
 	{ PORT_BOOT_ADDR,		PORT_BOOT_SIZE,		PORT_FLASH_PAGE, 4, 0x00 },
 	{ PORT_APP_ADDR,		PORT_APP_SIZE,		PORT_FLASH_PAGE, 4, 0x00 },
+#if PORT_STAGING_EXTERNAL
+	/* size stays 0 until the chip is detected (OTA then reports "too big") */
+	{ PORT_STAGING_ADDR,	0,					SPI_NOR_SECTOR_SIZE, 1, 0xFF },
+#else
 	{ PORT_STAGING_ADDR,	PORT_STAGING_SIZE,	PORT_FLASH_PAGE, 4, 0x00 },
+#endif
 };
+
+#if PORT_STAGING_EXTERNAL
+static uint8_t staging_is_external(flash_part_t part) {
+	return part == FLASH_PART_STAGING;
+}
+#endif
+
+/* External mode: detect the SPI NOR and enable STAGING only if the chip is
+ * present and large enough. Internal mode: nothing to do. */
+static void staging_init(void) {
+#if PORT_STAGING_EXTERNAL
+	uint32_t size = spi_nor_init();
+
+	if (size >= PORT_STAGING_ADDR + PORT_STAGING_SIZE) {
+		parts[FLASH_PART_STAGING].size = PORT_STAGING_SIZE;
+	}
+	else {
+		xprintf("[port] SPI NOR not found (JEDEC 0x%06X), OTA staging disabled\n", spi_nor_jedec_id());
+	}
+#endif
+}
 
 const flash_part_info_t* hal_flash_info(flash_part_t part) {
 	return (part < FLASH_PART_NUM) ? &parts[part] : 0;
@@ -353,9 +386,20 @@ static void flash_unlock(void) {
 int hal_flash_erase(flash_part_t part, uint32_t off, uint32_t len) {
 	int ret = HAL_FLASH_OK;
 
-	if (!part_writable(part) || !range_ok(part, off, len, PORT_FLASH_PAGE)) {
+	if (!part_writable(part) || !range_ok(part, off, len, parts[part].erase_size)) {
 		return HAL_FLASH_ERR_ARG;
 	}
+
+#if PORT_STAGING_EXTERNAL
+	if (staging_is_external(part)) {
+		for (uint32_t a = parts[part].addr + off; a < parts[part].addr + off + len; a += SPI_NOR_SECTOR_SIZE) {
+			if (spi_nor_erase_sector(a) != SPI_NOR_OK) {
+				return HAL_FLASH_ERR_HW;
+			}
+		}
+		return HAL_FLASH_OK;
+	}
+#endif
 
 	flash_unlock();
 	for (uint32_t a = parts[part].addr + off; a < parts[part].addr + off + len; a += PORT_FLASH_PAGE) {
@@ -442,9 +486,15 @@ int hal_flash_write(flash_part_t part, uint32_t off, const void* data, uint32_t 
 	uint32_t a;
 	int ret = HAL_FLASH_OK;
 
-	if (!part_writable(part) || !range_ok(part, off, len, 4)) {
+	if (!part_writable(part) || !range_ok(part, off, len, parts[part].write_size)) {
 		return HAL_FLASH_ERR_ARG;
 	}
+
+#if PORT_STAGING_EXTERNAL
+	if (staging_is_external(part)) {
+		return spi_nor_write(parts[part].addr + off, data, len) == SPI_NOR_OK ? HAL_FLASH_OK : HAL_FLASH_ERR_HW;
+	}
+#endif
 
 	a = parts[part].addr + off;
 	flash_unlock();
@@ -470,6 +520,11 @@ int hal_flash_read(flash_part_t part, uint32_t off, void* buf, uint32_t len) {
 	if (!range_ok(part, off, len, 1)) {
 		return HAL_FLASH_ERR_ARG;
 	}
+#if PORT_STAGING_EXTERNAL
+	if (staging_is_external(part)) {
+		return spi_nor_read(parts[part].addr + off, buf, len) == SPI_NOR_OK ? HAL_FLASH_OK : HAL_FLASH_ERR_HW;
+	}
+#endif
 	memcpy(buf, (const void*)(parts[part].addr + off), len);
 	return HAL_FLASH_OK;
 }

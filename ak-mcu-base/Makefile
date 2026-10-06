@@ -2,12 +2,14 @@
 #   make test     host unit tests + simulator end-to-end test
 #   make sim      build and run the simulator (bootloader + app)
 #   make stm32    build boot.elf/.bin, app.elf/.bin, app.img for STM32L151
+#                 (OTA staging on external SPI flash, APP 116K)
+#   make stm32-internal   same, staging in internal flash (APP 58K)
 #   make clean
 
 BUILD_HOST  := build/host
 BUILD_STM32 := build/stm32l151
 
-.PHONY: all host test sim stm32 clean
+.PHONY: all host test sim stm32 stm32-internal clean
 
 all: test stm32
 
@@ -22,8 +24,12 @@ sim: host
 	$(BUILD_HOST)/ak_sim --flash $(BUILD_HOST)/ak_sim_flash.bin
 
 stm32:
-	cmake -S . -B $(BUILD_STM32) -DAK_PORT=stm32l151 -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
+	cmake -S . -B $(BUILD_STM32) -DAK_PORT=stm32l151 -DAK_STAGING=external -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
 	cmake --build $(BUILD_STM32) -j
+
+stm32-internal:
+	cmake -S . -B $(BUILD_STM32)-internal -DAK_PORT=stm32l151 -DAK_STAGING=internal -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
+	cmake --build $(BUILD_STM32)-internal -j
 
 clean:
 	rm -rf build .pio
