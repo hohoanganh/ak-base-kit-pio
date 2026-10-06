@@ -7,12 +7,12 @@ không cần board.
 
 ![Demo chạy trên AK Base Kit, dựng từ chính mã vẽ của firmware](docs/demo-tour.gif)
 
-*Demo trên kit: đồng hồ số, Snake, Flappy và Dino (đang tự chơi), khối 3D, mê cung 3D, máy hát, video, trạm thời tiết. Chi tiết: [docs/demo-kit.md](docs/demo-kit.md).*
+*Demo trên kit: đồng hồ số, sáu game (đang tự chơi), khối 3D, mê cung 3D, máy hát, video, trạm thời tiết, màn hình chờ. Chi tiết: [docs/demo-kit.md](docs/demo-kit.md).*
 
 > **Dự án mới:** `python tools/new_project.py <thư-mục> --board <tên-board>` xuất một dự án độc lập.
 > Tiện ích có sẵn (nhật ký sự cố, giám sát task, đo stack, CI): [docs/tien-ich.md](docs/tien-ich.md).
 > Modbus RTU trên RS485 (slave, master, OTA): [docs/modbus.md](docs/modbus.md).
-> Demo trên kit (đồng hồ số, ba game, khối 3D, mê cung 3D, máy hát, video, trạm thời tiết): [docs/demo-kit.md](docs/demo-kit.md).
+> Demo trên kit (đồng hồ số, sáu game, khối 3D, mê cung 3D, máy hát, video, trạm thời tiết, màn hình chờ): [docs/demo-kit.md](docs/demo-kit.md).
 >
 > **Hơn gì, bằng gì, còn thiếu gì so với base cũ:** [docs/so-voi-base-cu.md](docs/so-voi-base-cu.md) ·
 > hướng tối ưu tiếp theo: [docs/huong-toi-uu-tiep.md](docs/huong-toi-uu-tiep.md).

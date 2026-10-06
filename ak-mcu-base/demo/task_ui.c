@@ -260,7 +260,7 @@ void task_ui(ak_msg_t* msg) {
 		open_screen(0);
 		gfx_clear();
 		gfx_flush(1);
-		timer_set(TASK_UI_ID, UI_SIG_FRAME, UI_FRAME_MS, TIMER_PERIODIC);
+		timer_set(TASK_UI_ID, UI_SIG_FRAME, UI_FRAME_MS, TIMER_ONE_SHOT);
 		ui_beep(2000, 60);
 		LOG_I(TAG, "demo started: %d ms per frame\n", UI_FRAME_MS);
 		break;
@@ -276,6 +276,11 @@ void task_ui(ak_msg_t* msg) {
 		}
 		ui_last_pages = lcd_ok ? gfx_flush(0) : 0;
 		ui_last_frame_ms = (uint16_t)(hal_millis() - t0);
+		/* The next frame is asked for only now. A periodic timer would keep
+		 * posting while a full-screen effect needs more than UI_FRAME_MS, and
+		 * the message pool would fill up; this way the effect just runs slower. */
+		timer_set(TASK_UI_ID, UI_SIG_FRAME,
+				  ui_last_frame_ms + 2U < UI_FRAME_MS ? (uint32_t)(UI_FRAME_MS - ui_last_frame_ms) : 2U, TIMER_ONE_SHOT);
 		break;
 
 	case UI_SIG_KEY_1:

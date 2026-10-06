@@ -10,11 +10,17 @@ Nó vẫn giữ nguyên mọi thứ của app mẫu: shell, OTA qua UART, Modbus
 | ![Snake tự chơi](demo-snake.gif) | ![Flappy tự chơi](demo-flappy.gif) | ![Đồng hồ số](demo-clock.gif) |
 | **Dino runner** | **Khối 3D** | **Máy hát** |
 | ![Dino tự chơi](demo-dino.gif) | ![Khối 3D quay](demo-3d.gif) | ![Máy hát](demo-music.gif) |
+| **Tetris** | **Breakout** | **Invaders** |
+| ![Tetris tự chơi](demo-tetris.gif) | ![Breakout tự chơi](demo-breakout.gif) | ![Invaders tự chơi](demo-invaders.gif) |
 | **Mê cung 3D** | **Trạm thời tiết** | **Video từ flash SPI** |
 | ![Mê cung tự đi](demo-maze.gif) | ![Nhiệt độ, độ ẩm](demo-weather.gif) | ![Clip thử](demo-video.gif) |
 
 Các ảnh động trên **không phải ảnh chụp**: `tests/test_demo.c` chạy đúng mã vẽ và mã game của firmware trên máy tính,
-ghi lại từng khung, rồi `tools/demo_gif.py` dựng thành GIF. Trong ảnh, ba game và mê cung đang ở chế độ tự chơi. Máy hát phát ra còi của kit nên ảnh động không có tiếng.
+ghi lại từng khung, rồi `tools/demo_gif.py` dựng thành GIF. **Màn hình chờ** (Game of Life, trường sao, plasma):
+
+![Màn hình chờ](demo-saver.gif)
+
+Trong ảnh, các game và mê cung đang ở chế độ tự chơi. Máy hát phát ra còi của kit nên ảnh động không có tiếng.
 Số liệu thời tiết và clip trong ảnh là dữ liệu giả lập của bộ test, không phải số đo thật.
 Ảnh tĩnh của mọi màn hình: [demo-screens.png](demo-screens.png).
 
@@ -49,16 +55,26 @@ Ba nút dưới màn hình, từ trái sang phải: B1, B2, B3. Dòng cuối mà
 | Snake | Rẽ trái | Rẽ phải | Tạm dừng | Về menu |
 | Flappy | Vỗ cánh | Vỗ cánh | — | Về menu |
 | Dino | Nhảy | Cúi (giữ nút) | — | Về menu |
+| Tetris | Sang trái | Sang phải | Xoay | Về menu |
+| Breakout | Sang trái (giữ) | Sang phải (giữ) | Phát bóng | Về menu |
+| Invaders | Sang trái (giữ) | Sang phải (giữ) | Bắn | Về menu |
 | Khối 3D | Đổi khối | Tốc độ quay | Khung dây / tô bóng | Về menu |
 | Mê cung 3D | Quay trái | Quay phải | Đi / dừng | Về menu |
 | Máy hát | Bài kế | Phát / dừng | — | Về menu |
 | Video | Tạm dừng / phát | Về đầu clip | — | Về menu |
 | Trạm thời tiết | Đồ thị nhiệt độ / độ ẩm | Đổi nhịp lấy mẫu | — | Về menu |
+| Màn hình chờ | Hiệu ứng kế | Life: gieo lại · sao: tốc độ · plasma: độ mịn | — | Về menu |
 | Hệ thống | Bíp | — | — | Về menu |
 
 - **Đồng hồ** lấy giờ từ RTC PCF85063 của kit; không thấy RTC thì tự đếm từ tick 1 ms (góc phải ghi `RTC` hoặc `soft`).
 - **Snake** nhanh dần theo điểm. Rẽ trái/phải tính theo hướng con rắn đang đi.
 - **Dino** nhanh dần theo điểm; chim chỉ xuất hiện sau 120 điểm và phải cúi mới qua được.
+- **Tetris**: giữ B1 hoặc B2 thì khối đi tiếp; giữ **cả B1 và B2** để thả nhanh. Cứ 8 hàng thì rơi nhanh hơn.
+  Giếng 10×20 ô, mỗi ô 3 điểm ảnh, nên hình nhỏ; đó là cái giá của màn hình nằm ngang cao 64 điểm.
+- **Breakout**: bóng chạm càng xa giữa thanh đỡ thì bật ra càng xiên. Hết gạch là sang màn mới, bóng nhanh hơn.
+- **Invaders**: mỗi lúc chỉ một viên đạn; còn càng ít quái thì chúng đi càng nhanh; mỗi đợt mới bắt đầu thấp hơn.
+  B3 bắn khi nhả nút (giữ B3 là về menu).
+- **Màn hình chờ**: Game of Life tự gieo lại khi chết hết hoặc đứng yên.
 - **Khối 3D** có lập phương, bát diện và kim tự tháp. Chip không có FPU nên mọi phép tính là số nguyên (bảng sin 256 mục);
   màn hình 1 bit nên độ sáng từng mặt được giả bằng dither 4×4.
 - **Máy hát** có 6 bài, đều là nhạc dân gian hoặc đã hết bản quyền từ lâu, viết bằng chuỗi RTTTL trong `demo/scr_music.c`.
@@ -108,7 +124,7 @@ display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 
 | Việc | Cách làm trên kernel AK |
 |---|---|
-| Vẽ 20 khung/giây | Timer chu kỳ 50 ms post `UI_SIG_FRAME` cho `task_ui`; không có vòng lặp chờ |
+| Vẽ 20 khung/giây | Timer một lần post `UI_SIG_FRAME` cho `task_ui`, đặt lại sau mỗi khung; không có vòng lặp chờ, khung nào chậm cũng không dồn message |
 | Nút bấm | Polling task chống dội rồi post `UI_SIG_KEY_x`; game nhận phím như nhận message |
 | Tiếng bíp | Bật còi, đặt timer một lần post `UI_SIG_BEEP_OFF`; không `delay` |
 | Đọc cảm biến | Khung này gửi lệnh đo, khung sau mới lấy kết quả: SHT45 cần 8 ms để đo và không ai phải đứng chờ nó |
@@ -120,10 +136,11 @@ display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 
 Số đo trên kit: dựng một khung mất 4–6 ms, mỗi trang gửi ra màn hình mất khoảng 5 ms (I2C bit-bang).
 Khối 3D đổi 5 trên 8 trang mỗi khung nên tốn 34–37 ms, vẫn kịp nhịp 50 ms; Dino tối đa 24 ms; mê cung 37 ms (6 trang).
+Tetris 20 ms, Breakout 15 ms, Invaders 31 ms. Màn hình chờ đổi cả 8 trang nên mất 45–50 ms (khoảng 19 khung/giây).
 Video đổi cả 8 trang thì mất 41–47 ms, tức sát ngân sách: clip 20 khung/giây có cảnh đổi toàn màn hình sẽ bị chậm lại
 một chút thay vì bỏ khung. 15 khung/giây là mức an toàn.
 
-Ý tưởng cho các demo tiếp theo (Game of Life, Tetris, Pong qua RS485…), kèm nguồn tham khảo:
+Ý tưởng cho các demo tiếp theo (Pong qua RS485, truyền màn hình về máy tính, chạy trên trình duyệt…), kèm nguồn tham khảo:
 [y-tuong-demo.md](y-tuong-demo.md).
 
 ## Thêm một màn hình

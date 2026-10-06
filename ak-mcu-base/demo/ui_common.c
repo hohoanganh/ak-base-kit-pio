@@ -82,11 +82,15 @@ static const ui_screen_t* const menu_items[] = {
 	&scr_snake,
 	&scr_flappy,
 	&scr_dino,
+	&scr_tetris,
+	&scr_breakout,
+	&scr_invaders,
 	&scr_cube,
 	&scr_maze,
 	&scr_music,
 	&scr_video,
 	&scr_weather,
+	&scr_saver,
 	&scr_system,
 };
 

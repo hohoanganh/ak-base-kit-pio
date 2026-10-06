@@ -3,7 +3,8 @@
  * @brief:  Demo for the AK Base Kit: menu, digital clock, two games and a
  *          system monitor on the 128x64 display, three buttons, buzzer.
  *          Later additions: Dino runner, rotating 3D solids, a jukebox,
- *          a ray-cast maze, video from the SPI flash, a weather station.
+ *          a ray-cast maze, video from the SPI flash, a weather station,
+ *          Tetris, Breakout, Invaders, screen savers.
  *
  *  How it sits on the kernel:
  *   - task_poll_buttons (polling) debounces the buttons and posts key signals;
@@ -35,7 +36,7 @@ extern "C"
 #include "kit.h"
 #include "gfx.h"
 
-#define UI_FRAME_MS			(50)		/* 20 frames per second */
+#define UI_FRAME_MS			(50)		/* 20 frames per second, fewer if a frame takes longer */
 #define UI_HOLD_MS			(700)		/* B3 held this long = back to the menu */
 
 /* TASK_UI_ID */
@@ -67,6 +68,10 @@ extern const ui_screen_t scr_music;
 extern const ui_screen_t scr_maze;
 extern const ui_screen_t scr_video;
 extern const ui_screen_t scr_weather;
+extern const ui_screen_t scr_tetris;
+extern const ui_screen_t scr_breakout;
+extern const ui_screen_t scr_invaders;
+extern const ui_screen_t scr_saver;
 extern const ui_screen_t scr_system;
 
 /* menu (scr_menu.c): returns the chosen screen on B3, else 0 */

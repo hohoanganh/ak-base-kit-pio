@@ -22,10 +22,16 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
   - *Trạm thời tiết*: nhiệt độ, độ ẩm từ SHT45, đồ thị 96 điểm (mỗi 1 s, 1 phút hoặc 15 phút = 24 giờ); cảm biến được đọc
     mỗi giây dù đang mở màn hình nào. Lệnh shell `th`, `th csv`.
   Menu 10 mục. Unit test demo: 124 kiểm tra.
+- **Thêm ba game và bộ màn hình chờ:** Tetris (giếng 10×20, B1/B2 sang ngang, B3 xoay, giữ B1+B2 để thả), Breakout,
+  Invaders, và màn hình chờ gồm Game of Life (lưới 64×32, đếm hàng xóm bằng phép bit trên từ 64 bit), trường sao, plasma.
+  Cả ba game đều tự chơi được với `ui auto`. Menu 14 mục. Unit test demo: 137 kiểm tra.
+  Đo trên kit: Tetris 20 ms mỗi khung, Breakout 15 ms, Invaders 31 ms, màn hình chờ 45–50 ms.
+- **Timer khung của demo đặt lại sau mỗi khung** thay cho timer chu kỳ: hiệu ứng đổi cả màn hình cần hơn 50 ms thì chỉ
+  chạy chậm đi, không dồn message vào pool.
 - **Giao thức nạp (`fw_proto`) có chỗ mở rộng:** lệnh từ `0x40` trở lên được chuyển cho hàm `ext` của ứng dụng
   (demo dùng để ghi file vào flash SPI). Bootloader không đổi hành vi.
 - **`demo/kit.h`** thêm SHT45 (`kit_sht_start/read`) và kho file trên flash SPI (`kit_store_*`).
-- **Demo tự chơi:** lệnh shell `ui auto` cho Snake, Flappy, Dino và mê cung tự chạy, máy hát tự phát lần lượt; bấm nút là
+- **Demo tự chơi:** lệnh shell `ui auto` cho các game và mê cung tự chạy, máy hát tự phát lần lượt; bấm nút là
   giành lại quyền điều khiển.
 - **Ảnh động cho tài liệu:** `tests/test_demo <thư mục> record` ghi từng khung từ mã vẽ thật, `tools/demo_gif.py`
   dựng thành GIF (README, [ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md)).

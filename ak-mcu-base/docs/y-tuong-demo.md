@@ -23,6 +23,8 @@ Cỡ việc: S = vài giờ, M = một hai ngày, L = nhiều ngày.
 | Video từ flash SPI (mục 5) | Trình phát + tool `ak_video.py`; đã phát clip thử trên kit. Chưa thử chính đoạn Bad Apple: repo không kèm video |
 | Trạm thời tiết (mục 6) | SHT45, đồ thị 96 điểm, `th csv`. Chưa ghi log vào flash: số liệu nằm trong RAM |
 | Mê cung raycaster (mục 8) | Tường tô 3 mức, cửa ra, tự đi. Chưa có vật thể hay kẻ địch |
+| Màn hình chờ (mục 4) | Game of Life trên lưới 64×32 (ô 2×2 điểm ảnh, không phải trọn 128×64), trường sao, plasma |
+| Tetris, Breakout, Invaders (mục 7) | Ba nút: trái, phải, hành động; Tetris thả nhanh bằng cách giữ cả B1 và B2. Chưa lưu điểm cao vào flash |
 | Máy hát RTTTL (mục 3) | 6 bài nằm trong flash của chip, một kênh. Chưa lưu bài trong flash SPI, chưa thử hợp âm rải |
 
 Tham khảo cách làm: trình giả lập [Ardens](https://github.com/retrom-project/Ardens) và
@@ -35,10 +37,10 @@ Tham khảo cách làm: trình giả lập [Ardens](https://github.com/retrom-pr
 | ~~1~~ | ~~Khối lập phương 3D quay~~ (đã làm); còn lại: lưới nhiều mặt kiểu ấm trà | S → M | Bản Arduboy dựng ấm trà 240 mặt hơn 30 khung/giây trên AVR 8 bit; Cortex-M3 dư sức | Màn hình, CPU | [arduboy3d](https://github.com/a1k0n/arduboy3d) · [U8G2 graphics demos](https://github.com/OkuboHeavyIndustries/U8G2_SSD1306_graphics_demos) |
 | ~~2~~ | ~~Dino runner~~ (đã làm): một nút nhảy, một nút cúi | S | Ai nhìn GIF cũng nhận ra ngay | Màn hình, nút, còi | [t-rex-duino](https://github.com/AlexIII/t-rex-duino) |
 | ~~3~~ | ~~Máy hát chiptune / RTTTL~~ (đã làm), nốt nhạc chạy trên màn hình, bài hát lưu trong flash SPI | S | Hợp tự nhiên với kernel dùng timer mềm; cần video có tiếng, GIF không thể hiện được | Còi, flash, nút | [PlayRtttl](https://github.com/ArminJo/PlayRtttl) |
-| 4 | **Bộ màn hình chờ**: Game of Life, trường sao, plasma | S mỗi cái | Life trọn 128×64 chỉ cần hai bộ đệm 1 KB | Màn hình, RTC (làm hạt giống ngẫu nhiên) | [cgol_i2c_oled](https://github.com/weightan/cgol_i2c_oled_arduino) · [SSD1306-GameOfLife](https://github.com/babonev/SSD1306-GameOfLife) |
+| ~~4~~ | ~~Bộ màn hình chờ~~ (đã làm): Game of Life, trường sao, plasma | S mỗi cái | Life trọn 128×64 chỉ cần hai bộ đệm 1 KB | Màn hình, RTC (làm hạt giống ngẫu nhiên) | [cgol_i2c_oled](https://github.com/weightan/cgol_i2c_oled_arduino) · [SSD1306-GameOfLife](https://github.com/babonev/SSD1306-GameOfLife) |
 | ~~5~~ | ~~Video Bad Apple~~ (đã có trình phát; clip tự nạp) phát từ flash SPI (nén RLE + heatshrink) | M | Đoạn phim "màn hình bé làm được gì" nổi tiếng nhất | Flash SPI, driver màn hình | [ESP32_BadApple](https://github.com/hackffm/ESP32_BadApple) · [pico-badapple](https://github.com/HaruYou27/pico-badapple) |
 | ~~6~~ | ~~Trạm thời tiết~~ (đã làm, trừ log vào flash): nhiệt độ, độ ẩm chữ to, đồ thị 24 giờ, ghi log vào flash, xuất CSV qua shell | S – M | Không hào nhoáng nhưng làm kit trông như một sản phẩm | SHT45, RTC, flash, UART | [Ví dụ trạm thời tiết SSD1306](https://simple-circuit.com/weather-station-arduino-bme280-ssd1306/) |
-| 7 | **Tetris, Breakout, Space Invaders** | S – M mỗi cái | Bộ TinyJoypad chạy được trên ATtiny85 với cùng màn hình | Nút, còi, flash (điểm cao) | [CH32V003-GameConsole](https://github.com/wagiminator/CH32V003-GameConsole) · [Tiny-invaders](https://github.com/Lorandil/Tiny-invaders-v4.2) |
+| ~~7~~ | ~~Tetris, Breakout, Space Invaders~~ (đã làm) | S – M mỗi cái | Bộ TinyJoypad chạy được trên ATtiny85 với cùng màn hình | Nút, còi, flash (điểm cao) | [CH32V003-GameConsole](https://github.com/wagiminator/CH32V003-GameConsole) · [Tiny-invaders](https://github.com/Lorandil/Tiny-invaders-v4.2) |
 | ~~8~~ | ~~Raycaster~~ (đã làm) kiểu Wolfenstein: trái, phải, tiến | M – L | Ấn tượng nhất trong các demo đơn lẻ | CPU, màn hình | [Raycaster-Arduino-SSD1306](https://github.com/kouzerumatsukite/Raycaster-Arduino-SSD1306) · [Arduboy3D](https://github.com/jhhoward/Arduboy3D) |
 | 9 | **Truyền màn hình về máy tính** qua UART, máy tính gửi ngược lại lệnh bấm nút | S – M | Cách Flipper Zero được trình diễn trong mọi video; shell `ui` đã làm được một nửa | UART, shell | — |
 | 10 | **Hai kit chơi Pong qua RS485** | M | Demo duy nhất dùng cổng RS485 cho việc vui | RS485, hai kit | [Mod nhiều người chơi qua cổng nối tiếp trên Arduboy](https://community.arduboy.com/t/network-of-the-damned-multiplayer-mod-for-catacombs-of-the-damned/8367) |

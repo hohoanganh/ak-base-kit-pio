@@ -321,41 +321,62 @@ static void record(void) {
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_snake.enter();
-	play(&scr_snake, 260);
+	play(&scr_snake, 160);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_flappy.enter();
-	play(&scr_flappy, 220);
+	play(&scr_flappy, 140);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_dino.enter();
-	play(&scr_dino, 220);
+	play(&scr_dino, 140);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_tetris.enter();
+	play(&scr_tetris, 200);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_breakout.enter();
+	play(&scr_breakout, 160);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_invaders.enter();
+	play(&scr_invaders, 160);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_cube.enter();
-	play(&scr_cube, 90);
+	play(&scr_cube, 60);
 	scr_cube.key(KIT_BTN_1);
-	play(&scr_cube, 70);
+	play(&scr_cube, 50);
 	scr_cube.key(KIT_BTN_1);
-	play(&scr_cube, 70);
+	play(&scr_cube, 50);
 	scr_cube.key(KIT_BTN_1);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_maze.enter();
-	play(&scr_maze, 260);
+	play(&scr_maze, 160);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_music.enter();
-	play(&scr_music, 160);
+	play(&scr_music, 100);
 	scr_music.leave();
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_video.enter();
-	play(&scr_video, 2 * CLIP_FRAMES);
+	play(&scr_video, CLIP_FRAMES);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_weather.enter();
-	play(&scr_weather, 80);
+	play(&scr_weather, 60);
+	play(0, 8);
+	menu_press(KIT_BTN_1, 8);
+	scr_saver.enter();
+	play(&scr_saver, 70);
+	scr_saver.key(KIT_BTN_1);
+	play(&scr_saver, 60);
+	scr_saver.key(KIT_BTN_1);
+	play(&scr_saver, 60);
+	scr_saver.key(KIT_BTN_1);
 	play(0, 8);
 	menu_press(KIT_BTN_1, 8);
 	scr_system.enter();
@@ -363,6 +384,33 @@ static void record(void) {
 	play(0, 6);
 	menu_press(KIT_BTN_1, 10);				/* wraps to the first entry: the GIF loops cleanly */
 	rec_close();
+
+	rec_open("tetris");
+	scr_tetris.enter();
+	play(&scr_tetris, 600);
+	rec_close();
+
+	rec_open("breakout");
+	scr_breakout.enter();
+	play(&scr_breakout, 500);
+	rec_close();
+
+	rec_open("invaders");
+	scr_invaders.enter();
+	play(&scr_invaders, 500);
+	rec_close();
+
+	ui_autoplay = 0;
+	rec_open("saver");
+	scr_saver.enter();
+	play(&scr_saver, 200);
+	scr_saver.key(KIT_BTN_1);
+	play(&scr_saver, 120);
+	scr_saver.key(KIT_BTN_1);
+	play(&scr_saver, 120);
+	scr_saver.key(KIT_BTN_1);
+	rec_close();
+	ui_autoplay = 1;
 
 	rec_open("maze");
 	scr_maze.enter();
@@ -917,6 +965,154 @@ static void test_maze(void) {
 	ui_autoplay = 0;
 }
 
+static void test_tetris(void) {
+	int a;
+
+	ui_autoplay = 0;
+	scr_tetris.enter();
+	frames(&scr_tetris, 2);
+	a = lit_pixels();
+	frames(&scr_tetris, 30);
+	CHECK_EQ(lit_pixels(), a);					/* waits for the first key */
+	scr_tetris.key(KIT_BTN_3);
+	frames(&scr_tetris, 12);
+	CHECK(lit_pixels() != a);					/* the piece falls */
+	snapshot("33_tetris_start");
+	/* hammer the keys: left wall, right wall, turning against both, dropping */
+	for (int i = 0; i < 400; i++) {
+		scr_tetris.key((i / 20) & 1 ? KIT_BTN_1 : KIT_BTN_2);
+		if (i % 3 == 0) {
+			scr_tetris.key(KIT_BTN_3);
+		}
+		held_buttons = (i % 50 > 40) ? (KIT_BTN_1 | KIT_BTN_2) : (i % 7 == 0 ? KIT_BTN_1 : 0);
+		frames(&scr_tetris, 1);
+	}
+	held_buttons = 0;
+	/* without steering the pile reaches the top: game over, and a key starts again */
+	scr_tetris.enter();
+	scr_tetris.key(KIT_BTN_1);
+	frames(&scr_tetris, 20 * 150);
+	snapshot("34_tetris_game_over");
+	a = lit_pixels();
+	frames(&scr_tetris, 20);
+	CHECK_EQ(lit_pixels(), a);					/* nothing moves any more */
+	scr_tetris.key(KIT_BTN_1);
+	frames(&scr_tetris, 1);
+	CHECK(lit_pixels() < a);					/* empty well */
+
+	ui_autoplay = 1;							/* plays itself for five minutes */
+	scr_tetris.enter();
+	frames(&scr_tetris, 20 * 40);
+	snapshot("35_tetris_autoplay");
+	frames(&scr_tetris, 20 * 260);
+	ui_autoplay = 0;
+}
+
+static void test_breakout(void) {
+	int a, full;
+
+	ui_autoplay = 0;
+	scr_breakout.enter();
+	frames(&scr_breakout, 2);
+	snapshot("36_breakout_serve");
+	a = full = lit_pixels();
+	scr_breakout.key(KIT_BTN_2);				/* the paddle moves, the ball rides on it */
+	frames(&scr_breakout, 3);
+	CHECK_EQ(lit_pixels(), a);
+	scr_breakout.key(KIT_BTN_3);				/* serve; nobody plays: three balls are lost */
+	for (int i = 0; i < 2; i++) {
+		frames(&scr_breakout, 20 * 30);
+		scr_breakout.key(KIT_BTN_3);
+	}
+	frames(&scr_breakout, 20 * 30);
+	snapshot("37_breakout_game_over");
+	held_buttons = KIT_BTN_1;					/* held against the left edge, then the right one */
+	scr_breakout.key(KIT_BTN_3);
+	scr_breakout.key(KIT_BTN_3);
+	frames(&scr_breakout, 100);
+	held_buttons = KIT_BTN_2;
+	frames(&scr_breakout, 100);
+	held_buttons = 0;
+
+	ui_autoplay = 1;							/* clears several walls */
+	scr_breakout.enter();
+	frames(&scr_breakout, 20 * 25);
+	snapshot("38_breakout_autoplay");
+	CHECK(lit_pixels() < full - 200);			/* bricks are gone */
+	frames(&scr_breakout, 20 * 400);
+	ui_autoplay = 0;
+}
+
+static void test_invaders(void) {
+	int a;
+
+	ui_autoplay = 0;
+	scr_invaders.enter();
+	frames(&scr_invaders, 2);
+	snapshot("39_invaders_ready");
+	a = lit_pixels();
+	frames(&scr_invaders, 30);
+	CHECK_EQ(lit_pixels(), a);					/* waits for a key */
+	scr_invaders.key(KIT_BTN_3);				/* nobody plays on: bombs or the fleet end the game */
+	frames(&scr_invaders, 20 * 120);
+	snapshot("40_invaders_game_over");
+	held_buttons = KIT_BTN_1;
+	scr_invaders.key(KIT_BTN_3);
+	scr_invaders.key(KIT_BTN_3);
+	for (int i = 0; i < 200; i++) {
+		scr_invaders.key(KIT_BTN_3);
+		frames(&scr_invaders, 1);
+		if (i == 100) {
+			held_buttons = KIT_BTN_2;
+		}
+	}
+	held_buttons = 0;
+
+	ui_autoplay = 1;
+	scr_invaders.enter();
+	frames(&scr_invaders, 20 * 12);
+	snapshot("41_invaders_autoplay");
+	frames(&scr_invaders, 20 * 400);
+	ui_autoplay = 0;
+}
+
+static void test_saver(void) {
+	int a, b;
+
+	ui_autoplay = 0;
+	scr_saver.enter();							/* Game of Life */
+	frames(&scr_saver, 40);
+	snapshot("42_saver_life");
+	a = lit_pixels();
+	CHECK(a > 200 && a < 4000);
+	CHECK(a % 4 == 0);							/* cells are 2x2 pixels */
+	frames(&scr_saver, 4);
+	CHECK(lit_pixels() != a);					/* it lives */
+	frames(&scr_saver, 20 * 200);				/* long enough to die out or freeze: it starts again */
+	CHECK(lit_pixels() > 40);
+
+	scr_saver.key(KIT_BTN_1);					/* star field */
+	frames(&scr_saver, 60);
+	snapshot("43_saver_stars");
+	b = lit_pixels();
+	CHECK(b >= 20 && b < 200);
+	for (int i = 0; i < 6; i++) {				/* every speed */
+		scr_saver.key(KIT_BTN_2);
+		frames(&scr_saver, 300);
+	}
+
+	scr_saver.key(KIT_BTN_1);					/* plasma: about half the screen lit */
+	frames(&scr_saver, 40);
+	snapshot("44_saver_plasma");
+	a = lit_pixels();
+	CHECK(a > 2500 && a < 5700);
+	for (int i = 0; i < 6; i++) {
+		scr_saver.key(KIT_BTN_2);
+		frames(&scr_saver, 300);
+	}
+	scr_saver.key(KIT_BTN_1);					/* back to Life */
+}
+
 static void test_system(void) {
 	ui_last_pages = 3;
 	ui_last_frame_ms = 9;
@@ -956,6 +1152,10 @@ int main(int argc, char** argv) {
 	RUN_TEST(test_video);
 	RUN_TEST(test_weather);
 	RUN_TEST(test_maze);
+	RUN_TEST(test_tetris);
+	RUN_TEST(test_breakout);
+	RUN_TEST(test_invaders);
+	RUN_TEST(test_saver);
 	printf("%d checks, %d failed\n", tt_checks, tt_fails);
 	return tt_fails ? 1 : 0;
 }
