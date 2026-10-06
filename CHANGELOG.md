@@ -7,7 +7,9 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
-## ak-mcu-base v1.3.2 — chưa phát hành
+## ak-mcu-base v1.3.2 — 06/10/2026
+
+App **1.3.2**, bootloader không đổi (1.2.0).
 
 - **Pong qua RS485** (màn hình mới của demo): hai kit nối chung dây RS485 chơi với nhau; kit có số ngẫu nhiên lớn hơn
   làm chủ, tính đường bóng và gửi trạng thái 20 lần/giây, kit kia trả lời vị trí thanh đỡ. Một mình thì kit tự chơi
