@@ -134,8 +134,12 @@ nhận được mỗi giây. Đã thử trên kit: 20 điểm/giây qua UART, 10
 ## Chạy trên trình duyệt
 
 <https://hohoanganh.github.io/ak-base-kit-pio/play/> là chính firmware này (kernel, shell, Modbus slave, mọi màn hình) biên dịch sang WebAssembly.
-Khác với kit: nhiệt độ, độ ẩm là số giả; đồng hồ lấy giờ máy tính; flash nằm trong bộ nhớ. Mở trang ở hai tab rồi vào
-Pong RS485 ở cả hai là hai bản firmware chơi với nhau.
+Khác với kit: nhiệt độ, độ ẩm là số giả; đồng hồ lấy giờ máy tính; flash nằm trong bộ nhớ.
+
+- Vừa mở trang, kit tự đi một vòng qua các màn hình cho tới khi bạn bấm nút. Hàng ô bên dưới kit mở thẳng từng màn hình,
+  và `play/?screen=tetris` là link tới thẳng một màn hình (tên như lệnh `ui open`).
+- [Hai kit chơi Pong](https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html): hai bản firmware cạnh nhau, nối bằng đường RS485 giả lập.
+- Muốn nhúng một kit vào trang khác: nạp `ak-kit.js` và `kit-ui.js` rồi gọi `AkKitUI.create(phần_tử)`.
 
 Dựng lại (cần [Emscripten SDK](https://emscripten.org)):
 
@@ -143,7 +147,8 @@ Dựng lại (cần [Emscripten SDK](https://emscripten.org)):
 python port/web/build.py            # ghi ra docs/play/ ở gốc repo
 ```
 
-Mã nguồn nằm ở `port/web/`: `web_main.c` thay cho bo mạch (`demo/kit.h`), `index.html` là trang web, `clip.akv` là clip thử.
+Mã nguồn nằm ở `port/web/`: `web_main.c` thay cho bo mạch (`demo/kit.h`), `kit-ui.js` là một kit trên trang web,
+`index.html` và `pong.html` là hai trang, `clip.akv` là clip mẫu.
 
 ## Xem màn hình kit trên máy tính
 
@@ -203,6 +208,7 @@ Không cần đứng cạnh kit vẫn thử được:
 display ok, screen: Snake, last frame 20 ms, 3 of 8 pages sent, buttons 0x00
 > ui 1        (bấm B1; ui 2, ui 3 tương tự)
 > ui back     (giữ B3: về menu)
+> ui open tetris   (mở thẳng một màn hình theo một phần tên trong menu; ui open menu để về menu)
 > ui auto     (bật/tắt tự chơi: mở một game thì game tự chạy, mở máy hát thì phát lần lượt; bấm nút để giành lại quyền điều khiển)
 > th          (nhiệt độ, độ ẩm hiện tại; th csv in thêm cả đồ thị dạng CSV)
 > ui dump     (gửi màn hình hiện tại một lần; ui stream: gửi mỗi khi đổi, gõ lần nữa để tắt)

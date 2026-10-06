@@ -7,6 +7,19 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
+## ak-mcu-base — sau v1.3.3, chưa phát hành
+
+- **Lệnh `ui open <tên>`**: mở thẳng một màn hình theo một phần tên trong menu (`ui open tetris`, `ui open 3d`,
+  `ui open menu`), không phải bấm qua menu. Dùng được trên kit qua shell.
+- **Trang chạy thử sống ngay khi mở:** kit tự đi một vòng qua các màn hình đẹp nhất cho tới khi có người bấm nút;
+  hàng nút tắt tới từng màn hình; link chia sẻ dạng `play/?screen=tetris`.
+- **Trang [hai kit chơi Pong](https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html):** hai bản firmware cạnh nhau trên một trang, nối bằng đường
+  RS485 giả lập; xem được ai làm chủ, số byte qua lại, và rút dây để thấy chúng tự quay về chơi một mình.
+- **`port/web/kit-ui.js`**: một kit thành một thành phần nhúng được vào trang bất kỳ; trang giới thiệu của dự án
+  giờ có kit chạy thật ngay đầu trang.
+- **README**: GIF 19 giây các cảnh đẹp nhất (`tools/highlights_gif.py`), nút chạy thử, bảng lối vào;
+  thêm [README.en.md](README.en.md) tiếng Anh.
+
 ## ak-mcu-base v1.3.3 — 06/10/2026
 
 App **1.3.3**, bootloader không đổi (1.2.0). Mã firmware không đổi so với v1.3.2 ngoài số phiên bản; bản này thêm clip mẫu và tool.

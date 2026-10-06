@@ -1,0 +1,75 @@
+/* Shared by the pages in docs/play: same palette as the project page (docs/index.html). */
+:root {
+  --bg: #0b0f14;
+  --surface: #111821;
+  --surface-2: #16202b;
+  --line: #223041;
+  --text: #d9e1ea;
+  --muted: #8d9bab;
+  --accent: #a8ff3e;
+  --accent-dim: rgba(168, 255, 62, 0.12);
+  --mono: ui-monospace, "Cascadia Mono", Consolas, SFMono-Regular, Menlo, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 6px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 var(--sans); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, kbd { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.4em; border-radius: 4px; }
+kbd { border: 1px solid var(--line); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+nav { border-bottom: 1px solid var(--line); }
+nav .wrap { display: flex; align-items: center; gap: 20px; height: 54px; }
+nav .brand { font: 700 15px var(--mono); color: var(--text); white-space: nowrap; }
+nav .brand span { color: var(--accent); }
+nav .links { margin-left: auto; display: flex; gap: 18px; font: 500 14px var(--mono); white-space: nowrap; overflow-x: auto; }
+
+header { padding: 36px 0 8px; }
+h1 { font: 700 30px/1.25 var(--sans); margin: 0 0 10px; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--muted); max-width: 780px; }
+header p strong { color: var(--text); font-weight: 600; }
+
+main { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 28px; padding: 28px 0 20px; align-items: start; }
+main.pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 960px) { main, main.pair { grid-template-columns: 1fr; } }
+
+.shortcuts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.shortcuts button, .chips button {
+  font: 14px var(--mono); color: var(--text); background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; cursor: pointer;
+}
+.chips button { color: var(--muted); padding: 3px 9px; }
+.shortcuts button:hover, .chips button:hover { color: var(--accent); border-color: var(--accent); }
+.shortcuts button:focus-visible, .chips button:focus-visible, .opts button:focus-visible, #cmd:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { color: var(--muted); font-size: 14px; margin: 12px 0 0; }
+.hint b { color: var(--text); }
+.opts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+.opts button, .opts label.file {
+  font: 500 14px var(--mono); color: var(--muted); background: transparent;
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 12px; cursor: pointer;
+}
+.opts input[type=file] { display: none; }
+.btn-link { font: 500 14px var(--mono); }
+
+.side h2, .label { font: 600 14px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 10px; }
+.term { background: #05080b; border: 1px solid var(--line); border-radius: var(--radius); }
+#out { margin: 0; padding: 12px 14px; height: 300px; overflow-y: auto; font: 14px/1.5 var(--mono); color: #c7d3df; white-space: pre-wrap; word-break: break-word; }
+.term form { display: flex; border-top: 1px solid var(--line); }
+.term form span { padding: 9px 0 9px 14px; font: 14px var(--mono); color: var(--accent); }
+#cmd { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--text); font: 14px var(--mono); padding: 9px 12px 9px 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
+
+.notes { margin: 22px 0 0; padding: 0; list-style: none; font-size: 15px; }
+.notes li { padding: 9px 0; border-top: 1px solid var(--line); color: var(--muted); }
+.notes li b { color: var(--text); font-weight: 600; }
+footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--muted); font-size: 14px; }
+
+/* ---------- pong.html: the wire between the two kits ---------- */
+.wire { grid-column: 1 / -1; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; font: 14px/1.6 var(--mono); color: var(--muted); }
+.wire b { color: var(--accent); font-weight: 600; }
+.wire .bar { height: 6px; background: var(--surface-2); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.wire .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.1s linear; }
+.who { font: 600 14px var(--mono); color: var(--muted); margin: 0 0 8px; }
+.who b { color: var(--text); }

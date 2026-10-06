@@ -234,6 +234,12 @@ EMSCRIPTEN_KEEPALIVE uint8_t web_autoplay_state(void) {
 	return ui_autoplay;
 }
 
+/* Opens the screen named by the text in io[] (0-terminated), "menu" = the menu. */
+EMSCRIPTEN_KEEPALIVE uint8_t web_open(void) {
+	io[IO_SIZE - 1] = 0;
+	return started ? ui_open((const char*)io) : 0;
+}
+
 EMSCRIPTEN_KEEPALIVE uint8_t* web_io(void) {
 	return io;
 }

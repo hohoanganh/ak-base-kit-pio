@@ -1417,6 +1417,23 @@ static void test_plot(void) {
 	scr_plot.key(KIT_BTN_2);
 }
 
+static void test_menu_find(void) {
+	CHECK(menu_find("tetris") == &scr_tetris);
+	CHECK(menu_find("TETRIS") == &scr_tetris);
+	CHECK(menu_find("3d") == &scr_cube);			/* the first entry that contains it */
+	CHECK(menu_find("maze") == &scr_maze);
+	CHECK(menu_find("clock") == &scr_clock);		/* anywhere in the name */
+	CHECK(menu_find("pong") == &scr_pong);
+	CHECK(menu_find("saver") == &scr_saver);
+	CHECK(menu_find("nothing like it") == 0);
+	CHECK(menu_find("") == 0);
+	CHECK(menu_find("tetrisx") == 0);
+	/* the menu selection follows: B3 in the menu opens the screen that was found */
+	menu_find("scope");
+	CHECK(menu_key(KIT_BTN_3) == &scr_plot);
+	menu_find("clock");
+}
+
 static void test_system(void) {
 	ui_last_pages = 3;
 	ui_last_frame_ms = 9;
@@ -1462,6 +1479,7 @@ int main(int argc, char** argv) {
 	RUN_TEST(test_saver);
 	RUN_TEST(test_pong);
 	RUN_TEST(test_plot);
+	RUN_TEST(test_menu_find);
 	RUN_TEST(test_screen_dump);
 	printf("%d checks, %d failed\n", tt_checks, tt_fails);
 	return tt_fails ? 1 : 0;

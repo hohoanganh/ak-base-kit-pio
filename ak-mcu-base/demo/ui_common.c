@@ -168,6 +168,30 @@ static uint8_t menu_top;			/* first entry shown */
 void menu_enter(void) {
 }
 
+static char lower(char c) {
+	return (c >= 'A' && c <= 'Z') ? (char)(c + 32) : c;
+}
+
+const ui_screen_t* menu_find(const char* text) {
+	if (!text[0]) {
+		return 0;
+	}
+	for (uint8_t i = 0; i < MENU_NUM; i++) {
+		for (const char* at = menu_items[i]->name; *at; at++) {
+			uint8_t k = 0;
+
+			while (text[k] && lower(at[k]) == lower(text[k])) {
+				k++;
+			}
+			if (!text[k]) {
+				menu_sel = i;
+				return menu_items[i];
+			}
+		}
+	}
+	return 0;
+}
+
 const ui_screen_t* menu_key(uint8_t btn) {
 	if (btn == KIT_BTN_1) {
 		menu_sel = (uint8_t)((menu_sel + 1) % MENU_NUM);

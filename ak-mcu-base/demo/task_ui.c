@@ -169,6 +169,19 @@ void cmd_ui(const char* args) {
 		stream_next_ms = 0;
 		xprintf("stream %s\n", stream_on ? "on" : "off");
 	}
+	else if (args[0] == 'o') {
+		const char* name = args;
+
+		while (*name && *name != ' ') {
+			name++;
+		}
+		while (*name == ' ') {
+			name++;
+		}
+		if (!ui_open(name)) {
+			xprintf("no screen named like that. usage: ui open <part of a menu name> | ui open menu\n");
+		}
+	}
 	else if (args[0] == 'a') {
 		ui_autoplay = !ui_autoplay;
 		xprintf("autoplay %s\n", ui_autoplay ? "on: open a game, it plays itself" : "off");
@@ -299,6 +312,20 @@ static void open_screen(const ui_screen_t* s) {
 	else {
 		menu_enter();
 	}
+}
+
+uint8_t ui_open(const char* text) {
+	const ui_screen_t* s = menu_find(text);
+
+	if (s) {
+		open_screen(s);
+		return 1;
+	}
+	if (text[0] == 'm' && text[1] == 'e' && text[2] == 'n' && text[3] == 'u' && text[4] == 0) {
+		open_screen(0);
+		return 1;
+	}
+	return 0;
 }
 
 static void key(uint8_t btn) {

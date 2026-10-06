@@ -5,86 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AK Base Kit — chạy firmware ngay trên trình duyệt</title>
 <meta name="description" content="Firmware ak-mcu-base (kernel AK, shell, bộ demo 16 màn hình) biên dịch sang WebAssembly, chạy trong trình duyệt.">
-<style>
-:root {
-  --bg: #0b0f14;
-  --surface: #111821;
-  --surface-2: #16202b;
-  --line: #223041;
-  --text: #d9e1ea;
-  --muted: #8d9bab;
-  --accent: #a8ff3e;
-  --accent-dim: rgba(168, 255, 62, 0.12);
-  --pixel: #e8f5f5;
-  --mono: ui-monospace, "Cascadia Mono", Consolas, SFMono-Regular, Menlo, monospace;
-  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
-  --radius: 6px;
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 var(--sans); }
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-code, kbd { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.4em; border-radius: 4px; }
-kbd { border: 1px solid var(--line); }
-.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
-
-nav { border-bottom: 1px solid var(--line); }
-nav .wrap { display: flex; align-items: center; gap: 20px; height: 54px; }
-nav .brand { font: 700 15px var(--mono); color: var(--text); }
-nav .brand span { color: var(--accent); }
-nav .links { margin-left: auto; display: flex; gap: 18px; font: 500 14px var(--mono); }
-
-header { padding: 36px 0 8px; }
-h1 { font: 700 30px/1.25 var(--sans); margin: 0 0 10px; letter-spacing: -0.01em; }
-header p { margin: 0; color: var(--muted); max-width: 760px; }
-header p strong { color: var(--text); font-weight: 600; }
-
-main { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 28px; padding: 28px 0 20px; align-items: start; }
-@media (max-width: 960px) { main { grid-template-columns: 1fr; } }
-
-/* ---------- the kit ---------- */
-.kit { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
-.kit-top { display: flex; align-items: center; gap: 10px; font: 500 13px var(--mono); color: var(--muted); margin-bottom: 12px; }
-.led { width: 9px; height: 9px; border-radius: 50%; background: #24313f; }
-.led.on { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-.kit-top .state { margin-left: auto; }
-.screen { background: #000; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
-canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; }
-.buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
-.buttons button {
-  font: 600 15px var(--mono); color: var(--text); background: var(--surface-2);
-  border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 0; cursor: pointer;
-  touch-action: none; user-select: none; -webkit-user-select: none;
-}
-.buttons button small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 2px; }
-.buttons button.down, .buttons button:active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-.buttons button:focus-visible, .opts button:focus-visible, #cmd:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.opts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-.opts button, .opts label.file {
-  font: 500 14px var(--mono); color: var(--muted); background: transparent;
-  border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 12px; cursor: pointer;
-}
-.opts button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
-.opts input[type=file] { display: none; }
-.hint { color: var(--muted); font-size: 14px; margin: 12px 0 0; }
-
-/* ---------- console ---------- */
-.side h2 { font: 600 14px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 10px; }
-.term { background: #05080b; border: 1px solid var(--line); border-radius: var(--radius); }
-#out { margin: 0; padding: 12px 14px; height: 300px; overflow-y: auto; font: 14px/1.5 var(--mono); color: #c7d3df; white-space: pre-wrap; word-break: break-word; }
-.term form { display: flex; border-top: 1px solid var(--line); }
-.term form span { padding: 9px 0 9px 14px; font: 14px var(--mono); color: var(--accent); }
-#cmd { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--text); font: 14px var(--mono); padding: 9px 12px 9px 8px; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
-.chips button { font: 14px var(--mono); color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 3px 9px; cursor: pointer; }
-.chips button:hover { color: var(--accent); border-color: var(--accent); }
-
-.notes { margin: 22px 0 0; padding: 0; list-style: none; font-size: 15px; }
-.notes li { padding: 9px 0; border-top: 1px solid var(--line); color: var(--muted); }
-.notes li b { color: var(--text); font-weight: 600; }
-footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--muted); font-size: 14px; }
-.error { color: #ff6b6b; }
-</style>
+<meta property="og:title" content="AK Base Kit — firmware chạy ngay trên trình duyệt">
+<meta property="og:description" content="Chính mã C của firmware STM32, biên dịch sang WebAssembly: Tetris, 3D, mê cung, Pong qua RS485, shell.">
+<meta property="og:image" content="https://hohoanganh.github.io/ak-base-kit-pio/play/social.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="page.css">
 </head>
 <body>
 
@@ -92,7 +17,8 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
   <div class="wrap">
     <a class="brand" href="../">ak-<span>mcu</span>-base</a>
     <div class="links">
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/docs/demo-kit.md">Tài liệu demo</a>
+      <a href="pong.html">Pong hai kit</a>
+      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/docs/demo-kit.md">Tài liệu</a>
       <a href="https://github.com/hohoanganh/ak-base-kit-pio">GitHub</a>
     </div>
   </div>
@@ -107,26 +33,34 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
   </header>
 
   <main>
-    <section class="kit" aria-label="AK Base Kit">
-      <div class="kit-top">
-        <span class="led" id="led" title="LED nhịp tim của firmware"></span>
-        <span>STM32L151 · OLED 128×64 · 3 nút · còi</span>
-        <span class="state" id="state">đang nạp…</span>
+    <section aria-label="AK Base Kit">
+      <div id="kit"></div>
+      <div class="shortcuts" id="shortcuts" aria-label="Mở thẳng một màn hình">
+        <button type="button" data-open="video">Logo 3D</button>
+        <button type="button" data-open="tetris">Tetris</button>
+        <button type="button" data-open="3d">Khối 3D</button>
+        <button type="button" data-open="maze">Mê cung</button>
+        <button type="button" data-open="dino">Dino</button>
+        <button type="button" data-open="invaders">Invaders</button>
+        <button type="button" data-open="breakout">Breakout</button>
+        <button type="button" data-open="snake">Snake</button>
+        <button type="button" data-open="pong">Pong</button>
+        <button type="button" data-open="jukebox">Nhạc</button>
+        <button type="button" data-open="scope">Máy hiện sóng</button>
+        <button type="button" data-open="weather">Thời tiết</button>
+        <button type="button" data-open="saver">Màn hình chờ</button>
+        <button type="button" data-open="clock">Đồng hồ</button>
+        <button type="button" data-open="menu">Menu</button>
       </div>
-      <div class="screen"><canvas id="lcd" width="128" height="64" aria-label="Màn hình của kit"></canvas></div>
-      <div class="buttons">
-        <button type="button" data-btn="1">B1<small>phím 1</small></button>
-        <button type="button" data-btn="2">B2<small>phím 2</small></button>
-        <button type="button" data-btn="4">B3<small>phím 3 · giữ = về menu</small></button>
-      </div>
+      <p class="hint">Bấm một ô ở trên để tới thẳng màn hình đó; màn hình tự chạy cho tới khi bạn bấm B1 hoặc B2.
+        Dòng cuối màn hình ghi chức năng của từng nút; giữ B3 để về menu.<br>
+        Còi mặc định tắt: bấm <b>Âm thanh</b> để bật, sẽ có một tiếng bíp thử. Trên iPhone phải gạt công tắc im lặng
+        sang chế độ có chuông.</p>
       <div class="opts">
-        <button type="button" id="sound" aria-pressed="false" title="Bật để nghe còi của kit; khi bật sẽ có một tiếng bíp thử">Âm thanh: tắt</button>
-        <button type="button" id="auto" aria-pressed="false">Tự chơi: tắt</button>
+        <button type="button" id="share">Chép link tới màn hình này</button>
         <label class="file">Nạp clip .akv<input type="file" id="clip" accept=".akv"></label>
+        <a class="btn-link" href="pong.html">Xem hai kit chơi Pong với nhau →</a>
       </div>
-      <p class="hint">Dòng cuối màn hình ghi chức năng của từng nút. Trong menu: B1 xuống, B2 lên, B3 mở.<br>
-      Còi của kit mặc định tắt: bấm <b>Âm thanh</b> để bật, sẽ có một tiếng bíp thử. Trên iPhone, gạt công tắc im lặng
-      về chế độ có chuông thì mới nghe được.</p>
     </section>
 
     <section class="side">
@@ -140,18 +74,19 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
       </div>
       <div class="chips" id="chips">
         <button type="button">help</button><button type="button">stat</button><button type="button">ui</button>
-        <button type="button">th</button><button type="button">plot 42</button><button type="button">ver</button><button type="button">crash</button>
-        <button type="button">reboot</button><button type="button" data-own="1">gây FATAL</button>
+        <button type="button">th</button><button type="button">plot 42</button><button type="button">ver</button>
+        <button type="button">crash</button><button type="button">reboot</button>
+        <button type="button" data-own="1">gây FATAL</button>
       </div>
 
       <ul class="notes">
         <li><b>Giống kit thật:</b> kernel, timer, pool message, shell, nhật ký sự cố, toàn bộ mã vẽ và mã game.
           Bấm “gây FATAL” rồi gõ <code>crash</code> để xem firmware ghi lại sự cố của chính nó.</li>
         <li><b>Giả lập:</b> nhiệt độ, độ ẩm là số giả; đồng hồ lấy giờ máy tính; flash nằm trong bộ nhớ, tải lại trang là mất.</li>
-        <li><b>Pong hai người:</b> mở trang này ở hai tab của cùng trình duyệt rồi vào <em>Pong RS485</em> ở cả hai.
-          Các byte RS485 được chuyển giữa hai tab như qua một sợi dây.</li>
+        <li><b>Pong hai người:</b> trang <a href="pong.html">Pong hai kit</a> đặt hai firmware cạnh nhau, nối bằng một
+          đường RS485 giả lập. Mở trang này ở hai tab rồi vào Pong ở cả hai cũng được.</li>
         <li><b>Video:</b> màn hình <em>Video</em> phát sẵn logo AK Foundation xoay 3D. Clip của bạn: tạo bằng
-          <code>tools/ak_video.py convert</code> rồi bấm “Nạp clip .akv”.</li>
+          <code>tools/ak_video.py convert</code> hoặc <code>tools/spin_clip.py</code> rồi bấm “Nạp clip .akv”.</li>
       </ul>
     </section>
   </main>
@@ -162,233 +97,84 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 40px; color: var(--m
 </footer>
 
 <script src="ak-kit.js"></script>
+<script src="kit-ui.js"></script>
 <script>
 (function () {
   "use strict";
-  var W = 128, H = 64, TICK_MS = 10;
   var out = document.getElementById("out");
-  var state = document.getElementById("state");
-  var canvas = document.getElementById("lcd");
-  var ctx = canvas.getContext("2d");
-  var image = ctx.createImageData(W, H);
-  var kit = null, panel = 0, io = 0;
-  var mask = 0, last = 0, lastPanel = new Uint8Array(W * 8);
-  var audio = null, osc = null, gain = null, soundOn = false, lastHz = -1, testUntil = 0;
-  var VOLUME = 0.2;
+  var params = new URLSearchParams(location.search);
+  var current = "";
   var wire = ("BroadcastChannel" in window) ? new BroadcastChannel("ak-kit-rs485") : null;
-  var pendingRx = [], timer = 0;
-
-  function fail(msg) {
-    state.textContent = "lỗi";
-    state.className = "state error";
-    out.textContent += "\n" + msg + "\n";
-  }
-
-  if (typeof AkKit !== "function") {
-    fail("Không nạp được ak-kit.js (file phải nằm cạnh trang này).");
-    return;
-  }
+  /* the first seconds of a visit: the best-looking screens, one after the other */
+  var TOUR = [["video", 7000], ["3d", 6000], ["maze", 8000], ["tetris", 9000], ["dino", 7000],
+              ["scope", 6000], ["invaders", 8000], ["saver", 7000]];
 
   function print(text) {
     var stick = out.scrollTop + out.clientHeight >= out.scrollHeight - 4;
     out.textContent += text;
-    if (out.textContent.length > 20000) {
-      out.textContent = out.textContent.slice(-15000);
-    }
-    if (stick) {
-      out.scrollTop = out.scrollHeight;
-    }
+    if (out.textContent.length > 20000) { out.textContent = out.textContent.slice(-15000); }
+    if (stick) { out.scrollTop = out.scrollHeight; }
   }
 
-  function send(line) {
-    var bytes = new TextEncoder().encode(line + "\r");
-    kit.HEAPU8.set(bytes.subarray(0, 4096), io);
-    kit._web_console_in(Math.min(bytes.length, 4096));
-  }
-
-  function draw() {
-    var mem = kit.HEAPU8, changed = false, i;
-    for (i = 0; i < W * 8; i++) {
-      if (mem[panel + i] !== lastPanel[i]) { changed = true; break; }
+  AkKitUI.create(document.getElementById("kit")).then(function (kit) {
+    window.akKit = kit;
+    kit.onConsole = print;
+    if (wire) {
+      kit.onRs485 = function (bytes) { wire.postMessage(bytes); };
+      wire.onmessage = function (e) { kit.rs485In(new Uint8Array(e.data)); };
     }
-    if (!changed) { return; }
-    lastPanel.set(mem.subarray(panel, panel + W * 8));
-    for (var y = 0; y < H; y++) {
-      var row = (y >> 3) * W, bit = 1 << (y & 7);
-      for (var x = 0; x < W; x++) {
-        var on = lastPanel[row + x] & bit, p = (y * W + x) * 4;
-        image.data[p] = on ? 232 : 0;
-        image.data[p + 1] = on ? 245 : 0;
-        image.data[p + 2] = on ? 245 : 0;
-        image.data[p + 3] = 255;
+
+    function open(name) {
+      kit.stopTour();
+      kit.autoplay(true);
+      if (kit.open(name)) { current = name; }
+    }
+
+    if (params.get("screen") && kit.open(params.get("screen"))) {
+      current = params.get("screen");
+      kit.autoplay(true);
+    } else if (params.get("tour") !== "0") {
+      kit.tour(TOUR);
+    }
+
+    document.getElementById("shortcuts").addEventListener("click", function (e) {
+      if (e.target.tagName === "BUTTON") { open(e.target.getAttribute("data-open")); }
+    });
+    document.getElementById("share").addEventListener("click", function (e) {
+      var url = location.origin + location.pathname + (current ? "?screen=" + encodeURIComponent(current) : "");
+      var btn = e.target;
+      function done(ok) {
+        btn.textContent = ok ? "Đã chép: " + url.replace(/^https?:\/\//, "") : url;
+        setTimeout(function () { btn.textContent = "Chép link tới màn hình này"; }, 3500);
       }
-    }
-    ctx.putImageData(image, 0, 0);
-  }
-
-  function buzzer() {
-    var hz = kit._web_buzzer();
-    if (performance.now() < testUntil) { return; }      /* the test beep is sounding */
-    if (hz === lastHz || !soundOn || !audio) { return; }
-    lastHz = hz;
-    if (hz >= 20) {
-      osc.frequency.setValueAtTime(hz, audio.currentTime);
-      gain.gain.setValueAtTime(VOLUME, audio.currentTime);
-    } else {
-      gain.gain.setValueAtTime(0, audio.currentTime);
-    }
-  }
-
-  function tick() {
-    var now = performance.now();
-    var dt = Math.min(200, Math.max(0, Math.round(now - last)));
-    var n;
-    if (dt < 1) { return; }
-    last += dt;
-    if (now - last > 400) { last = now; }       /* the tab slept: do not replay the gap */
-    while (pendingRx.length) {
-      var chunk = pendingRx.shift();
-      kit.HEAPU8.set(chunk.subarray(0, 4096), io);
-      kit._web_rs485_in(Math.min(chunk.length, 4096));
-    }
-    kit._web_buttons(mask);
-    try {
-      kit._web_tick(dt);
-    } catch (err) {
-      clearInterval(timer);
-      fail("Firmware dừng vì lỗi WebAssembly: " + err + ". Tải lại trang để chạy lại.");
-      return;
-    }
-    n = kit._web_console_out();
-    if (n) { print(new TextDecoder().decode(kit.HEAPU8.subarray(io, io + n)).replace(/\r/g, "")); }
-    n = kit._web_rs485_out();
-    if (n && wire) { wire.postMessage(kit.HEAPU8.slice(io, io + n)); }
-    draw();
-    buzzer();
-    document.getElementById("led").className = kit._web_led() ? "led on" : "led";
-    setToggle("auto", "Tự chơi", !!kit._web_autoplay_state());
-  }
-
-  function setToggle(id, label, on) {
-    var b = document.getElementById(id);
-    if ((b.getAttribute("aria-pressed") === "true") !== on) {
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-      b.textContent = label + ": " + (on ? "bật" : "tắt");
-    }
-  }
-
-  /* ---- buttons: pointer and keyboard both just set the mask the firmware polls ---- */
-  var MIN_PRESS_MS = 70, downAt = {};
-  function press(bit, down, late) {
-    if (down && soundOn && audio && audio.state !== "running") { audio.resume(); }
-    /* the firmware debounces its buttons: a tap shorter than that would be lost */
-    if (down) {
-      downAt[bit] = performance.now();
-    } else if (!late && performance.now() - (downAt[bit] || 0) < MIN_PRESS_MS) {
-      setTimeout(function () { press(bit, false, true); }, MIN_PRESS_MS);
-      return;
-    }
-    mask = down ? (mask | bit) : (mask & ~bit);
-    var b = document.querySelector('.buttons button[data-btn="' + bit + '"]');
-    if (b) { b.classList.toggle("down", down); }
-  }
-  Array.prototype.forEach.call(document.querySelectorAll(".buttons button"), function (b) {
-    var bit = parseInt(b.getAttribute("data-btn"), 10);
-    b.addEventListener("pointerdown", function (e) { e.preventDefault(); b.setPointerCapture(e.pointerId); press(bit, true); });
-    b.addEventListener("pointerup", function () { press(bit, false); });
-    b.addEventListener("pointercancel", function () { press(bit, false); });
-    b.addEventListener("keydown", function (e) { if (e.key === " " || e.key === "Enter") { e.preventDefault(); press(bit, true); } });
-    b.addEventListener("keyup", function (e) { if (e.key === " " || e.key === "Enter") { press(bit, false); } });
-  });
-  var keys = { "1": 1, "2": 2, "3": 4 };
-  document.addEventListener("keydown", function (e) {
-    if (e.target === document.getElementById("cmd") || e.repeat || e.ctrlKey || e.metaKey || e.altKey) { return; }
-    if (keys[e.key]) { press(keys[e.key], true); e.preventDefault(); }
-  });
-  document.addEventListener("keyup", function (e) {
-    if (keys[e.key]) { press(keys[e.key], false); }
-  });
-  window.addEventListener("blur", function () { press(1, false); press(2, false); press(4, false); });
-
-  /* ---- options ---- */
-  document.getElementById("sound").addEventListener("click", function () {
-    soundOn = !soundOn;
-    if (soundOn && !audio) {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) { soundOn = false; return; }
-      audio = new AC();
-      osc = audio.createOscillator();
-      gain = audio.createGain();
-      osc.type = "square";
-      gain.gain.value = 0;
-      osc.connect(gain);
-      gain.connect(audio.destination);
-      osc.start();
-    }
-    if (audio) {
-      if (soundOn) {
-        /* a short beep right away: the listener knows at once whether sound gets through
-         * (phone volume, silent switch) without having to find a screen that makes noise */
-        audio.resume();
-        osc.frequency.setValueAtTime(1760, audio.currentTime);
-        gain.gain.setValueAtTime(VOLUME, audio.currentTime);
-        gain.gain.setValueAtTime(0, audio.currentTime + 0.15);
-        testUntil = performance.now() + 200;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { done(true); }, function () { done(false); });
       } else {
-        gain.gain.cancelScheduledValues(audio.currentTime);
-        gain.gain.setValueAtTime(0, audio.currentTime);
-      }
-    }
-    lastHz = -1;
-    setToggle("sound", "Âm thanh", soundOn);
-  });
-  document.getElementById("auto").addEventListener("click", function () {
-    if (kit) { kit._web_autoplay(kit._web_autoplay_state() ? 0 : 1); }
-  });
-  document.getElementById("clip").addEventListener("change", function (e) {
-    var f = e.target.files[0];
-    if (!f || !kit) { return; }
-    f.arrayBuffer().then(function (buf) {
-      var data = new Uint8Array(buf), size = kit._web_store_size();
-      if (data.length < 16 || String.fromCharCode(data[0], data[1], data[2], data[3]) !== "AKV1") {
-        print("\n[web] " + f.name + " không phải file .akv\n");
-      } else if (data.length > size) {
-        print("\n[web] clip " + data.length + " byte, kho chỉ chứa " + size + " byte\n");
-      } else {
-        kit.HEAPU8.set(data, kit._web_store());
-        print("\n[web] đã nạp " + f.name + " (" + data.length + " byte). Mở lại màn hình Video để phát.\n");
+        done(false);
       }
     });
-    e.target.value = "";
-  });
-
-  /* ---- console ---- */
-  document.getElementById("form").addEventListener("submit", function (e) {
-    var input = document.getElementById("cmd");
-    e.preventDefault();
-    if (kit) { send(input.value); }
-    input.value = "";
-  });
-  document.getElementById("chips").addEventListener("click", function (e) {
-    if (e.target.tagName !== "BUTTON" || !kit) { return; }
-    if (e.target.getAttribute("data-own")) { kit._web_test_fatal(); } else { send(e.target.textContent); }
-  });
-
-  if (wire) {
-    wire.onmessage = function (e) { pendingRx.push(new Uint8Array(e.data)); };
-  }
-
-  AkKit().then(function (m) {
-    kit = m;
-    panel = kit._web_panel();
-    io = kit._web_io();
-    last = performance.now();
-    state.textContent = "đang chạy";
-    window.akKit = kit;
-    timer = setInterval(tick, TICK_MS);
-  }).catch(function (err) {
-    fail("Không khởi động được WebAssembly: " + err);
-  });
+    document.getElementById("clip").addEventListener("change", function (e) {
+      var f = e.target.files[0];
+      if (!f) { return; }
+      f.arrayBuffer().then(function (buf) {
+        var problem = kit.loadClip(new Uint8Array(buf));
+        print(problem ? "\n[web] " + f.name + ": " + problem + "\n"
+                      : "\n[web] đã nạp " + f.name + " (" + buf.byteLength + " byte)\n");
+        if (!problem) { open("video"); }
+      });
+      e.target.value = "";
+    });
+    document.getElementById("form").addEventListener("submit", function (e) {
+      var input = document.getElementById("cmd");
+      e.preventDefault();
+      kit.send(input.value);
+      input.value = "";
+    });
+    document.getElementById("chips").addEventListener("click", function (e) {
+      if (e.target.tagName !== "BUTTON") { return; }
+      if (e.target.getAttribute("data-own")) { kit.testFatal(); } else { kit.send(e.target.textContent); }
+    });
+  }, function () {});
 }());
 </script>
 </body>

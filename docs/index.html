@@ -68,7 +68,11 @@ nav li a:hover { color: var(--accent); text-decoration: none; }
 nav .gh { margin-left: auto; font: 500 13px var(--mono); white-space: nowrap; }
 
 /* ---------- hero ---------- */
-header.hero { padding: 72px 0 56px; border-bottom: 1px solid var(--line); }
+header.hero { padding: 56px 0 48px; border-bottom: 1px solid var(--line); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 40px; align-items: center; }
+@media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } }
+.hero-kit .cap { font: 500 12.5px var(--mono); color: var(--muted); margin: 10px 2px 0; }
+.hero-kit .cap a { white-space: nowrap; }
 .kicker { font: 500 13px var(--mono); color: var(--accent); letter-spacing: 0.04em; }
 h1 { font: 700 clamp(30px, 5vw, 46px)/1.15 var(--mono); margin: 14px 0 16px; letter-spacing: -0.02em; }
 h1 .cursor { display: inline-block; width: 0.55em; height: 0.9em; background: var(--accent); vertical-align: -0.08em; margin-left: 4px; animation: blink 1.1s steps(1) infinite; }
@@ -221,6 +225,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   <div class="wrap">
     <a class="brand" href="#top">ak<span>/</span>base-kit</a>
     <ul>
+      <li><a href="play/">Chạy thử</a></li>
       <li><a href="#tong-quan">Tổng quan</a></li>
       <li><a href="#kernel">Kernel AK</a></li>
       <li><a href="#hai-nhanh">Hai nhánh</a></li>
@@ -234,25 +239,32 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 </nav>
 
 <header class="hero" id="top">
-  <div class="wrap">
+  <div class="wrap hero-grid">
+   <div>
     <div class="kicker">// FIRMWARE SOURCE BASE · STM32L151CBT6 · CORTEX-M3</div>
     <h1>AK Base Kit<span class="cursor" aria-hidden="true"></span></h1>
     <p class="lead">Nền firmware bare-metal cho STM32L151, dựng trên kernel <strong>AK Active Object</strong>:
       các task giao tiếp qua message, chạy hết việc mới nhường (run-to-completion), không cần RTOS.
-      Có sẵn bootloader, cập nhật firmware không cần ST-Link, và build bằng một lệnh.</p>
+      Có sẵn bootloader, cập nhật firmware không cần ST-Link, và build bằng một lệnh.
+      <strong>Kit trên trang này đang chạy thật</strong>: đó là chính mã C của firmware, biên dịch sang WebAssembly.</p>
     <div class="badges">
-      <span class="badge ok">v1.3.0 · đã kiểm trên board</span>
-      <span class="badge exp">ak-mcu-base · thử nghiệm</span>
+      <span class="badge ok">ak-mcu-base v1.3.3 · đã kiểm trên kit</span>
+      <span class="badge">base cũ v1.3.0</span>
       <span class="badge">PlatformIO · CMake</span>
       <span class="badge">OTA RS485 / UART</span>
       <span class="badge">nanoMODBUS (MIT)</span>
     </div>
     <div class="cta">
-      <a class="btn primary" href="#base">Bắt đầu với v1.3.0</a>
-      <a class="btn" href="https://github.com/hohoanganh/ak-base-kit-pio/releases">Tải firmware (Releases)</a>
+      <a class="btn primary" href="play/">Chạy thử, đủ 16 màn hình</a>
+      <a class="btn" href="play/pong.html">Hai kit chơi Pong</a>
       <a class="btn" href="#mcu-base">Xem ak-mcu-base</a>
-      <a class="btn" href="play/">Chạy thử trên trình duyệt</a>
+      <a class="btn" href="https://github.com/hohoanganh/ak-base-kit-pio/releases">Tải firmware</a>
     </div>
+   </div>
+   <div class="hero-kit">
+    <div id="hero-kit"></div>
+    <p class="cap">Bấm B1 B2 B3 (hoặc phím 1 2 3) để tự điều khiển · <a href="play/">mở bản đầy đủ có shell →</a></p>
+   </div>
   </div>
 </header>
 
@@ -262,8 +274,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 <section id="tong-quan">
   <div class="wrap">
     <h2 class="reveal"><span class="num">01</span>Tổng quan</h2>
-    <p class="sub reveal">Repo gồm hai phần: <strong>base ổn định</strong> trong <code>sources/</code> (đang dùng cho sản phẩm thật)
-      và <strong>ak-mcu-base</strong> (bản viết lại, tách khỏi chip, đang thử nghiệm). Cả hai cùng dựa trên kernel AK.</p>
+    <p class="sub reveal">Repo gồm hai phần: <strong>ak-mcu-base</strong> (bản viết lại, tách khỏi chip, có unit test; dự án mới
+      bắt đầu từ đây) và <strong>base cũ</strong> trong <code>sources/</code> (dành cho dự án đang chạy trên nó).
+      Cả hai cùng dựa trên kernel AK.</p>
 
     <div class="grid c4 reveal">
       <div class="cell">
@@ -458,7 +471,7 @@ task_t app_task_table[] = {
 <!-- ============ 05 AK-MCU-BASE ============ -->
 <section id="mcu-base">
   <div class="wrap">
-    <h2 class="reveal"><span class="num">05</span>ak-mcu-base <span class="badge exp" style="vertical-align:middle;margin-left:6px">thử nghiệm</span></h2>
+    <h2 class="reveal"><span class="num">05</span>ak-mcu-base <span class="badge ok" style="vertical-align:middle;margin-left:6px">v1.3.3</span></h2>
     <p class="sub reveal">Kernel AK, bootloader và OTA viết <strong>một lần</strong>, chạy trên mọi chip có port. Code phía trên lớp HAL
       không include header của chip. Port <strong>host</strong> chạy unit test và giả lập cả bootloader lẫn app ngay trên máy tính, không cần board.</p>
 
@@ -622,6 +635,16 @@ task_t app_task_table[] = {
     box.appendChild(b);
   });
 })();
+</script>
+<script src="play/ak-kit.js"></script>
+<script src="play/kit-ui.js"></script>
+<script>
+/* the kit in the hero: the firmware itself, showing its best screens until someone presses a button */
+if (window.AkKitUI) {
+  AkKitUI.create(document.getElementById("hero-kit"), { caption: "firmware thật · WebAssembly" }).then(function (kit) {
+    kit.tour([["video", 7000], ["3d", 6000], ["maze", 8000], ["tetris", 9000], ["dino", 7000], ["scope", 6000], ["invaders", 8000]]);
+  }, function () {});
+}
 </script>
 </body>
 </html>

@@ -1,19 +1,35 @@
 # ak-base-kit-pio — Firmware source base cho STM32L151
 
-![Repo Traffic](https://hits.sh/github.com/hohoanganh/ak-base-kit-pio.svg?style=flat-square&label=Repo%20Traffic&color=007ec6)
-
-Nền firmware bare-metal cho **STM32L151CBT6** (AK Base Kit): kernel AK kiểu Active Object không cần RTOS,
-bootloader và cập nhật firmware có sẵn. Dựng lại từ
-[ak-base-kit-stm32l151](https://github.com/the-ak-foundation/ak-base-kit-stm32l151) của AK Foundation.
-
-Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/> · **[Chạy thử firmware ngay trên trình duyệt](https://hohoanganh.github.io/ak-base-kit-pio/play/)** (không cần kit)
+**Tiếng Việt** · [English](README.en.md)
 
 <p align="center">
-  <a href="ak-mcu-base/docs/demo-kit.md"><img src="ak-mcu-base/docs/demo-tour.gif" alt="Demo trên AK Base Kit: một vòng qua các màn hình" width="404"></a>
-  <br>
-  <em>Demo trên kit với base mới: đồng hồ số, bảy game, khối 3D, mê cung 3D, máy hát, video từ flash SPI, trạm thời tiết, máy hiện sóng.<br>
-  Ảnh dựng từ chính mã vẽ của firmware, không phải ảnh chụp.</em>
+  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/"><img src="ak-mcu-base/docs/demo-highlights.gif" alt="Demo trên AK Base Kit: logo xoay 3D, khối 3D, mê cung, Tetris, Dino, Invaders, máy hiện sóng" width="404"></a>
 </p>
+
+<p align="center">
+  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/"><img src="https://img.shields.io/badge/%E2%96%B6%20CH%E1%BA%A0Y%20TH%E1%BB%AC%20NGAY-tr%C3%AAn%20tr%C3%ACnh%20duy%E1%BB%87t-a8ff3e?style=for-the-badge&labelColor=0b0f14" alt="Chạy thử firmware ngay trên trình duyệt"></a>
+  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html"><img src="https://img.shields.io/badge/HAI%20KIT-ch%C6%A1i%20Pong%20qua%20RS485-d9e1ea?style=for-the-badge&labelColor=0b0f14" alt="Hai kit chơi Pong qua RS485"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/hohoanganh/ak-base-kit-pio/actions/workflows/ak-mcu-base.yml"><img src="https://github.com/hohoanganh/ak-base-kit-pio/actions/workflows/ak-mcu-base.yml/badge.svg" alt="CI"></a>
+  <img src="https://hits.sh/github.com/hohoanganh/ak-base-kit-pio.svg?style=flat-square&label=Repo%20Traffic&color=007ec6" alt="Repo Traffic">
+</p>
+
+Nền firmware bare-metal cho **STM32L151CBT6** (AK Base Kit): kernel AK hướng sự kiện không cần RTOS, bootloader,
+cập nhật firmware qua UART và RS485. Dựng lại từ
+[ak-base-kit-stm32l151](https://github.com/the-ak-foundation/ak-base-kit-stm32l151) của AK Foundation.
+
+Ảnh động ở trên **không phải ảnh chụp**: nó được dựng từ chính mã vẽ của firmware. Và hai nút bên dưới nó chạy đúng mã C
+đó trong trình duyệt, không cần kit.
+
+| Muốn… | Vào đây |
+|---|---|
+| **Xem nó chạy** | [Một kit, đủ 16 màn hình](https://hohoanganh.github.io/ak-base-kit-pio/play/) · [hai kit chơi Pong với nhau](https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html) |
+| **Biết demo có gì** | [Từng màn hình, kèm ảnh động](ak-mcu-base/docs/demo-kit.md) |
+| **Bắt đầu dự án mới** | `python ak-mcu-base/tools/new_project.py <thư-mục> --board <tên-board>` · [hướng dẫn](ak-mcu-base/docs/tien-ich.md) |
+| **Tải firmware** | [Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases) |
+| **Đọc tổng quan** | [Trang giới thiệu](https://hohoanganh.github.io/ak-base-kit-pio/) |
 
 ## Repo có hai base — chọn cái nào
 
@@ -28,10 +44,7 @@ Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/> · **[Ch�
 
 So sánh chi tiết, kèm những gì base mới còn thiếu: **[xem trang so sánh](https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html)** · bản Markdown: [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
 
-**Dự án mới bắt đầu từ `ak-mcu-base`**: `python ak-mcu-base/tools/new_project.py <thư-mục> --board <tên-board>`
-(xem [ak-mcu-base/docs/tien-ich.md](ak-mcu-base/docs/tien-ich.md)). Demo chạy trên kit (16 màn hình):
-[ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md), chạy thử [trên trình duyệt](https://hohoanganh.github.io/ak-base-kit-pio/play/). Phần còn lại của trang này nói về base `sources/`,
-dành cho các dự án đang chạy trên nó.
+Phần còn lại của trang này nói về base `sources/`, dành cho các dự án đang chạy trên nó.
 
 ## Bộ nhớ và kiến trúc
 

@@ -7,9 +7,10 @@ build.py - build the browser version of the AK Base Kit demo (WebAssembly).
   python port/web/build.py --emcc D:/emsdk/upstream/emscripten/emcc.bat
 
 Needs the Emscripten SDK (https://emscripten.org): emcc on the PATH (run
-emsdk_env first), or --emcc. The result is two files, index.html and
-ak-kit.js (the WebAssembly is inside the .js), that also work when opened
-straight from disk.
+emsdk_env first), or --emcc. The result is a handful of static files -
+index.html (one kit), pong.html (two kits on one RS485 line), kit-ui.js,
+page.css and ak-kit.js (the firmware; the WebAssembly is inside the .js) -
+that also work when opened straight from disk.
 """
 
 import argparse
@@ -83,8 +84,10 @@ def main():
     ]
     print("emcc: %d source files" % len(files))
     subprocess.check_call(cmd)
-    shutil.copyfile(os.path.join(HERE, "index.html"), os.path.join(a.out, "index.html"))
-    for name in ("index.html", "ak-kit.js"):
+    pages = ("index.html", "pong.html", "kit-ui.js", "page.css", "social.png")
+    for name in pages:
+        shutil.copyfile(os.path.join(HERE, name), os.path.join(a.out, name))
+    for name in pages + ("ak-kit.js",):
         print("%-11s %7d bytes" % (name, os.path.getsize(os.path.join(a.out, name))))
 
 

@@ -80,6 +80,12 @@ extern const ui_screen_t scr_system;
 extern void menu_enter(void);
 extern const ui_screen_t* menu_key(uint8_t btn);
 extern void menu_frame(uint32_t now_ms);
+/* Screen whose menu name contains the text (any case), "3d" -> "3D solids";
+ * 0 if none does. Also moves the menu selection there. */
+extern const ui_screen_t* menu_find(const char* text);
+/* Opens that screen directly, "menu" goes back to the menu. Returns 0 if
+ * no screen matches. Shell: "ui open <name>". */
+extern uint8_t ui_open(const char* text);
 
 /* helpers for the screens */
 extern void ui_beep(uint16_t freq_hz, uint16_t ms);		/* silent while a song plays */
@@ -118,7 +124,8 @@ extern uint8_t ui_last_pages;
 extern uint16_t ui_last_frame_ms;
 
 /* shell: "ui" = status, "ui 1|2|3" = press a button, "ui back" = hold B3,
- * "ui auto" = games play themselves, "ui dump" = the screen as text once,
+ * "ui auto" = games play themselves, "ui open <name>" = go to a screen,
+ * "ui dump" = the screen as text once,
  * "ui stream" = the screen as text whenever it changes (on / off) */
 extern void cmd_ui(const char* args);
 /* shell: "plot <number>" = one more point on the scope screen */

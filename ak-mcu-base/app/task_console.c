@@ -212,7 +212,7 @@ static const shell_cmd_t shell_cmds[] = {
 	{ "mb",		"mb read / mb write",			cmd_mb		},
 #endif
 #if defined(APP_KIT_DEMO)
-	{ "ui",		"demo: ui 1|2|3|back|auto|dump|stream",	cmd_ui	},
+	{ "ui",		"demo: ui 1|2|3|back|auto|open <name>|dump|stream",	cmd_ui	},
 	{ "th",		"temperature, humidity (th csv)",	cmd_th		},
 	{ "plot",	"plot <number>: point on the Scope screen",	cmd_plot	},
 #endif

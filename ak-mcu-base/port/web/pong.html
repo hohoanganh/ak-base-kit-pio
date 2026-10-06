@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hai AK Base Kit chơi Pong qua RS485 — trong trình duyệt</title>
+<meta name="description" content="Hai bản firmware STM32 chạy cạnh nhau bằng WebAssembly, nói chuyện với nhau qua một đường RS485 giả lập để chơi Pong.">
+<meta property="og:title" content="Hai firmware chơi Pong với nhau qua RS485">
+<meta property="og:description" content="Hai bản firmware STM32 thật, chạy bằng WebAssembly, tự bắt tay và chơi Pong qua đường RS485 giả lập.">
+<meta property="og:image" content="https://hohoanganh.github.io/ak-base-kit-pio/play/social.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="page.css">
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="../">ak-<span>mcu</span>-base</a>
+    <div class="links">
+      <a href="./">Một kit, đủ 16 màn hình</a>
+      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/docs/demo-kit.md">Tài liệu</a>
+      <a href="https://github.com/hohoanganh/ak-base-kit-pio">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header>
+    <h1>Hai kit, một sợi dây RS485, một ván Pong</h1>
+    <p>Bên dưới là <strong>hai bản firmware riêng biệt</strong>, mỗi bản tưởng mình đang chạy trên một bo mạch.
+    Chúng không biết gì về nhau ngoài những byte đi qua đường RS485. Vừa mở màn hình Pong là hai bên gọi “hello”,
+    tự phân vai chủ và khách, rồi chơi. Bấm <kbd>1</kbd> <kbd>2</kbd> để giành thanh đỡ bên trái,
+    <kbd>9</kbd> <kbd>0</kbd> cho bên phải.</p>
+  </header>
+
+  <main class="pair">
+    <section>
+      <p class="who">Kit A · <b id="roleA">đang nạp…</b></p>
+      <div id="kitA"></div>
+    </section>
+    <section>
+      <p class="who">Kit B · <b id="roleB">đang nạp…</b></p>
+      <div id="kitB"></div>
+    </section>
+
+    <div class="wire" aria-live="off">
+      Đường RS485 (9600 8N1, bán song công): A → B <b id="ab">0</b> byte · B → A <b id="ba">0</b> byte
+      · khung/giây <b id="fps">0</b>
+      <div class="bar"><i id="act"></i></div>
+    </div>
+
+    <div class="opts" style="grid-column: 1 / -1">
+      <button type="button" id="cut" aria-pressed="false">Rút dây</button>
+      <button type="button" id="auto">Cho cả hai tự chơi lại</button>
+      <span class="hint" style="margin:0">Rút dây: sau một giây mỗi kit quay về chơi một mình. Cắm lại là chúng bắt tay lại.</span>
+    </div>
+
+    <ul class="notes" style="grid-column: 1 / -1">
+      <li><b>Ai làm chủ:</b> mỗi kit bốc một số ngẫu nhiên và gửi trong khung “hello”. Số lớn hơn làm chủ (<code>host</code>):
+        nó tính đường bóng và gửi trạng thái 20 lần mỗi giây.</li>
+      <li><b>Không bao giờ nói cùng lúc:</b> khách (<code>guest</code>) chỉ trả lời ngay sau mỗi khung của chủ, bằng vị trí
+        thanh đỡ của mình. Đó là cách một đường dây bán song công tránh va chạm.</li>
+      <li><b>Mỗi bên thấy mình ở bên trái:</b> khách vẽ sân lật ngược, nên hai màn hình là ảnh gương của nhau.</li>
+      <li><b>Trên phần cứng thật</b> cũng chính mã này chạy; chỉ khác là byte đi qua bộ thu phát RS485 thay vì qua trang web.
+        Mã nguồn: <code>ak-mcu-base/demo/scr_pong.c</code>.</li>
+    </ul>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">Dựng từ <code>ak-mcu-base/port/web</code> bằng Emscripten.</div>
+</footer>
+
+<script src="ak-kit.js"></script>
+<script src="kit-ui.js"></script>
+<script>
+(function () {
+  "use strict";
+  var connected = true, ab = 0, ba = 0, frames = 0, lastCount = performance.now();
+
+  Promise.all([
+    AkKitUI.create(document.getElementById("kitA"), { keys: { "1": 1, "2": 2 }, caption: "Kit A · phím 1 2" }),
+    AkKitUI.create(document.getElementById("kitB"), { keys: { "9": 1, "0": 2 }, caption: "Kit B · phím 9 0", sound: false })
+  ]).then(function (kits) {
+    var a = kits[0], b = kits[1];
+    window.akKits = kits;
+
+    /* what one kit sends, the other receives - unless the cable is pulled */
+    a.onRs485 = function (bytes) { ab += bytes.length; if (connected) { b.rs485In(bytes); } watch(a, bytes); };
+    b.onRs485 = function (bytes) { ba += bytes.length; if (connected) { a.rs485In(bytes); } watch(b, bytes); };
+
+    /* frames on the wire start with C5 and a letter: H hello, S state (from the host), P paddle (from the guest) */
+    function watch(kit, bytes) {
+      for (var i = 0; i + 1 < bytes.length; i++) {
+        if (bytes[i] === 0xC5) {
+          if (bytes[i + 1] === 0x53) { kit.roleName = "chủ (host)"; frames++; }
+          else if (bytes[i + 1] === 0x50) { kit.roleName = "khách (guest)"; }
+          else if (bytes[i + 1] === 0x48) { kit.roleName = "một mình, đang gọi hello"; }
+        }
+      }
+    }
+
+    kits.forEach(function (k) { k.autoplay(true); k.open("pong"); });
+
+    setInterval(function () {
+      var now = performance.now();
+      document.getElementById("roleA").textContent = a.roleName || "…";
+      document.getElementById("roleB").textContent = b.roleName || "…";
+      document.getElementById("ab").textContent = ab;
+      document.getElementById("ba").textContent = ba;
+      if (now - lastCount >= 1000) {
+        document.getElementById("fps").textContent = Math.round(frames * 1000 / (now - lastCount));
+        document.getElementById("act").style.width = Math.min(100, frames * 5) + "%";
+        frames = 0;
+        lastCount = now;
+      }
+    }, 200);
+
+    document.getElementById("cut").addEventListener("click", function (e) {
+      connected = !connected;
+      e.target.setAttribute("aria-pressed", connected ? "false" : "true");
+      e.target.textContent = connected ? "Rút dây" : "Cắm lại dây";
+    });
+    document.getElementById("auto").addEventListener("click", function () {
+      kits.forEach(function (k) { k.autoplay(true); });
+    });
+  });
+}());
+</script>
+</body>
+</html>
