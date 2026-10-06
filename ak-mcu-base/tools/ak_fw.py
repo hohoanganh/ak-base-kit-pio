@@ -140,31 +140,65 @@ class AkFw:
                     self._parse()
 
     def _parse(self):
-        while self.rx:
-            i = self.rx.find(bytes([SOF]))
+        """Split self.rx into response frames and log text.
+
+        EVERY 0xA5 in the buffer is tried as a start of frame, not only the
+        first one. A stray 0xA5 in the log text right before a real frame
+        "declares" a length made of bytes of that real frame; waiting for that
+        many bytes would hold the real frame back for ever (it arrives, the
+        request times out all the same).
+        """
+        rx = self.rx
+        sof = bytes([SOF])
+        while rx:
+            i = rx.find(sof)
             if i < 0:
-                self._text(self.rx)
-                self.rx.clear()
+                self._text(rx)
+                rx.clear()
                 return
             if i:
-                self._text(self.rx[:i])
-                del self.rx[:i]
-            if len(self.rx) < 7:
-                return
-            ln = self.rx[3] | (self.rx[4] << 8)
-            if ln > 512:
-                self._text(self.rx[:1])
-                del self.rx[:1]
-                continue
-            if len(self.rx) < 7 + ln:
-                return
-            fr = bytes(self.rx[:7 + ln])
-            if crc16(fr[1:5 + ln]) == (fr[5 + ln] | (fr[6 + ln] << 8)) and fr[1] & RESP:
+                self._text(rx[:i])
+                del rx[:i]
+
+            hold = None         # first SOF whose frame may still be arriving
+            found = None
+            pos = 0
+            while pos >= 0:
+                left = len(rx) - pos
+                if left < 7:
+                    if hold is None:
+                        hold = pos
+                    break
+                ln = rx[pos + 3] | (rx[pos + 4] << 8)
+                if ln <= 512:
+                    if left < 7 + ln:
+                        if hold is None:
+                            hold = pos
+                    else:
+                        fr = bytes(rx[pos:pos + 7 + ln])
+                        if crc16(fr[1:5 + ln]) == (fr[5 + ln] | (fr[6 + ln] << 8)) and fr[1] & RESP:
+                            found = (pos, fr)
+                            break
+                pos = rx.find(sof, pos + 1)
+
+            if found:
+                pos, fr = found
+                if pos:
+                    self._text(rx[:pos])        # what stood before it was text
+                ln = len(fr) - 7
                 self.frames.append((fr[1] & 0x7F, fr[2], fr[5:5 + ln]))
-                del self.rx[:7 + ln]
-            else:
-                self._text(self.rx[:1])
-                del self.rx[:1]
+                del rx[:pos + len(fr)]
+                continue
+            if hold is None:                    # no frame can start in here
+                self._text(rx)
+                rx.clear()
+            elif hold:
+                self._text(rx[:hold])
+                del rx[:hold]
+            if len(rx) > 2048:                  # a false start must not hold text back for ever
+                self._text(rx[:len(rx) - 1024])
+                del rx[:len(rx) - 1024]
+            return
 
     def _text(self, b):
         self.text += b

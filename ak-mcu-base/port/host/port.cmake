@@ -74,6 +74,9 @@ target_compile_options(ak_sim PRIVATE ${HOST_WARN} -g)
 # --- end-to-end: tools/ak_fw.py flashes ak_sim over pipes ---
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)
+	# frame reader of tools/ak_fw.py against log text around the frames
+	add_test(NAME ak_fw
+		COMMAND ${Python3_EXECUTABLE} ${ROOT}/tests/test_ak_fw.py --tools ${ROOT}/tools)
 	add_test(NAME sim_ota
 		COMMAND ${Python3_EXECUTABLE} ${ROOT}/tests/test_sim_ota.py
 			--sim $<TARGET_FILE:ak_sim> --tools ${ROOT}/tools
