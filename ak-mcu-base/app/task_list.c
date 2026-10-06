@@ -1,5 +1,8 @@
 #include "task_list.h"
 #include "timer.h"
+#if defined(APP_KIT_DEMO)
+#include "ui.h"
+#endif
 
 task_t app_task_table[] = {
 	/*************************************************************************/
@@ -14,6 +17,10 @@ task_t app_task_table[] = {
 	{TASK_SYSTEM_ID,		TASK_PRI_LEVEL_6,		task_system		},
 	{TASK_CONSOLE_ID,		TASK_PRI_LEVEL_3,		task_console	},
 	{TASK_FW_ID,			TASK_PRI_LEVEL_4,		task_fw			},
+#if defined(APP_KIT_DEMO)
+	/* below the console and the update task: a frame may take 20 ms */
+	{TASK_UI_ID,			TASK_PRI_LEVEL_2,		task_ui			},
+#endif
 
 	/*************************************************************************/
 	/* END OF TABLE */
@@ -23,5 +30,13 @@ task_t app_task_table[] = {
 
 task_polling_t app_task_polling_table[] = {
 	{TASK_POLL_CONSOLE_ID,	AK_ENABLE,		task_poll_console	},
+#if defined(APP_MODBUS_SLAVE)
+	{TASK_POLL_MODBUS_ID,	AK_ENABLE,		task_poll_modbus	},
+#else
+	{TASK_POLL_MODBUS_ID,	AK_DISABLE,		task_poll_modbus	},
+#endif
+#if defined(APP_KIT_DEMO)
+	{TASK_POLL_BUTTONS_ID,	AK_ENABLE,		task_poll_buttons	},
+#endif
 	{AK_TASK_POLLING_EOT_ID,AK_DISABLE,		(pf_task_polling)0	},
 };

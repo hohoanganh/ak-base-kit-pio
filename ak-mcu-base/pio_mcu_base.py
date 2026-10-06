@@ -31,7 +31,7 @@ env.BuildSources(os.path.join("$BUILD_DIR", "spl"), spl_src, src_filter=[
     "+<stm32l1xx_spi.c>",
 ])
 
-if env.subst("$PIOENV") == "app":
+if env.subst("$PIOENV") != "boot":
     def patch_image(source, target, env):
         elf = target[0].get_abspath()
         build = env.subst("$BUILD_DIR")

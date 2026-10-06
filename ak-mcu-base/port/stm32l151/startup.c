@@ -35,6 +35,7 @@ void nmi_handler(void)			__attribute__((weak, alias("default_handler")));
 void svc_handler(void)			__attribute__((weak, alias("default_handler")));
 void debug_mon_handler(void)	__attribute__((weak, alias("default_handler")));
 void pendsv_handler(void)		__attribute__((weak, alias("default_handler")));
+void usart2_irq_handler(void)	__attribute__((weak, alias("default_handler")));	/* rs485.c, if built */
 
 port_noinit_t port_noinit __attribute__((section(".noinit")));
 
@@ -93,7 +94,7 @@ void (* const isr_vector[])(void) = {
 	default_handler,	/* 35 SPI1 */
 	default_handler,	/* 36 SPI2 */
 	usart1_irq_handler,	/* 37 USART1 */
-	default_handler,	/* 38 USART2 */
+	usart2_irq_handler,	/* 38 USART2 */
 	default_handler,	/* 39 USART3 */
 	default_handler,	/* 40 EXTI15_10 */
 	default_handler,	/* 41 RTC_Alarm */

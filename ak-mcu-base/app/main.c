@@ -18,6 +18,9 @@
 
 #include "app.h"
 #include "task_list.h"
+#if defined(APP_KIT_DEMO)
+#include "ui.h"
+#endif
 
 static fw_version_t running_version = { APP_VER_MAJOR, APP_VER_MINOR, APP_VER_PATCH, 0, APP_VER_BUILD };
 
@@ -54,9 +57,13 @@ int app_main(void) {
 	task_init();
 	task_create(app_task_table);
 	task_polling_create(app_task_polling_table);
+	app_modbus_init();
 
 	task_post_pure_msg(TASK_SYSTEM_ID, SYSTEM_SIG_INIT);
 	task_post_pure_msg(TASK_CONSOLE_ID, CONSOLE_SIG_INIT);
+#if defined(APP_KIT_DEMO)
+	task_post_pure_msg(TASK_UI_ID, UI_SIG_INIT);
+#endif
 
 	return task_run();
 }

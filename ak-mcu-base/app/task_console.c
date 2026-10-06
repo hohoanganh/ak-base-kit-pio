@@ -25,6 +25,9 @@
 
 #include "app.h"
 #include "task_list.h"
+#if defined(APP_KIT_DEMO)
+#include "ui.h"
+#endif
 
 #define CONSOLE_LINE_MAX		(AK_COMMON_MSG_DATA_SIZE - 1)
 
@@ -203,6 +206,14 @@ static const shell_cmd_t shell_cmds[] = {
 	{ "verify",	"full CRC of app + staging",	cmd_verify	},
 	{ "stat",	"pools, stack, crash count",	cmd_stat	},
 	{ "crash",	"crash log (crash clear)",		cmd_crash	},
+#if defined(APP_MODBUS_SLAVE)
+	{ "mb",		"modbus slave status",			cmd_mb		},
+#elif defined(APP_MODBUS_MASTER)
+	{ "mb",		"mb read / mb write",			cmd_mb		},
+#endif
+#if defined(APP_KIT_DEMO)
+	{ "ui",		"demo status, ui 1|2|3|back",	cmd_ui		},
+#endif
 	{ "reboot",	"software reset",				cmd_reboot	},
 	{ "loader",	"reset into bootloader loader",	cmd_loader	},
 };

@@ -9,6 +9,8 @@ Các tiện ích dưới đây nằm sẵn trong base, đã kiểm trên AK Base
 | [Giám sát task](#3-giám-sát-task) | Phát hiện task treo hoặc bị bỏ đói | `app/task_system.c` |
 | [Mức dùng stack](#4-mức-dùng-stack) | Biết còn bao nhiêu RAM chưa từng dùng | shell `stat` |
 | [Build PlatformIO](#5-build) | Build và nạp như các dự án khác | `pio run` |
+| Modbus RTU / RS485 | Slave, master, OTA qua RS485 | [modbus.md](modbus.md) |
+| Demo trên kit | Đồng hồ số, Snake, Flappy trên OLED | [demo-kit.md](demo-kit.md) |
 | [CI](#6-ci-trên-github) | Tự chạy test và build mỗi lần push | `.github/workflows/ak-mcu-base.yml` |
 
 ---

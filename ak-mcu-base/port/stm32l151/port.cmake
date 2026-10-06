@@ -71,6 +71,12 @@ target_include_directories(spl PUBLIC ${PORT_INC})
 target_compile_definitions(spl PUBLIC ${MCU_DEFS})
 target_compile_options(spl PRIVATE ${MCU_FLAGS} -Os -g -ffunction-sections -fdata-sections)
 
+# nanoMODBUS: vendor code, built like the SPL (no warning set), role from AK_MODBUS
+add_library(nanomodbus STATIC ${ROOT}/third_party/nanomodbus/nanomodbus.c)
+target_include_directories(nanomodbus PUBLIC ${ROOT}/third_party/nanomodbus)
+target_compile_definitions(nanomodbus PUBLIC ${MB_DEFS})
+target_compile_options(nanomodbus PRIVATE ${MCU_FLAGS} -Os -g -ffunction-sections -fdata-sections)
+
 function(ak_firmware name ldscript)
 	cmake_parse_arguments(FW "" "" "SOURCES;DEFS;INCS" ${ARGN})
 	add_executable(${name} ${FW_SOURCES})
@@ -101,8 +107,10 @@ ak_firmware(app app.ld
 		${PORT_DIR}/startup.c ${PORT_DIR}/port_stm32l151.c ${PORT_DIR}/system_stm32l1xx.c
 		${PORT_DIR}/fw_header.c ${STAGING_SRC}
 		${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${SYS_SRC} ${APP_SRC}
-	INCS ${ROOT}/app
+		${MB_SRC} ${PORT_DIR}/rs485.c
+	INCS ${ROOT}/app ${MB_INC}
 )
+target_link_libraries(app PRIVATE nanomodbus)
 # Fill header CRC/size into app.bin -> app.img, and patch .fw_header in app.elf
 # so that flashing the .elf over SWD also yields a valid image.
 add_custom_command(TARGET app POST_BUILD

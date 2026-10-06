@@ -8,7 +8,7 @@
 
 #ifndef APP_VER_MAJOR
 #define APP_VER_MAJOR		1
-#define APP_VER_MINOR		2
+#define APP_VER_MINOR		3
 #define APP_VER_PATCH		0
 #endif
 
@@ -29,6 +29,15 @@
 #ifndef APP_CRASH_TEST
 #define APP_CRASH_TEST			(1)
 #endif
+
+/* Modbus on the RS485 port (role: -DAPP_MODBUS_SLAVE or -DAPP_MODBUS_MASTER) */
+#ifndef APP_MB_BAUD
+#define APP_MB_BAUD						(9600)
+#endif
+#ifndef APP_MB_UNIT_ID
+#define APP_MB_UNIT_ID					(1)			/* slave address, 1..247 */
+#endif
+#define APP_MB_RESPONSE_TIMEOUT_MS		(200)		/* master: wait for an answer */
 
 /* TASK_SYSTEM_ID */
 enum {
@@ -56,5 +65,9 @@ enum {
 extern const fw_version_t* app_version(void);
 
 extern int app_main(void);
+
+/* task_modbus.c */
+extern void app_modbus_init(void);
+extern void cmd_mb(const char* args);
 
 #endif /* __APP_H__ */

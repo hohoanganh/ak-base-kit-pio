@@ -9,6 +9,7 @@
 
 #include "ak_port.h"
 #include "hal.h"
+#include "hal_rs485.h"
 #include "port_host.h"
 
 /*----------------------------------------------------------------------------
@@ -233,6 +234,60 @@ uint8_t host_cur_sig(void) {
 
 uint32_t hal_stack_unused(void) {
 	return 0;
+}
+
+/*----------------------------------------------------------------------------
+ * RS485 (in-memory queues)
+ *--------------------------------------------------------------------------*/
+static uint8_t rs_rx[2048];
+static uint32_t rs_rx_head, rs_rx_tail;
+static uint8_t rs_tx[2048];
+static uint32_t rs_tx_len;
+static uint32_t rs_baud;
+static uint32_t rs_rx_bytes;
+
+void hal_rs485_init(uint32_t baudrate) {
+	rs_baud = baudrate;
+	rs_rx_head = rs_rx_tail = 0;
+	rs_tx_len = 0;
+	rs_rx_bytes = 0;
+}
+
+uint32_t hal_rs485_rx_bytes(void) {
+	return rs_rx_bytes;
+}
+
+int hal_rs485_getc(void) {
+	if (rs_rx_tail == rs_rx_head) {
+		return -1;
+	}
+	return rs_rx[rs_rx_tail++ % sizeof(rs_rx)];
+}
+
+void hal_rs485_write(const uint8_t* data, uint32_t len) {
+	while (len-- && rs_tx_len < sizeof(rs_tx)) {
+		rs_tx[rs_tx_len++] = *data++;
+	}
+}
+
+void host_rs485_inject(const uint8_t* data, uint32_t len) {
+	while (len--) {
+		rs_rx[rs_rx_head++ % sizeof(rs_rx)] = *data++;
+		rs_rx_bytes++;
+	}
+}
+
+uint32_t host_rs485_take_tx(uint8_t* out, uint32_t max) {
+	uint32_t n = rs_tx_len < max ? rs_tx_len : max;
+
+	memcpy(out, rs_tx, n);
+	memmove(rs_tx, rs_tx + n, rs_tx_len - n);
+	rs_tx_len -= n;
+	return n;
+}
+
+uint32_t host_rs485_baud(void) {
+	return rs_baud;
 }
 
 void hal_reset(void) {

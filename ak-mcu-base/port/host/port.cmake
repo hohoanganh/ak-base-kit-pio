@@ -27,14 +27,45 @@ target_compile_options(test_fw PRIVATE ${HOST_WARN} -fsanitize=address,undefined
 target_link_options(test_fw PRIVATE -fsanitize=address,undefined)
 add_test(NAME fw COMMAND test_fw)
 
+# --- Modbus services (vendor library built without our warning set) ---
+add_library(nanomodbus_host STATIC ${ROOT}/third_party/nanomodbus/nanomodbus.c)
+target_include_directories(nanomodbus_host PUBLIC ${ROOT}/third_party/nanomodbus)
+target_compile_options(nanomodbus_host PRIVATE -w -g)
+
+add_executable(test_modbus
+	${ROOT}/tests/test_modbus.c
+	${COMMON_SRC} ${FW_SRC} ${MB_SRC}
+	${HOST_DIR}/port_host.c
+)
+target_include_directories(test_modbus PRIVATE ${ROOT}/tests ${BASE_INC} ${MB_INC} ${HOST_DIR})
+target_compile_definitions(test_modbus PRIVATE AK_SIM ${VERSION_DEFS})
+target_compile_options(test_modbus PRIVATE ${HOST_WARN} -fsanitize=address,undefined -g)
+target_link_options(test_modbus PRIVATE -fsanitize=address,undefined)
+target_link_libraries(test_modbus PRIVATE nanomodbus_host)
+add_test(NAME modbus COMMAND test_modbus)
+
+# --- kit demo: screens and game logic, with the kit emulated in the test ---
+add_executable(test_demo
+	${ROOT}/tests/test_demo.c
+	${ROOT}/demo/gfx.c ${ROOT}/demo/ui_common.c
+	${ROOT}/demo/scr_clock.c ${ROOT}/demo/scr_snake.c ${ROOT}/demo/scr_flappy.c ${ROOT}/demo/scr_system.c
+	${KERNEL_SRC} ${COMMON_SRC} ${SYS_SRC}
+	${HOST_DIR}/port_host.c
+)
+target_include_directories(test_demo PRIVATE ${ROOT}/tests/kernel ${ROOT}/tests ${ROOT}/demo ${BASE_INC} ${HOST_DIR})
+target_compile_options(test_demo PRIVATE ${HOST_WARN} -fsanitize=address,undefined -g)
+target_link_options(test_demo PRIVATE -fsanitize=address,undefined)
+add_test(NAME demo COMMAND test_demo)
+
 # --- ak_sim: bootloader + app running on the PC ---
 add_executable(ak_sim
 	${HOST_DIR}/sim_main.c
 	${HOST_DIR}/port_host.c
-	${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${SYS_SRC} ${BOOT_SRC} ${APP_SRC}
+	${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${SYS_SRC} ${MB_SRC} ${BOOT_SRC} ${APP_SRC}
 )
-target_include_directories(ak_sim PRIVATE ${ROOT}/app ${BASE_INC} ${HOST_DIR})
-target_compile_definitions(ak_sim PRIVATE AK_SIM ${VERSION_DEFS})
+target_include_directories(ak_sim PRIVATE ${ROOT}/app ${BASE_INC} ${MB_INC} ${HOST_DIR})
+target_compile_definitions(ak_sim PRIVATE AK_SIM ${VERSION_DEFS} APP_MODBUS_SLAVE)
+target_link_libraries(ak_sim PRIVATE nanomodbus_host)
 target_compile_options(ak_sim PRIVATE ${HOST_WARN} -g)
 
 # --- end-to-end: tools/ak_fw.py flashes ak_sim over pipes ---

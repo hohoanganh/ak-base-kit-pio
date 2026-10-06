@@ -22,7 +22,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 # App version: edit here or pass -DAPP_VERSION=1.2.3
-set(APP_VERSION "1.2.0" CACHE STRING "App version major.minor.patch")
+set(APP_VERSION "1.3.0" CACHE STRING "App version major.minor.patch")
 set(APP_BUILD "0" CACHE STRING "Build number (incremented by CI)")
 set(BOOT_VERSION "1.2.0" CACHE STRING "Bootloader version")
 
@@ -64,6 +64,25 @@ set(SYS_SRC
 	${ROOT}/services/sys/crash_log.c
 )
 
+# Modbus on RS485: slave | master | none (role of the sample app)
+set(AK_MODBUS "slave" CACHE STRING "Modbus role of the app: slave | master | none")
+set(MB_SRC
+	${ROOT}/services/modbus/mb_port.c
+	${ROOT}/services/modbus/mb_slave.c
+	${ROOT}/services/modbus/mb_ota.c
+	${ROOT}/services/modbus/mb_master.c
+)
+set(MB_INC ${ROOT}/services/modbus ${ROOT}/third_party/nanomodbus)
+if(AK_MODBUS STREQUAL "slave")
+	set(MB_DEFS APP_MODBUS_SLAVE NMBS_CLIENT_DISABLED NMBS_STRERROR_DISABLED)
+elseif(AK_MODBUS STREQUAL "master")
+	set(MB_DEFS APP_MODBUS_MASTER NMBS_SERVER_DISABLED NMBS_STRERROR_DISABLED)
+elseif(AK_MODBUS STREQUAL "none")
+	set(MB_DEFS "")
+else()
+	message(FATAL_ERROR "Unknown AK_MODBUS: ${AK_MODBUS}")
+endif()
+
 set(BOOT_SRC
 	${ROOT}/boot/boot_core.c
 	${ROOT}/boot/boot_main.c
@@ -75,6 +94,7 @@ set(APP_SRC
 	${ROOT}/app/task_system.c
 	${ROOT}/app/task_console.c
 	${ROOT}/app/task_fw.c
+	${ROOT}/app/task_modbus.c
 )
 
 set(BASE_INC

@@ -80,6 +80,12 @@ extern void host_set_last_dispatch(uint8_t task_id, uint8_t sig);
 extern uint8_t host_cur_task(void);
 extern uint8_t host_cur_sig(void);
 
+/* Emulated RS485 port (hal_rs485.h): inject = bytes arriving from the bus,
+ * take_tx = bytes the firmware sent. */
+extern void host_rs485_inject(const uint8_t* data, uint32_t len);
+extern uint32_t host_rs485_take_tx(uint8_t* out, uint32_t max);
+extern uint32_t host_rs485_baud(void);
+
 /* Periodic service: feeds elapsed ms to hal_tick_hook(). */
 extern void host_service(void);
 

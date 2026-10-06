@@ -73,6 +73,12 @@
 #endif
 #define PORT_NOR_SPI_PRESCALER	SPI_BaudRatePrescaler_8	/* 32 MHz / 8 = 4 MHz, as ak-base-kit */
 
+/* RS485: USART2 PA2 TX, PA3 RX; direction pin PA1, high = transmit */
+#define PORT_RS485_DIR_PORT		GPIOA
+#define PORT_RS485_DIR_PIN		GPIO_Pin_1
+#define PORT_RS485_DIR_CLK		RCC_AHBPeriph_GPIOA
+#define PORT_RS485_RX_BUF		(256)		/* power of 2, one full Modbus frame */
+
 /* LED life PB8, active high */
 #define PORT_LED_PORT			GPIOB
 #define PORT_LED_PIN			GPIO_Pin_8

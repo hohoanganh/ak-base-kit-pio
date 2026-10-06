@@ -22,6 +22,9 @@ enum {
 	TASK_SYSTEM_ID,
 	TASK_CONSOLE_ID,
 	TASK_FW_ID,
+#if defined(APP_KIT_DEMO)
+	TASK_UI_ID,				/* demo/: display, buttons, games */
+#endif
 
 	/* EOT task ID */
 	AK_TASK_EOT_ID,
@@ -29,6 +32,10 @@ enum {
 
 enum {
 	TASK_POLL_CONSOLE_ID,
+	TASK_POLL_MODBUS_ID,
+#if defined(APP_KIT_DEMO)
+	TASK_POLL_BUTTONS_ID,
+#endif
 
 	/* EOT polling task ID */
 	AK_TASK_POLLING_EOT_ID,
@@ -44,5 +51,6 @@ extern void task_fw(ak_msg_t* msg);
 
 /* polling handler */
 extern void task_poll_console(void);
+extern void task_poll_modbus(void);
 
 #endif /* __TASK_LIST_H__ */
