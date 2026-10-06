@@ -1,6 +1,6 @@
 # ak-base-kit-pio — Firmware source base cho STM32L151
 
-![Repo Traffic](https://komarev.com/ghpvc/?username=ak-base-kit-pio&label=Repo+Traffic&color=blue&style=flat-square)
+![Repo Traffic](https://hits.sh/github.com/hohoanganh/ak-base-kit-pio.svg?style=flat-square&label=Repo%20Traffic&color=007ec6)
 
 Nền firmware bare-metal cho **STM32L151CBT6** (AK Base Kit): kernel AK kiểu Active Object không cần RTOS,
 bootloader và cập nhật firmware có sẵn. Dựng lại từ
