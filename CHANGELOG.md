@@ -7,6 +7,15 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
+## ak-mcu-base — sau v1.3.6, chưa phát hành
+
+- **LED nhịp tim đúng pha với bo** (`port/stm32l151`): theo schematic kit 3.0, LED đỏ ở PB8 sáng khi chân ở mức thấp.
+  `hal_led_set(1)` giờ kéo chân xuống thấp; thêm `PORT_LED_ACTIVE_LOW` (mặc định 1, đặt 0 cho bo có LED sáng mức cao).
+  Chân được đặt về mức "tắt" trước khi thành ngõ ra. Áp dụng cho cả app và bootloader.
+- **Chân CSN của mô-đun SPI ở J6 là PA4**: `PORT_KIT_NRF24_CSN` (mặc định tắt) giờ giữ PA4 ở mức cao thay cho PB9;
+  kit đời trước ghi đè ba macro `PORT_NRF_CSN_*`.
+- Chưa thử trên kit: mới kiểm bằng biên dịch và CI.
+
 ## ak-mcu-base v1.3.6 — 06/10/2026
 
 App **1.3.6**, bootloader không đổi (1.2.0). Mã firmware không đổi so với v1.3.4 ngoài số phiên bản; bản này là sơ đồ và sửa tài liệu theo schematic.

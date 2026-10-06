@@ -277,12 +277,12 @@ Sơ đồ cổng nối sinh bởi `tools/connectors_svg.py` theo trang Connector
 
 ![Cây nguồn của bo](../../docs/kit/power-tree.svg)
 
-Hai điều schematic cho thấy mà firmware chưa theo:
+Hai điều schematic cho thấy, firmware đã sửa theo từ sau v1.3.6:
 
-- **LED đỏ (PB8) sáng khi chân ở mức thấp** (net `LED_DBG_N`), còn `hal_led_set(1)` lại kéo chân lên cao. Nhịp tim vẫn
-  nháy, chỉ là ngược pha: "bật" trong firmware là tắt trên bo.
-- **Chân chọn chip của mô-đun SPI ở J6 là PA4**; tuỳ chọn `PORT_KIT_NRF24_CSN` trong `port_cfg.h` (mặc định tắt) vẫn trỏ PB9
-  theo kit đời trước.
+- **LED đỏ (PB8) sáng khi chân ở mức thấp** (net `LED_DBG_N`). `hal_led_set(1)` giờ kéo chân xuống thấp
+  (`PORT_LED_ACTIVE_LOW`, mặc định 1); trước đó "bật" trong firmware là tắt trên bo.
+- **Chân chọn chip của mô-đun SPI ở J6 là PA4.** Tuỳ chọn `PORT_KIT_NRF24_CSN` (mặc định tắt) giờ giữ PA4 ở mức cao;
+  trước đó nó trỏ PB9 theo kit đời trước.
 
 <details><summary>Bản dựng 3D của bo mạch (không phải ảnh chụp)</summary>
 

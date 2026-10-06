@@ -250,6 +250,7 @@ void hal_init(void) {
 	gpio.GPIO_OType = GPIO_OType_PP;
 	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	gpio.GPIO_Speed = GPIO_Speed_400KHz;
+	hal_led_set(0);						/* the level for "off" before the pin drives */
 	GPIO_Init(PORT_LED_PORT, &gpio);
 
 	console_init();
@@ -382,7 +383,7 @@ __attribute__((naked)) void hard_fault_handler(void) {
  * LED / IWDG
  *--------------------------------------------------------------------------*/
 void hal_led_set(uint8_t on) {
-	if (on) {
+	if (PORT_LED_ACTIVE_LOW ? !on : on) {
 		GPIO_SetBits(PORT_LED_PORT, PORT_LED_PIN);
 	}
 	else {

@@ -60,16 +60,18 @@
 #define PORT_NOR_CS_PIN			GPIO_Pin_14
 #define PORT_NOR_CS_CLK			RCC_AHBPeriph_GPIOB
 
-/* AK Base Kit only: an nRF24 module in the kit socket shares SPI1, its CSN
- * (PB9) must be held high or it answers on MISO. A product board has no such
- * device: leave 0 and PB9 stays untouched. */
+/* AK Base Kit only: a module on the SPI expansion connector J6 (nRF24L01+,
+ * W5500) shares SPI1 with the flash. Its chip select must be held high or it
+ * answers on MISO. On the kit 3.0 that is PA4 (J6 pin 4, schematic sheet 6);
+ * earlier kits used PB9: override the three PORT_NRF_CSN_* for those.
+ * A product board has no such device: leave 0 and the pin stays untouched. */
 #ifndef PORT_KIT_NRF24_CSN
 #define PORT_KIT_NRF24_CSN		(0)
 #endif
-#if PORT_KIT_NRF24_CSN
-#define PORT_NRF_CSN_PORT		GPIOB
-#define PORT_NRF_CSN_PIN		GPIO_Pin_9
-#define PORT_NRF_CSN_CLK		RCC_AHBPeriph_GPIOB
+#if PORT_KIT_NRF24_CSN && !defined(PORT_NRF_CSN_PIN)
+#define PORT_NRF_CSN_PORT		GPIOA
+#define PORT_NRF_CSN_PIN		GPIO_Pin_4
+#define PORT_NRF_CSN_CLK		RCC_AHBPeriph_GPIOA
 #endif
 #define PORT_NOR_SPI_PRESCALER	SPI_BaudRatePrescaler_8	/* 32 MHz / 8 = 4 MHz, as ak-base-kit */
 
@@ -79,9 +81,13 @@
 #define PORT_RS485_DIR_CLK		RCC_AHBPeriph_GPIOA
 #define PORT_RS485_RX_BUF		(256)		/* power of 2, one full Modbus frame */
 
-/* LED life PB8, active high */
+/* LED life PB8. On the kit the LED sits between +3V3 and the pin (net
+ * LED_DBG_N, schematic sheet 7): it lights when the pin is LOW. */
 #define PORT_LED_PORT			GPIOB
 #define PORT_LED_PIN			GPIO_Pin_8
 #define PORT_LED_CLK			RCC_AHBPeriph_GPIOB
+#ifndef PORT_LED_ACTIVE_LOW
+#define PORT_LED_ACTIVE_LOW		(1)
+#endif
 
 #endif /* __PORT_CFG_H__ */
