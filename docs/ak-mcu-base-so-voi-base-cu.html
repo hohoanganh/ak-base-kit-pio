@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ak-mcu-base so với base cũ — hơn gì, bằng gì, còn thiếu gì</title>
+<style>
+:root{
+  --teal:#3A8F8F; --teal-dark:#2C6E6E; --teal-light:#E8F5F5;
+  --navy:#2E4057; --row-alt:#F2F9F9; --border:#D0E4E4;
+  --warn:#9A6410; --bad:#B3261E;
+  --ink:#1A1A1A; --ink-2:#555555; --ink-3:#6A7178; --rule:#BFBFBF;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:#EDEFF0; color:var(--ink);
+  font:14px/1.7 "Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.num,td,th{font-variant-numeric:tabular-nums}
+.page{max-width:960px; margin:0 auto; background:#fff; padding:0 0 30px}
+.wrap{position:relative}
+a{color:var(--teal-dark)}
+
+.banner{background:var(--teal-dark); color:#fff; padding:22px 40px 20px}
+.banner h1{margin:0; font-size:21px; font-weight:800; text-transform:uppercase; letter-spacing:1.4px}
+.banner .sub{margin-top:6px; font-size:14px; letter-spacing:.2px}
+.toolbar{position:absolute; top:20px; right:calc(50% - 480px + 24px)}
+.toolbar button{font:inherit; font-size:12.5px; padding:5px 13px; cursor:pointer;
+  color:#fff; background:var(--navy); border:1px solid #fff; border-radius:3px}
+main{padding:0 40px}
+
+.meta{display:grid; grid-template-columns:auto 1fr; gap:3px 16px;
+  border-bottom:1px solid var(--border); padding:16px 0; font-size:14px}
+.meta dt{color:var(--ink-2); white-space:nowrap}
+.meta dd{margin:0}
+
+/* ---------- bảng điểm ba cột: mô-típ của tài liệu ---------- */
+.score{display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin:18px 0 6px;
+  border:1px solid var(--border); border-radius:3px; overflow:hidden}
+.score a{display:block; padding:14px 18px 13px; text-decoration:none; color:var(--ink);
+  border-right:1px solid var(--border); background:#fff}
+.score a:last-child{border-right:0}
+.score .n{font-size:40px; font-weight:800; line-height:1; letter-spacing:-1px}
+.score .k{font-size:14px; font-weight:700; margin-top:6px; color:var(--navy)}
+.score .d{font-size:13px; color:var(--ink-2); line-height:1.5; margin-top:2px}
+.score .more .n{color:var(--teal-dark)}
+.score .same .n{color:var(--ink-3)}
+.score .less .n{color:var(--warn)}
+.score .more{box-shadow:inset 0 4px 0 var(--teal)}
+.score .same{box-shadow:inset 0 4px 0 #C9CED4}
+.score .less{box-shadow:inset 0 4px 0 var(--warn)}
+
+.verdict{margin-top:14px; background:var(--teal-light); border:1px solid var(--border);
+  border-radius:3px; padding:12px 16px; font-size:14px}
+.verdict b{color:var(--navy)}
+
+h2{font-size:16px; font-weight:700; color:var(--navy); margin:32px 0 10px;
+  padding-bottom:6px; position:relative}
+h2::after{content:""; position:absolute; left:0; bottom:0; height:2px; width:100%;
+  background:linear-gradient(to right,var(--teal),transparent)}
+h3{font-size:14px; font-weight:700; color:var(--navy); margin:22px 0 6px}
+p{margin:9px 0}
+
+table{width:100%; border-collapse:collapse; font-size:14px; margin:11px 0}
+th{background:var(--teal-dark); color:#fff; font-weight:700; text-align:left;
+  padding:7px 10px; border:1px solid var(--border); font-size:13px}
+td{padding:7px 10px; border:1px solid var(--border); vertical-align:top}
+tbody tr:nth-child(even){background:var(--row-alt)}
+td.lbl{font-weight:700; color:var(--navy)}
+td.r,th.r{text-align:right}
+/* cặp cũ ↔ mới: chỉ tô td, không tô th */
+.pair td:nth-child(2){background:#FAFBFB; color:var(--ink-2)}
+.pair td:nth-child(3){background:var(--teal-light)}
+.pair tbody tr:nth-child(even) td:nth-child(2){background:#F4F6F6}
+.pair tbody tr:nth-child(even) td:nth-child(3){background:#DFEFEF}
+.pair col.c1{width:22%} .pair col.c2{width:27%} .pair col.c3{width:33%} .pair col.c4{width:18%}
+.how{font-size:14px; color:var(--ink-2)}
+
+code{font:13px/1.5 Consolas,"Courier New",monospace; background:var(--teal-light);
+  padding:1px 4px; border-radius:2px}
+.pair td:nth-child(3) code{background:#fff}
+
+/* ---------- bản đồ flash vẽ đúng tỉ lệ ---------- */
+.flash{margin:14px 0 4px}
+.flash .row{display:grid; grid-template-columns:150px 1fr; gap:12px; align-items:center; margin:8px 0}
+.flash .who{font-size:13px; font-weight:700; color:var(--navy); line-height:1.35}
+.flash .who span{display:block; font-weight:400; color:var(--ink-2)}
+.bar{display:flex; height:38px; border:1px solid var(--navy); border-radius:2px; overflow:hidden}
+.bar div{display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:700;
+  color:#fff; white-space:nowrap; border-right:1px solid #fff}
+.bar div:last-child{border-right:0}
+.bar .boot{background:var(--navy)}
+.bar .bsf{background:#6A7178}
+.bar .app{background:var(--teal-dark); justify-content:flex-start; padding-left:14px}
+.axis{display:grid; grid-template-columns:150px 1fr; gap:12px; font-size:12px; color:var(--ink-2)}
+.axis div:last-child{display:flex; justify-content:space-between}
+.legend{font-size:13px; color:var(--ink-2); margin:8px 0 0 162px}
+.legend i{display:inline-block; width:11px; height:11px; vertical-align:-1px; margin:0 5px 0 14px; border-radius:1px}
+.legend i:first-child{margin-left:0}
+
+.note{border:1px solid var(--border); border-left:4px solid var(--teal); border-radius:3px;
+  background:var(--teal-light); padding:11px 15px; margin:14px 0; font-size:14px}
+.note.w{border-left-color:var(--warn); background:#FBF6EC}
+.note .h{font-weight:700; color:var(--navy); display:block; margin-bottom:3px}
+.note.w .h{color:var(--warn)}
+.note > :last-child{margin-bottom:0}
+ul{margin:8px 0; padding-left:20px}
+li{margin:3px 0}
+
+.docfoot{margin-top:30px; border-top:1px solid var(--border); text-align:center;
+  font-size:13px; color:var(--ink-2); padding:14px 40px 0}
+
+@media print{
+  body{background:#fff}
+  .page{max-width:none; padding:0}
+  .toolbar{display:none}
+  main{padding:0 14mm}
+  .banner{padding:14px 14mm}
+  h2,h3{page-break-after:avoid}
+  table,.note,.flash,.score{page-break-inside:avoid}
+  .banner,.bar div,th,.score a{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  @page{size:A4; margin:12mm 0}
+}
+@media (max-width:820px){
+  main{padding:0 18px}
+  .banner{padding:18px}
+  .toolbar{position:static; padding:8px 18px 0; text-align:right}
+  .score{grid-template-columns:1fr}
+  .score a{border-right:0; border-bottom:1px solid var(--border)}
+  .flash .row,.axis{grid-template-columns:1fr; gap:4px}
+  .legend{margin-left:0}
+  table{display:block; overflow-x:auto}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="toolbar"><button onclick="window.print()">In / Xuất PDF</button></div>
+<div class="page">
+
+  <div class="banner">
+    <h1>ak-mcu-base so với base cũ</h1>
+    <div class="sub">Hơn gì, bằng gì, còn thiếu gì — để biết nên bắt đầu dự án từ base nào</div>
+  </div>
+
+  <main>
+
+    <dl class="meta">
+      <dt>Base mới</dt><dd><code>ak-mcu-base</code> v1.1.0, bootloader 1.1.0</dd>
+      <dt>Base cũ</dt><dd><code>sources/</code> của ak-base-kit-pio v1.3.0, bootloader 0.0.3</dd>
+      <dt>Board</dt><dd>AK Base Kit, STM32L151CBT6 (128K flash, 16K RAM)</dd>
+      <dt>Ngày lập</dt><dd>06/10/2026</dd>
+    </dl>
+
+    <div class="score">
+      <a class="more" href="#hon">
+        <div class="n num">16</div>
+        <div class="k">điểm hơn</div>
+        <div class="d">Kiểm ảnh, chống cài dở, timer, unit test, chuyển chip</div>
+      </a>
+      <a class="same" href="#bang">
+        <div class="n num">4</div>
+        <div class="k">điểm ngang nhau</div>
+        <div class="d">Những thứ base cũ đã làm tốt sẵn</div>
+      </a>
+      <a class="less" href="#thieu">
+        <div class="n num">7</div>
+        <div class="k">điểm còn thiếu</div>
+        <div class="d">Modbus, RS485, driver, build PlatformIO</div>
+      </a>
+    </div>
+
+    <div class="verdict">
+      <b>Khuyến nghị.</b> Sản phẩm cần Modbus, RS485 hoặc driver có sẵn thì vẫn dùng base cũ.
+      Dự án mới mà cập nhật firmware an toàn và khả năng chuyển chip quan trọng hơn bộ driver có sẵn
+      thì dùng <code>ak-mcu-base</code>, và chấp nhận tự viết lại driver cần dùng.
+    </div>
+
+    <h2>1. Bản đồ flash, vẽ đúng tỉ lệ</h2>
+    <p>Cả hai bên đều dành 12K đầu flash cho phần khởi động và để lại 116K cho app. Khác nhau ở cách dùng 12K đó.</p>
+
+    <div class="flash">
+      <div class="row">
+        <div class="who">Base cũ<span>boot dùng 6.820 B</span></div>
+        <div class="bar">
+          <div class="boot" style="width:6.25%">8K</div>
+          <div class="bsf" style="width:3.125%">4K</div>
+          <div class="app" style="width:90.625%">APP 116K tại 0x08003000</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="who">ak-mcu-base<span>boot dùng 8.056 B</span></div>
+        <div class="bar">
+          <div class="boot" style="width:9.375%">12K</div>
+          <div class="app" style="width:90.625%">APP 116K tại 0x08003000, 256 B đầu là header ảnh</div>
+        </div>
+      </div>
+      <div class="axis"><div></div><div><span>0x08000000</span><span>0x08020000</span></div></div>
+      <div class="legend"><i style="background:var(--navy)"></i>Bootloader<i style="background:#6A7178"></i>BSF: trạng thái boot ↔ app<i style="background:var(--teal-dark)"></i>Application</div>
+    </div>
+    <p>Bootloader mới <b>lớn hơn 1.236 B</b> vì thêm CRC32, kiểm header, hai bản ghi trạng thái và chế độ cứu ảnh.
+    Trạng thái boot chuyển sang EEPROM nên vùng BSF 4K nhường lại cho bootloader; app không mất byte nào.</p>
+
+    <h2 id="hon">2. Những điểm hơn</h2>
+
+    <h3>2.1 Bootloader và cập nhật firmware</h3>
+    <table class="pair">
+      <colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"></colgroup>
+      <thead><tr><th>Hạng mục</th><th>Base cũ</th><th>ak-mcu-base</th><th>Đã kiểm bằng</th></tr></thead>
+      <tbody>
+        <tr><td class="lbl">Toàn vẹn ảnh</td><td>Tổng 16 bit của các word, chỉ tính sau khi chép</td><td>CRC32 toàn ảnh, tính mỗi lần boot và trước khi cài</td><td class="how">Unit test, trên board</td></tr>
+        <tr><td class="lbl">Nạp nhầm ảnh</td><td>Chỉ có magic number trong header</td><td>Header mang tên board và địa chỉ nạp; ảnh của board khác bị từ chối ngay khi nhận xong</td><td class="how">Unit test</td></tr>
+        <tr><td class="lbl">Cài hỏng lặp lại</td><td>Checksum sai thì reset và thử lại mãi</td><td>Tối đa 3 lần, sau đó về chế độ loader chờ nạp</td><td class="how">Unit test</td></tr>
+        <tr><td class="lbl">Mất điện lúc cài</td><td>Xoá hết APP rồi chép; lần boot sau dựa vào lệnh còn trong BSF</td><td>Trang header của APP xoá đầu tiên, chép cuối cùng: ảnh chép dở luôn "không hợp lệ"</td><td class="how">3.252 điểm cắt điện trên giả lập, cho cả hai kiểu staging</td></tr>
+        <tr><td class="lbl">Trạng thái boot ↔ app</td><td>BSF 4K trong flash, xoá rồi mới ghi</td><td>2 × 32 B trong EEPROM, hai bản ghi luân phiên có số thứ tự</td><td class="how">Cắt ở từng byte của lần ghi (65 điểm); trên board: OTA liên tiếp</td></tr>
+        <tr><td class="lbl">Giao thức nạp</td><td>Boot có giao thức UART riêng, app đi đường khác</td><td>Một giao thức <code>fw_proto</code> cho cả boot lẫn app, dùng chung UART với shell</td><td class="how">Trên board</td></tr>
+      </tbody>
+    </table>
+    <p>Bản mới còn có: tự cài lại từ staging khi APP hỏng, và chế độ <code>AK_STAGING=internal</code>
+    (APP 58K + staging 58K trong flash trong) cho board không gắn flash SPI. Cả hai mới qua unit test.</p>
+
+    <h3>2.2 Kernel AK</h3>
+    <p>API giữ nguyên (<code>task_post_*</code>, <code>timer_set</code>, <code>fsm</code>/<code>tsm</code>, bảng task). Mọi thay đổi đều có unit test.</p>
+    <table class="pair">
+      <colgroup><col class="c1"><col style="width:36%"><col style="width:42%"></colgroup>
+      <thead><tr><th>Hạng mục</th><th>Base cũ</th><th>ak-mcu-base</th></tr></thead>
+      <tbody>
+        <tr><td class="lbl">Timer chu kỳ khi một handler chạy lâu</td><td>Nạp lại <code>counter = period</code>, bỏ phần trễ nên trôi dần</td><td>Mốc hết hạn tuyệt đối, giữ đúng pha</td></tr>
+        <tr><td class="lbl"><code>timer_set()</code> gọi sau handler chạy N ms</td><td>Bị trừ luôn N ms đã dồn nên nổ sớm</td><td>Tính từ thời điểm gọi</td></tr>
+        <tr><td class="lbl">Tải của ngắt tick 1 ms</td><td>Mỗi ms cấp một message và duyệt cả danh sách timer</td><td>Chỉ post khi timer gần nhất đến hạn</td></tr>
+        <tr><td class="lbl"><code>src_task_id</code> của message từ polling task</td><td>Mang id của task chạy gần nhất</td><td><code>AK_TASK_IDLE_ID</code></td></tr>
+        <tr><td class="lbl">Vòng lặp chính lúc rảnh</td><td>Quay liên tục</td><td><code>WFI</code>; kiểm hàng đợi và ngủ trong cùng một critical section</td></tr>
+        <tr><td class="lbl">Bảng task khai báo sai</td><td><code>pri</code> = 0 ghi ra ngoài mảng</td><td><code>FATAL</code> ngay lúc khởi động</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2.3 Build, kiểm thử và chuyển chip</h3>
+    <table class="pair">
+      <colgroup><col class="c1"><col style="width:36%"><col style="width:42%"></colgroup>
+      <thead><tr><th>Hạng mục</th><th>Base cũ</th><th>ak-mcu-base</th></tr></thead>
+      <tbody>
+        <tr><td class="lbl">Tối ưu lúc link (LTO)</td><td>Không</td><td>Bật mặc định; boot và app nhỏ hơn khoảng 14%</td></tr>
+        <tr><td class="lbl">Cảnh báo biên dịch</td><td>Không ép</td><td><code>-Wall -Wextra -Werror</code> cho mã của base</td></tr>
+        <tr><td class="lbl">Kiểm thử trên máy tính</td><td>Chỉ lớp Modbus</td><td>Kernel 16 ca, bootloader và OTA 165 kiểm tra, OTA đầu-cuối trên giả lập <code>ak_sim</code></td></tr>
+        <tr><td class="lbl">Phụ thuộc chip</td><td>Kernel, boot, app gọi thẳng SPL và lớp Arduino</td><td>Mã phía trên HAL không include header của chip; thêm chip là viết <code>port/&lt;chip&gt;/</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>2.4 Số đo trên board</h3>
+    <table>
+      <thead><tr><th>Phép đo</th><th class="r">Kết quả</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td>OTA ảnh 10,5K qua UART 115200 bằng <code>ak_fw.py</code></td><td class="r num"><b>1,6 s</b></td><td>Gồm cả verify trên board. Trước khi sửa tool là 5,4 s</td></tr>
+        <tr><td>Từ reset tới lúc app chạy, ảnh 11K</td><td class="r num"><b>31 ms</b></td><td>Đã gồm CRC toàn ảnh</td></tr>
+        <tr><td>Mức dùng pool message <code>pure</code> cao nhất</td><td class="r num"><b>2</b></td><td>Sau nhiều phút chạy; khớp với việc tick không còn post mỗi ms</td></tr>
+      </tbody>
+    </table>
+    <p>Không so trực tiếp được với OTA qua RS485 9600 của base cũ (khoảng 78 s mỗi lượt) vì khác đường truyền và khác cỡ ảnh.</p>
+
+    <h2 id="bang">3. Ngang nhau</h2>
+    <p>Bốn thứ dưới đây dễ bị tưởng là điểm mới, nhưng base cũ đã có.</p>
+    <ul>
+      <li><b>Console TX không chặn</b> (ring + ngắt TXE): base cũ có sẵn, bản mới thêm ở v1.1.0.</li>
+      <li><b>Ghi flash trong theo half-page</b> từ RAM.</li>
+      <li><b>Watchdog trong bootloader</b>: cũ 32 s, mới 10 s.</li>
+      <li><b>Chỗ cho app</b>: 116K tại <code>0x08003000</code>, staging trên flash SPI tại <code>0x80000</code>.</li>
+    </ul>
+
+    <h2 id="thieu">4. Còn thiếu so với base cũ</h2>
+    <table>
+      <thead><tr><th style="width:42%">Thiếu</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="lbl">Modbus RTU và OTA qua RS485</td><td>Kênh mới chỉ cần gọi <code>fw_update_*()</code> rồi post <code>FW_SIG_INSTALL</code>; chưa viết</td></tr>
+        <tr><td class="lbl">Driver: nút, còi, OLED, nRF24, EEPROM ngoài, lớp Arduino</td><td>Cố ý không mang sang; viết lại theo nhu cầu từng sản phẩm</td></tr>
+        <tr><td class="lbl">Watchdog mềm và ghi lỗi FATAL vào flash</td><td>Hiện chỉ có IWDG 8 s; HardFault lưu PC/LR vào RAM, FATAL chỉ in ra console</td></tr>
+        <tr><td class="lbl">Rollback về ảnh trước</td><td>Chỉ có cài lại từ staging</td></tr>
+        <tr><td class="lbl">Ký số ảnh</td><td>Chỉ có CRC: chống hỏng dữ liệu, không chống giả mạo</td></tr>
+        <tr><td class="lbl">Build PlatformIO và target CMake cho STM32</td><td>Mới kiểm cú pháp; bản phát hành build trực tiếp bằng <code>arm-none-eabi-gcc</code> với cùng bộ cờ</td></tr>
+        <tr><td class="lbl">Dự án con</td><td>Chưa dự án nào chuyển sang; các dự án hiện có vẫn theo base cũ</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note w">
+      <span class="h">App và bootloader phải cùng đời</span>
+      Bootloader 1.0.0 chỉ đọc bản ghi trạng thái thứ nhất nên bỏ sót lệnh cài của app từ 1.1.0.
+      Nạp bootloader trước qua SWD, rồi mới nạp hoặc OTA app.
+    </div>
+
+    <h2>5. Đã kiểm gì trên board</h2>
+    <ul>
+      <li>Boot sang app, shell (<code>help</code>, <code>ver</code>, <code>info</code>, <code>verify</code>, <code>stat</code>), OTA nhiều lượt qua bootloader 1.1.0.</li>
+      <li>Chế độ loader 16 s không reset. Dừng lõi 13 s bằng debugger thì watchdog của bootloader reset và quay lại đúng chế độ loader.</li>
+      <li>Dồn 40 dòng lệnh khi một lệnh chậm đang chạy: không FATAL, dòng thừa bị bỏ kèm thông báo.</li>
+    </ul>
+    <div class="note">
+      <span class="h">Chưa kiểm trên board</span>
+      Rút điện giữa lúc bootloader đang cài, OTA ảnh gần 116K, timeout của flash SPI,
+      độ chính xác timer bằng máy hiện sóng.
+    </div>
+
+  </main>
+
+  <div class="docfoot">
+    Bản Markdown: <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/docs/so-voi-base-cu.md">ak-mcu-base/docs/so-voi-base-cu.md</a>
+    · <a href="index.html">Trang giới thiệu dự án</a>
+  </div>
+
+</div>
+</div>
+</body>
+</html>

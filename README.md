@@ -17,7 +17,7 @@ Trang giới thiệu: <https://hohoanganh.github.io/ak-base-kit-pio/>
 | Cập nhật firmware | UART, RS485 (Modbus), flash SPI ngoài | UART; ảnh có CRC32, tên board, chống cài dở |
 | Kiểm thử trên máy tính | Lớp Modbus | Kernel, bootloader, OTA đầu-cuối trên giả lập |
 
-So sánh chi tiết, kèm những gì base mới còn thiếu: [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
+So sánh chi tiết, kèm những gì base mới còn thiếu: **[xem trang so sánh](https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html)** · bản Markdown: [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
 
 Phần còn lại của trang này nói về **base chính `sources/`**. Base mới có README riêng.
 
