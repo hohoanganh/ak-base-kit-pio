@@ -45,16 +45,26 @@ ak-mcu-base/
 
 ## Bản đồ flash (STM32L151CB, 128K)
 
+Mặc định (`AK_STAGING=external`): ảnh OTA chờ cài nằm trên **flash SPI ngoài W25Qxx** của board,
+nên APP dùng được toàn bộ phần flash trong còn lại.
+
 | Vùng | Địa chỉ | Kích thước | Nội dung |
 |---|---|---|---|
-| BOOT | `0x08000000` | 12K | bootloader (đang dùng 8,4K) |
-| APP | `0x08003000` | 58K | `[header 256 B][app]`, vector table ở `0x08003100` |
-| STAGING | `0x08011800` | 58K | ảnh OTA chờ cài |
+| BOOT | `0x08000000` | 12K | bootloader (đang dùng 9,6K) |
+| APP | `0x08003000` | **116K** | `[header 256 B][app]`, vector table ở `0x08003100` |
+| STAGING | SPI NOR `0x80000` | 116K | ảnh OTA chờ cài (sector 4K), cùng địa chỉ với base cũ |
 | boot_ctrl | `0x08080000` | 20 B | data EEPROM: lệnh boot ↔ app |
 
-Map nằm ở `port/stm32l151/port_cfg.h`; nếu sửa thì sửa luôn `boot.ld` / `app.ld`. STAGING có thể
-chuyển sang flash SPI ngoài: chỉ cần port trả `hal_flash_info()` và erase/write cho vùng đó, phần còn
-lại giữ nguyên. Khi đó APP được dùng gần trọn 116K.
+Board không gắn chip SPI thì build với `AK_STAGING=internal` (`make stm32-internal`): APP 58K tại
+`0x08003000`, STAGING 58K tại `0x08011800` trong flash trong.
+
+Flash SPI: W25Qxx trên SPI1 (PA5 SCK, PA6 MISO, PA7 MOSI), CS PB14, mode 0, 4 MHz, giống driver của
+base cũ. Mỗi lần khởi động, port đọc JEDEC ID; không thấy chip (hoặc chip nhỏ hơn 1 MB) thì tắt
+STAGING và in cảnh báo. Khi đó OTA báo lỗi `too big` thay vì ghi bừa, còn app đang chạy không bị ảnh
+hưởng. Chân CSN của nRF24 (PB9, dùng chung SPI1) được kéo lên cao để không tranh bus.
+
+Map nằm ở `port/stm32l151/port_cfg.h`. Kích thước APP được truyền cho linker
+(`--defsym __app_part_size`) và kiểm bằng `ASSERT`: app vượt phân vùng thì link báo lỗi luôn.
 
 ## Bắt đầu nhanh
 
@@ -63,7 +73,8 @@ Cần: `cmake`, `gcc` (cho host), `arm-none-eabi-gcc` + newlib (cho STM32), Pyth
 ```bash
 cd ak-mcu-base
 make test      # build host, chạy unit test + test OTA đầu-cuối trên ak_sim
-make stm32     # build/stm32l151/{boot.bin, app.bin, app.img, *.elf, *.map}
+make stm32     # build/stm32l151/{boot.bin, app.bin, app.img, *.elf, *.map} (staging SPI ngoài)
+make stm32-internal   # staging trong flash trong, cho board không có chip SPI
 make sim       # chạy giả lập: gõ 'help' trong shell, Ctrl-D để thoát
 ```
 
@@ -99,7 +110,8 @@ Thử trước trên máy tính: `python3 tools/ak_fw.py --sim build/host/ak_sim
 - **App nhận ảnh** (qua `fw_proto` trên console, hoặc kênh khác gọi `fw_update_*()`) và ghi vào
   STAGING. Trang flash được xóa dần khi ghi tới, nên không chặn task lâu. Xong thì verify toàn bộ:
   CRC, board, địa chỉ nạp, vector table. Hợp lệ thì đặt `boot_ctrl.cmd = UPDATE` rồi reset.
-- **Boot** đọc `boot_ctrl`, verify APP và STAGING, rồi chọn một hành động:
+- **Boot** đọc `boot_ctrl`, verify APP, rồi chọn một hành động. STAGING chỉ được đọc và kiểm khi
+  cần (đang có lệnh cài, hoặc APP hỏng), nên lần boot bình thường không phải đọc 116K qua SPI:
 
 | Tình huống | Hành động |
 |---|---|
@@ -120,6 +132,12 @@ Thử trước trên máy tính: `python3 tools/ak_fw.py --sim build/host/ak_sim
 - Nhảy sang app bằng cách **reset rồi nhảy ngay trong `reset_handler`**, trước khi khởi tạo ngoại vi,
   nên app luôn bắt đầu từ chip sạch. Nguyên nhân reset thật được chuyển cho app qua RAM `.noinit`.
 - HardFault: PC/LR/CFSR được lưu vào `.noinit` và in ra ở lần khởi động sau.
+- **Ghi flash theo half-page (STM32L1):** mỗi khối 128 B (32 word) được ghi trong một lần thay vì
+  32 lần. Hàm ghi chạy từ RAM, tắt ngắt trong lúc ghi (vì đang ghi thì cấm đọc flash, mà vector
+  table/ISR đều nằm trong flash), dữ liệu luôn được chép vào buffer RAM trước khi ghi, ghi xong thì
+  đọc lại để so. Đoạn lẻ không căn 128 B vẫn ghi từng word. Chunk OTA và buffer chép của boot đều
+  là 128 B nên luôn đi đường nhanh. Mỗi lần tắt ngắt kéo dài cỡ một chu kỳ ghi flash (vài ms):
+  byte UART tới đúng lúc đó có thể bị mất, nhưng giao thức nạp là hỏi-đáp nên không ảnh hưởng.
 
 Giao thức (`services/fw/fw_proto.h`): khung `A5 | cmd | seq | len | payload | crc16`, gồm các lệnh
 INFO / BEGIN / DATA / END / INSTALL / LOADER / RESET / RUN. Byte `0xA5` không phải ASCII nên giao
@@ -144,11 +162,12 @@ log queue debug của bản gốc.
 | Hạng mục | Trạng thái |
 |---|---|
 | Unit test kernel (12 ca) — ASan + UBSan | ✅ pass |
-| Unit test fw/boot (13 ca), gồm 3.252 điểm cắt điện — ASan + UBSan | ✅ pass |
+| Unit test fw/boot (14 ca; 11 ca chạy trên cả 2 kiểu staging: SPI NOR giả lập và flash trong), gồm 6.504 điểm cắt điện — ASan + UBSan | ✅ pass |
 | Đầu-cuối trên ak_sim bằng chính `ak_fw.py` + `mkimage.py` (13 bước) | ✅ pass |
-| Build STM32 (boot + app), `-Wall -Wextra -Werror` | ✅ |
+| Build STM32 (boot + app) cả hai chế độ staging, `-Wall -Wextra -Werror`; ASSERT kích thước APP chặn được app quá lớn | ✅ |
 | Kiểm layout ảnh STM32 (header @ `0x08003000`, vector @ `0x08003100`, `.elf` == `.img`) | ✅ |
-| **Chạy trên board thật** (UART, flash/EEPROM, IWDG, nhảy app) | ❌ chưa — cloud không có phần cứng |
+| Ghi half-page: hàm nằm trong RAM, không gọi sang flash, tắt/bật ngắt đúng (đọc lại mã máy) | ✅ |
+| **Chạy trên board thật** (UART, flash/EEPROM, half-page, SPI NOR, IWDG, nhảy app) | ❌ chưa — cloud không có phần cứng |
 | Build bằng PlatformIO | ❌ chưa — registry bị chặn trên cloud |
 
 Khi thử trên board, nên kiểm theo thứ tự: log boot qua UART → `info` → OTA một ảnh →
@@ -156,10 +175,9 @@ rút điện giữa lúc boot đang cài (log `installing...`) → cắm lại p
 
 ## Giới hạn & bước tiếp theo
 
-- **Tốc độ ghi flash STM32L1:** port đang ghi từng word (`FLASH_FastProgramWord`). Flash L1 ghi một
-  word mất cỡ vài ms, nên cài ảnh 13 KB có thể mất khoảng chục giây — **cần đo trên board**. Ghi theo
-  half-page (32 word/lần, chạy từ RAM) sẽ nhanh hơn nhiều; đây là việc nên làm tiếp.
-- STAGING trên flash SPI ngoài (board có sẵn chip flash) để app dùng gần trọn 116K.
+- **Tốc độ ghi flash STM32L1:** đã chuyển sang half-page. Về lý thuyết nhanh khoảng 32 lần so với
+  ghi từng word (một chu kỳ ghi cho 32 word), nhưng **chưa đo trên board**. Khi thử, xem thời gian
+  `ak_fw.py flash` in ra và khoảng giữa log `installing...` với `install ok`.
 - Rollback (giữ ảnh cũ để quay lại nếu app mới không xác nhận chạy tốt) — hiện chỉ có cài lại từ STAGING.
 - Ký số ảnh (hiện chỉ có CRC, đủ chống hỏng dữ liệu nhưng không chống giả mạo).
 - Port thứ hai (STM32 dòng mới với HAL/LL, hoặc ESP32/GD32) để kiểm lớp HAL.

@@ -47,8 +47,11 @@ const char* boot_act_str(boot_act_t act) {
 	}
 }
 
+/* 128 B = STM32L1 half page: lets the port use its fast program path. */
+#define COPY_CHUNK		(128U)
+
 static fw_err_t copy_page(uint32_t off, uint32_t page_size) {
-	uint8_t buf[64];
+	uint32_t buf[COPY_CHUNK / 4];	/* word aligned */
 	uint32_t i;
 
 	if (hal_flash_erase(FLASH_PART_APP, off, page_size) != HAL_FLASH_OK) {
@@ -76,12 +79,13 @@ fw_err_t boot_install(const fw_image_hdr_t* staging_hdr) {
 	uint32_t off;
 	fw_err_t err;
 
-	/* page >= 64 B, multiple of the copy buffer; header fits in the first page */
-	if (page < 64 || (page % 64) != 0 || page < FW_IMAGE_HDR_SIZE ||
-			stg->erase_size != page) {
+	/* page is a multiple of the copy chunk; header fits in the first page.
+	 * STAGING may have a different geometry (e.g. SPI NOR, 4K sectors): it
+	 * is only read here, in whole APP pages. */
+	if ((page % COPY_CHUNK) != 0 || page < FW_IMAGE_HDR_SIZE) {
 		return FW_ERR_ARG;
 	}
-	if (total > app->size) {
+	if (total > app->size || ((total + page - 1) / page) * page > stg->size) {
 		return FW_ERR_TOO_BIG;
 	}
 

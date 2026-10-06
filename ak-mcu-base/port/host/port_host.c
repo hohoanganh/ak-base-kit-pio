@@ -12,17 +12,27 @@
 #include "port_host.h"
 
 /*----------------------------------------------------------------------------
- * Partitions: same map as port stm32l151 (boot 12K | app 58K | staging 58K)
+ * Partitions: same maps as port stm32l151
+ *   internal staging: boot 12K | app 58K | staging 58K (all internal flash)
+ *   external staging: boot 12K | app 116K, staging 116K on emulated SPI NOR
+ *                     (4K sectors, byte writes, erased 0xFF)
  *--------------------------------------------------------------------------*/
-static const flash_part_info_t parts[FLASH_PART_NUM] = {
+static const flash_part_info_t parts_internal[FLASH_PART_NUM] = {
 	/* addr                           size        erase           write  erased */
 	{ HOST_FLASH_BASE + 0x00000UL,   0x03000UL,  HOST_PAGE_SIZE, 4,     0xFF },
 	{ HOST_FLASH_BASE + 0x03000UL,   0x0E800UL,  HOST_PAGE_SIZE, 4,     0xFF },
 	{ HOST_FLASH_BASE + 0x11800UL,   0x0E800UL,  HOST_PAGE_SIZE, 4,     0xFF },
 };
+static const flash_part_info_t parts_external[FLASH_PART_NUM] = {
+	{ HOST_FLASH_BASE + 0x00000UL,   0x03000UL,  HOST_PAGE_SIZE, 4,     0xFF },
+	{ HOST_FLASH_BASE + 0x03000UL,   0x1D000UL,  HOST_PAGE_SIZE, 4,     0xFF },
+	{ HOST_EXT_STAGING_ADDR,         HOST_EXT_STAGING_SIZE, HOST_EXT_SECTOR, 1, 0xFF },
+};
 static flash_part_info_t parts_rt[FLASH_PART_NUM];
+static uint8_t layout_external = 1;
 
 static uint8_t flash_mem[HOST_FLASH_SIZE];
+static uint8_t ext_mem[HOST_EXT_STAGING_SIZE];
 static uint8_t nvm_mem[HAL_NVM_SIZE];
 
 static uint32_t flash_ops;
@@ -53,11 +63,15 @@ static void host_xputc(uint8_t c) {
 }
 
 void host_reset_state(uint8_t erased_val) {
-	memcpy(parts_rt, parts, sizeof(parts));
+	memcpy(parts_rt, layout_external ? parts_external : parts_internal, sizeof(parts_rt));
 	for (int i = 0; i < FLASH_PART_NUM; i++) {
-		parts_rt[i].erased_val = erased_val;
+		/* erased_val models the MCU flash; SPI NOR always erases to 0xFF */
+		if (!(layout_external && i == FLASH_PART_STAGING)) {
+			parts_rt[i].erased_val = erased_val;
+		}
 	}
 	memset(flash_mem, erased_val, sizeof(flash_mem));
+	memset(ext_mem, 0xFF, sizeof(ext_mem));
 	memset(nvm_mem, 0, sizeof(nvm_mem));
 	flash_ops = 0;
 	power_cut_at = 0;
@@ -317,6 +331,15 @@ uint8_t* host_flash_mem(void) {
 	return flash_mem;
 }
 
+void host_set_layout(uint8_t external_staging) {
+	layout_external = external_staging ? 1 : 0;
+	host_reset_state(0xFF);
+}
+
+uint8_t host_layout_external(void) {
+	return layout_external;
+}
+
 uint32_t host_flash_ops(void) {
 	return flash_ops;
 }
@@ -353,7 +376,14 @@ static uint8_t* part_ptr(flash_part_t part, uint32_t off, uint32_t len) {
 	if (p == 0 || off > p->size || len > p->size - off) {
 		return 0;
 	}
+	if (layout_external && part == FLASH_PART_STAGING) {
+		return ext_mem + off;
+	}
 	return flash_mem + (p->addr - HOST_FLASH_BASE) + off;
+}
+
+uint8_t* host_part_mem(flash_part_t part) {
+	return part_ptr(part, 0, 0);
 }
 
 int hal_flash_erase(flash_part_t part, uint32_t off, uint32_t len) {
@@ -407,9 +437,10 @@ int host_flash_load(const char* path) {
 		return -1;
 	}
 	size_t a = fread(flash_mem, 1, sizeof(flash_mem), f);
+	size_t e = fread(ext_mem, 1, sizeof(ext_mem), f);
 	size_t b = fread(nvm_mem, 1, sizeof(nvm_mem), f);
 	fclose(f);
-	return (a == sizeof(flash_mem) && b == sizeof(nvm_mem)) ? 0 : -1;
+	return (a == sizeof(flash_mem) && e == sizeof(ext_mem) && b == sizeof(nvm_mem)) ? 0 : -1;
 }
 
 int host_flash_save(const char* path) {
@@ -418,6 +449,7 @@ int host_flash_save(const char* path) {
 		return -1;
 	}
 	fwrite(flash_mem, 1, sizeof(flash_mem), f);
+	fwrite(ext_mem, 1, sizeof(ext_mem), f);
 	fwrite(nvm_mem, 1, sizeof(nvm_mem), f);
 	fclose(f);
 	return 0;

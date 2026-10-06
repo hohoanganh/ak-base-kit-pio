@@ -56,6 +56,8 @@ _sidata = LOADADDR(.data);
 .data : {
 	. = ALIGN(4);
 	_sdata = .;
+	*(.ramfunc)			/* code that must run from RAM (flash half-page write) */
+	*(.ramfunc*)
 	*(.data)
 	*(.data*)
 	. = ALIGN(4);

@@ -37,7 +37,8 @@ fw_err_t fw_image_check_hdr(const fw_image_hdr_t* hdr, uint32_t part_size) {
 		return FW_ERR_MAGIC;
 	}
 
-	if (hdr->img_size < 8 || hdr->img_size > part_size - FW_IMAGE_HDR_SIZE) {
+	if (part_size <= FW_IMAGE_HDR_SIZE ||
+			hdr->img_size < 8 || hdr->img_size > part_size - FW_IMAGE_HDR_SIZE) {
 		return FW_ERR_SIZE;
 	}
 

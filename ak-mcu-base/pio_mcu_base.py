@@ -8,8 +8,12 @@ import os
 
 proj = env.subst("$PROJECT_DIR")
 
+staging_external = env.GetProjectConfig().get("common", "staging_external", "1").strip() == "1"
+app_part_size = "0x1D000" if staging_external else "0xE800"
+
 env.Append(LINKFLAGS=[
     "-mcpu=cortex-m3", "-mthumb", "-mfloat-abi=soft",
+    "-Wl,--defsym=__app_part_size=" + app_part_size,
     "-nostartfiles", "--specs=nano.specs",
     "-Wl,--gc-sections", "-Wl,--print-memory-usage",
     "-L" + os.path.join(proj, "port", "stm32l151"),
@@ -22,6 +26,7 @@ spl_src = os.path.normpath(os.path.join(
 env.BuildSources(os.path.join("$BUILD_DIR", "spl"), spl_src, src_filter=[
     "-<*>", "+<misc.c>", "+<stm32l1xx_rcc.c>", "+<stm32l1xx_gpio.c>",
     "+<stm32l1xx_usart.c>", "+<stm32l1xx_flash.c>", "+<stm32l1xx_iwdg.c>",
+    "+<stm32l1xx_spi.c>",
 ])
 
 if env.subst("$PIOENV") == "app":

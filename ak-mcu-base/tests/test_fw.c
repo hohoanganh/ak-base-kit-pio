@@ -60,8 +60,7 @@ static void rehdr(uint8_t* out) {
 }
 
 static void put_part(flash_part_t part, const uint8_t* data, uint32_t len) {
-	const flash_part_info_t* p = hal_flash_info(part);
-	memcpy(host_flash_mem() + (p->addr - HOST_FLASH_BASE), data, len);
+	memcpy(host_part_mem(part), data, len);
 }
 
 static fw_err_t upload(const uint8_t* img, uint32_t total, uint32_t chunk) {
@@ -74,7 +73,7 @@ static fw_err_t upload(const uint8_t* img, uint32_t total, uint32_t chunk) {
 }
 
 static void setup(uint8_t erased) {
-	host_reset_state(erased);
+	host_reset_state(erased);	/* keeps the layout chosen by host_set_layout() */
 	host_use_virtual_time(1);
 	host_fatal_jmp = 0;
 	host_reset_handler = 0;
@@ -186,9 +185,16 @@ static void test_upload_errors(void) {
 
 	CHECK_EQ(fw_update_begin(total), FW_OK);
 	CHECK_EQ(fw_update_write(4, img_buf, 4), FW_ERR_OFFSET);
-	CHECK_EQ(fw_update_write(0, img_buf, 3), FW_ERR_SIZE);	/* unaligned chunk that is not the last */
-	CHECK_EQ(fw_update_write(0, img_buf, 128), FW_OK);
-	CHECK_EQ(fw_update_finish(0), FW_ERR_STATE);			/* chua du */
+	if (hal_flash_info(FLASH_PART_STAGING)->write_size > 1) {
+		CHECK_EQ(fw_update_write(0, img_buf, 3), FW_ERR_SIZE);	/* unaligned chunk that is not the last */
+		CHECK_EQ(fw_update_write(0, img_buf, 128), FW_OK);
+	}
+	else {
+		/* byte-writable staging (SPI NOR): any chunk size is fine */
+		CHECK_EQ(fw_update_write(0, img_buf, 3), FW_OK);
+		CHECK_EQ(fw_update_write(3, img_buf + 3, 125), FW_OK);
+	}
+	CHECK_EQ(fw_update_finish(0), FW_ERR_STATE);			/* incomplete */
 
 	/* corrupt one binary byte */
 	img_buf[FW_IMAGE_HDR_SIZE + 1000] ^= 0x01;
@@ -279,6 +285,25 @@ static void test_boot_runs_valid_app(void) {
 	put_part(FLASH_PART_APP, img_buf, n);
 	CHECK_EQ(run_boot(0), BOOT_JUMPED);
 	CHECK_EQ(jumped_addr, app_entry());
+}
+
+/* App valid, no update pending: boot must not read STAGING at all (a full
+ * SPI NOR read on every boot is slow). Garbage in STAGING is irrelevant. */
+static void test_boot_skips_staging_when_app_ok(void) {
+	uint32_t n;
+
+	setup(0xFF);
+	n = make_image(img_buf, 4000, 1, 0, 0, HOST_BOARD_NAME, 1);
+	put_part(FLASH_PART_APP, img_buf, n);
+	memset(host_part_mem(FLASH_PART_STAGING), 0xA5, 4096);
+	host_console_take_tx(0, 1 << 20);
+	CHECK_EQ(run_boot(0), BOOT_JUMPED);
+	{
+		static uint8_t log[8192];
+		uint32_t len = host_console_take_tx(log, sizeof(log) - 1);
+		log[len] = 0;
+		CHECK(strstr((char*)log, "staging: not checked") != 0);
+	}
 }
 
 static void test_boot_update_flow(void) {
@@ -500,7 +525,7 @@ static void test_boot_recover_corrupt_app(void) {
 	n = make_image(img_buf, 5000, 4, 0, 0, HOST_BOARD_NAME, 9);
 	put_part(FLASH_PART_APP, img_buf, n);
 	put_part(FLASH_PART_STAGING, img_buf, n);
-	host_flash_mem()[(hal_flash_info(FLASH_PART_APP)->addr - HOST_FLASH_BASE) + 2000] ^= 0x10;
+	host_part_mem(FLASH_PART_APP)[2000] ^= 0x10;
 	CHECK_EQ(part_version(FLASH_PART_APP, &e), 0);
 	CHECK_EQ(e, FW_ERR_IMG_CRC);
 
@@ -549,16 +574,24 @@ static void test_boot_recover_power_cut_everywhere(void) {
 
 TT_MAIN_BEGIN("test_fw")
 	RUN_TEST(test_crc);
-	RUN_TEST(test_upload_ok);
-	RUN_TEST(test_upload_errors);
 	RUN_TEST(test_boot_decide);
-	RUN_TEST(test_boot_ctrl);
 	RUN_TEST(test_proto_robustness);
-	RUN_TEST(test_boot_runs_valid_app);
-	RUN_TEST(test_boot_update_flow);
-	RUN_TEST(test_boot_recover_corrupt_app);
-	RUN_TEST(test_loader_full_flow);
-	RUN_TEST(test_boot_attempts_exhausted);
-	RUN_TEST(test_boot_power_cut_everywhere);
-	RUN_TEST(test_boot_recover_power_cut_everywhere);
+
+	/* Layout-dependent tests run twice: staging on emulated SPI NOR (4K
+	 * sectors, byte writes) and staging in internal flash (256 B pages). */
+	for (int layout = 1; layout >= 0; layout--) {
+		host_set_layout((uint8_t)layout);
+		printf(" [staging: %s]\n", layout ? "external SPI NOR" : "internal flash");
+		RUN_TEST(test_upload_ok);
+		RUN_TEST(test_upload_errors);
+		RUN_TEST(test_boot_ctrl);
+		RUN_TEST(test_boot_runs_valid_app);
+		RUN_TEST(test_boot_skips_staging_when_app_ok);
+		RUN_TEST(test_boot_update_flow);
+		RUN_TEST(test_boot_recover_corrupt_app);
+		RUN_TEST(test_loader_full_flow);
+		RUN_TEST(test_boot_attempts_exhausted);
+		RUN_TEST(test_boot_power_cut_everywhere);
+		RUN_TEST(test_boot_recover_power_cut_everywhere);
+	}
 TT_MAIN_END()

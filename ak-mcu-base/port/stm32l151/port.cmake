@@ -10,6 +10,21 @@ endif()
 
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
+# Where OTA images are staged: external W25Qxx (APP 116K) or internal flash (APP 58K).
+set(AK_STAGING "external" CACHE STRING "OTA staging location: external | internal")
+if(AK_STAGING STREQUAL "external")
+	set(STAGING_DEFS PORT_STAGING_EXTERNAL=1)
+	set(APP_PART_SIZE 0x1D000)
+	set(STAGING_SRC ${ROOT}/port/stm32l151/spi_nor.c)
+elseif(AK_STAGING STREQUAL "internal")
+	set(STAGING_DEFS PORT_STAGING_EXTERNAL=0)
+	set(APP_PART_SIZE 0xE800)
+	set(STAGING_SRC "")
+else()
+	message(FATAL_ERROR "Unknown AK_STAGING: ${AK_STAGING}")
+endif()
+message(STATUS "STM32L151 staging: ${AK_STAGING} (APP partition ${APP_PART_SIZE})")
+
 set(SPL_DIR ${STM32L1_LIB_DIR}/STM32L1xx_StdPeriph_Driver)
 set(SPL_SRC
 	${SPL_DIR}/src/misc.c
@@ -18,6 +33,7 @@ set(SPL_SRC
 	${SPL_DIR}/src/stm32l1xx_usart.c
 	${SPL_DIR}/src/stm32l1xx_flash.c
 	${SPL_DIR}/src/stm32l1xx_iwdg.c
+	${SPL_DIR}/src/stm32l1xx_spi.c
 )
 
 set(PORT_INC
@@ -42,10 +58,10 @@ function(ak_firmware name ldscript)
 	add_executable(${name} ${FW_SOURCES})
 	set_target_properties(${name} PROPERTIES SUFFIX ".elf")
 	target_include_directories(${name} PRIVATE ${FW_INCS} ${BASE_INC} ${PORT_INC})
-	target_compile_definitions(${name} PRIVATE ${MCU_DEFS} ${VERSION_DEFS} ${FW_DEFS})
+	target_compile_definitions(${name} PRIVATE ${MCU_DEFS} ${VERSION_DEFS} ${STAGING_DEFS} ${FW_DEFS})
 	target_compile_options(${name} PRIVATE ${MCU_FLAGS} -Os -g -ffunction-sections -fdata-sections ${MCU_WARN} -Werror)
 	target_link_options(${name} PRIVATE ${MCU_FLAGS}
-		-T${PORT_DIR}/${ldscript} -L${PORT_DIR}
+		-T${PORT_DIR}/${ldscript} -L${PORT_DIR} -Wl,--defsym=__app_part_size=${APP_PART_SIZE}
 		-nostartfiles --specs=nano.specs
 		-Wl,--gc-sections -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${name}.map -Wl,--print-memory-usage)
 	target_link_libraries(${name} PRIVATE spl c gcc)
@@ -55,7 +71,7 @@ endfunction()
 ak_firmware(boot boot.ld
 	SOURCES
 		${PORT_DIR}/startup.c ${PORT_DIR}/port_stm32l151.c ${PORT_DIR}/system_stm32l1xx.c
-		${COMMON_SRC} ${FW_SRC} ${BOOT_SRC}
+		${STAGING_SRC} ${COMMON_SRC} ${FW_SRC} ${BOOT_SRC}
 	DEFS AK_BOOTLOADER
 )
 add_custom_command(TARGET boot POST_BUILD
@@ -65,7 +81,7 @@ add_custom_command(TARGET boot POST_BUILD
 ak_firmware(app app.ld
 	SOURCES
 		${PORT_DIR}/startup.c ${PORT_DIR}/port_stm32l151.c ${PORT_DIR}/system_stm32l1xx.c
-		${PORT_DIR}/fw_header.c
+		${PORT_DIR}/fw_header.c ${STAGING_SRC}
 		${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${APP_SRC}
 	INCS ${ROOT}/app
 )
