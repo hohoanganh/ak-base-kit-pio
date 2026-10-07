@@ -1,14 +1,8 @@
 # Port STM32L151CB: builds boot.elf/.bin, app.elf/.bin and app.img (OTA image).
-set(PORT_DIR ${ROOT}/port/stm32l151)
+set(PORT_DIR ${SRC}/port/stm32l151)
 
-# SPL + CMSIS: vendor/stm32l1 in a project exported by tools/new_project.py,
-# otherwise taken from the old base in legacy/.
-if(EXISTS ${ROOT}/vendor/stm32l1/STM32L1xx_StdPeriph_Driver)
-	set(_spl_default ${ROOT}/vendor/stm32l1)
-else()
-	set(_spl_default ${ROOT}/legacy/sources/application/platform/stm32l/Libraries)
-endif()
-set(STM32L1_LIB_DIR ${_spl_default}
+# SPL + CMSIS of the STM32L1: the part the build uses is in third_party/stm32l1
+set(STM32L1_LIB_DIR ${ROOT}/third_party/stm32l1
 	CACHE PATH "Directory containing STM32L1xx_StdPeriph_Driver and CMSIS")
 if(NOT EXISTS ${STM32L1_LIB_DIR}/STM32L1xx_StdPeriph_Driver)
 	message(FATAL_ERROR "SPL not found: ${STM32L1_LIB_DIR} (set -DSTM32L1_LIB_DIR=...)")
@@ -21,7 +15,7 @@ set(AK_STAGING "external" CACHE STRING "OTA staging location: external | interna
 if(AK_STAGING STREQUAL "external")
 	set(STAGING_DEFS PORT_STAGING_EXTERNAL=1)
 	set(APP_PART_SIZE 0x1D000)
-	set(STAGING_SRC ${ROOT}/port/stm32l151/spi_nor.c)
+	set(STAGING_SRC ${SRC}/port/stm32l151/spi_nor.c)
 elseif(AK_STAGING STREQUAL "internal")
 	set(STAGING_DEFS PORT_STAGING_EXTERNAL=0)
 	set(APP_PART_SIZE 0xE800)
@@ -108,7 +102,7 @@ ak_firmware(app app.ld
 		${PORT_DIR}/fw_header.c ${STAGING_SRC}
 		${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${SYS_SRC} ${APP_SRC}
 		${MB_SRC} ${PORT_DIR}/rs485.c
-	INCS ${ROOT}/app ${MB_INC}
+	INCS ${SRC}/app ${MB_INC}
 )
 target_link_libraries(app PRIVATE nanomodbus)
 # Fill header CRC/size into app.bin -> app.img, and patch .fw_header in app.elf

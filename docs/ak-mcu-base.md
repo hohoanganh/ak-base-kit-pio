@@ -19,7 +19,8 @@ không cần board.
 > hướng tối ưu tiếp theo: [docs/huong-toi-uu-tiep.md](huong-toi-uu-tiep.md).
 >
 > Từ 07/10/2026 base này nằm ở **gốc repo**; base cũ chuyển vào [`legacy/`](../legacy/README.md).
-> SPL/CMSIS của STM32L1 mà bản build dùng nằm trong `vendor/stm32l1/`.
+> Mã nguồn firmware nằm trong `src/`; đường dẫn kiểu `port/stm32l151`, `services/fw` trong tài liệu này tính từ `src/`.
+> SPL/CMSIS của STM32L1 mà bản build dùng nằm trong `third_party/stm32l1/`.
 
 ## Kiến trúc
 
@@ -45,7 +46,7 @@ Code phía trên HAL **không include header của chip**. Thêm chip mới = vi
 (xem [docs/porting.md](porting.md)).
 
 ```
-<gốc repo>/
+src/
 ├── kernel/         AK kernel bản portable (sửa 2 lỗi của bản gốc, xem dưới)
 ├── hal/            giao diện phần cứng: hệ thống, console, LED, watchdog, NVM, flash theo partition
 ├── common/         xprintf, CRC32/CRC16, log có mức độ
@@ -53,9 +54,9 @@ Code phía trên HAL **không include header của chip**. Thêm chip mới = vi
 ├── boot/           bootloader độc lập chip
 ├── app/            app mẫu: heartbeat + watchdog, shell, OTA
 ├── port/host/      port máy tính + ak_sim
-├── port/stm32l151/ port STM32L151CB
-├── tests/          unit test (kernel, fw/boot) + test đầu-cuối trên ak_sim
-└── tools/          mkimage.py (tạo/kiểm ảnh), ak_fw.py (nạp qua UART / ak_sim)
+└── port/stm32l151/ port STM32L151CB
+tests/              unit test (kernel, fw/boot) + test đầu-cuối trên ak_sim
+tools/              mkimage.py (tạo/kiểm ảnh), ak_fw.py (nạp qua UART / ak_sim)
 ```
 
 ## Bản đồ flash (STM32L151CB, 128K)

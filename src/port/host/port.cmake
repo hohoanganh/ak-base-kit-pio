@@ -1,5 +1,5 @@
 # Host port: unit tests + ak_sim simulator
-set(HOST_DIR ${ROOT}/port/host)
+set(HOST_DIR ${SRC}/port/host)
 set(HOST_WARN -Wall -Wextra -Wno-unused-parameter -Werror)
 
 enable_testing()
@@ -47,15 +47,15 @@ add_test(NAME modbus COMMAND test_modbus)
 # --- kit demo: screens and game logic, with the kit emulated in the test ---
 add_executable(test_demo
 	${ROOT}/tests/test_demo.c
-	${ROOT}/demo/gfx.c ${ROOT}/demo/ui_common.c
-	${ROOT}/demo/scr_clock.c ${ROOT}/demo/scr_snake.c ${ROOT}/demo/scr_flappy.c ${ROOT}/demo/scr_system.c
-	${ROOT}/demo/scr_dino.c ${ROOT}/demo/scr_cube.c ${ROOT}/demo/scr_music.c ${ROOT}/demo/music.c
-	${ROOT}/demo/scr_maze.c ${ROOT}/demo/scr_video.c ${ROOT}/demo/video.c ${ROOT}/demo/scr_weather.c
-	${ROOT}/demo/scr_tetris.c ${ROOT}/demo/scr_breakout.c ${ROOT}/demo/scr_invaders.c ${ROOT}/demo/scr_saver.c ${ROOT}/demo/scr_pong.c ${ROOT}/demo/scr_plot.c
+	${SRC}/demo/gfx.c ${SRC}/demo/ui_common.c
+	${SRC}/demo/scr_clock.c ${SRC}/demo/scr_snake.c ${SRC}/demo/scr_flappy.c ${SRC}/demo/scr_system.c
+	${SRC}/demo/scr_dino.c ${SRC}/demo/scr_cube.c ${SRC}/demo/scr_music.c ${SRC}/demo/music.c
+	${SRC}/demo/scr_maze.c ${SRC}/demo/scr_video.c ${SRC}/demo/video.c ${SRC}/demo/scr_weather.c
+	${SRC}/demo/scr_tetris.c ${SRC}/demo/scr_breakout.c ${SRC}/demo/scr_invaders.c ${SRC}/demo/scr_saver.c ${SRC}/demo/scr_pong.c ${SRC}/demo/scr_plot.c
 	${KERNEL_SRC} ${COMMON_SRC} ${SYS_SRC}
 	${HOST_DIR}/port_host.c
 )
-target_include_directories(test_demo PRIVATE ${ROOT}/tests/kernel ${ROOT}/tests ${ROOT}/demo ${BASE_INC} ${HOST_DIR})
+target_include_directories(test_demo PRIVATE ${ROOT}/tests/kernel ${ROOT}/tests ${SRC}/demo ${BASE_INC} ${HOST_DIR})
 target_compile_options(test_demo PRIVATE ${HOST_WARN} -fsanitize=address,undefined -g)
 target_link_options(test_demo PRIVATE -fsanitize=address,undefined)
 add_test(NAME demo COMMAND test_demo)
@@ -66,7 +66,7 @@ add_executable(ak_sim
 	${HOST_DIR}/port_host.c
 	${KERNEL_SRC} ${COMMON_SRC} ${FW_SRC} ${SYS_SRC} ${MB_SRC} ${BOOT_SRC} ${APP_SRC}
 )
-target_include_directories(ak_sim PRIVATE ${ROOT}/app ${BASE_INC} ${MB_INC} ${HOST_DIR})
+target_include_directories(ak_sim PRIVATE ${SRC}/app ${BASE_INC} ${MB_INC} ${HOST_DIR})
 target_compile_definitions(ak_sim PRIVATE AK_SIM ${VERSION_DEFS} APP_MODBUS_SLAVE)
 target_link_libraries(ak_sim PRIVATE nanomodbus_host)
 target_compile_options(ak_sim PRIVATE ${HOST_WARN} -g)

@@ -67,7 +67,7 @@ The connectors, pin by pin, from the schematic (*chân* = pin, *cầu hàn* = so
 
 ## Where things are
 
-- The repository root is the base, **ak-mcu-base** — start new projects here ([overview](docs/ak-mcu-base.md),
+- The repository is the base, **ak-mcu-base**: firmware sources in `src/`, tests in `tests/`, tools in `tools/` — start new projects here ([overview](docs/ak-mcu-base.md),
   Vietnamese). Portable (the code above the HAL never includes a chip header), unit-tested, builds with PlatformIO or
   CMake. Current version: v1.3.7.
 - [`legacy/`](legacy/README.md) — the older base (v1.3.0), kept for projects already running on it. Until 7 October 2026

@@ -6,7 +6,7 @@
 #
 #   STM32L151 (boot + app + OTA image):
 #     cmake -S . -B build/stm32l151 -DAK_PORT=stm32l151 \
-#           -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
+#           -DCMAKE_TOOLCHAIN_FILE=src/port/stm32l151/arm-none-eabi.cmake
 #     cmake --build build/stm32l151
 #
 #   Shortcut: make test / make sim / make stm32 (Makefile in this folder).
@@ -36,43 +36,44 @@ list(GET _bv 1 BOOT_VER_MINOR)
 list(GET _bv 2 BOOT_VER_PATCH)
 
 set(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(SRC ${ROOT}/src)
 
 # ------------------------------------------------------------------------------
 # Chip-independent components
 # ------------------------------------------------------------------------------
 set(KERNEL_SRC
-	${ROOT}/kernel/src/fsm.c
-	${ROOT}/kernel/src/tsm.c
-	${ROOT}/kernel/src/message.c
-	${ROOT}/kernel/src/task.c
-	${ROOT}/kernel/src/timer.c
+	${SRC}/kernel/src/fsm.c
+	${SRC}/kernel/src/tsm.c
+	${SRC}/kernel/src/message.c
+	${SRC}/kernel/src/task.c
+	${SRC}/kernel/src/timer.c
 )
 
 set(COMMON_SRC
-	${ROOT}/common/xprintf.c
-	${ROOT}/common/crc.c
+	${SRC}/common/xprintf.c
+	${SRC}/common/crc.c
 )
 
 set(FW_SRC
-	${ROOT}/services/fw/fw_image.c
-	${ROOT}/services/fw/fw_update.c
-	${ROOT}/services/fw/fw_proto.c
-	${ROOT}/services/fw/boot_ctrl.c
+	${SRC}/services/fw/fw_image.c
+	${SRC}/services/fw/fw_update.c
+	${SRC}/services/fw/fw_proto.c
+	${SRC}/services/fw/boot_ctrl.c
 )
 
 set(SYS_SRC
-	${ROOT}/services/sys/crash_log.c
+	${SRC}/services/sys/crash_log.c
 )
 
 # Modbus on RS485: slave | master | none (role of the sample app)
 set(AK_MODBUS "slave" CACHE STRING "Modbus role of the app: slave | master | none")
 set(MB_SRC
-	${ROOT}/services/modbus/mb_port.c
-	${ROOT}/services/modbus/mb_slave.c
-	${ROOT}/services/modbus/mb_ota.c
-	${ROOT}/services/modbus/mb_master.c
+	${SRC}/services/modbus/mb_port.c
+	${SRC}/services/modbus/mb_slave.c
+	${SRC}/services/modbus/mb_ota.c
+	${SRC}/services/modbus/mb_master.c
 )
-set(MB_INC ${ROOT}/services/modbus ${ROOT}/third_party/nanomodbus)
+set(MB_INC ${SRC}/services/modbus ${ROOT}/third_party/nanomodbus)
 if(AK_MODBUS STREQUAL "slave")
 	set(MB_DEFS APP_MODBUS_SLAVE NMBS_CLIENT_DISABLED NMBS_STRERROR_DISABLED)
 elseif(AK_MODBUS STREQUAL "master")
@@ -84,26 +85,26 @@ else()
 endif()
 
 set(BOOT_SRC
-	${ROOT}/boot/boot_core.c
-	${ROOT}/boot/boot_main.c
+	${SRC}/boot/boot_core.c
+	${SRC}/boot/boot_main.c
 )
 
 set(APP_SRC
-	${ROOT}/app/main.c
-	${ROOT}/app/task_list.c
-	${ROOT}/app/task_system.c
-	${ROOT}/app/task_console.c
-	${ROOT}/app/task_fw.c
-	${ROOT}/app/task_modbus.c
+	${SRC}/app/main.c
+	${SRC}/app/task_list.c
+	${SRC}/app/task_system.c
+	${SRC}/app/task_console.c
+	${SRC}/app/task_fw.c
+	${SRC}/app/task_modbus.c
 )
 
 set(BASE_INC
-	${ROOT}/kernel/inc
-	${ROOT}/common
-	${ROOT}/hal
-	${ROOT}/services/fw
-	${ROOT}/services/sys
-	${ROOT}/boot
+	${SRC}/kernel/inc
+	${SRC}/common
+	${SRC}/hal
+	${SRC}/services/fw
+	${SRC}/services/sys
+	${SRC}/boot
 )
 
 set(VERSION_DEFS
@@ -117,9 +118,9 @@ set(VERSION_DEFS
 )
 
 if(AK_PORT STREQUAL "host")
-	include(${ROOT}/port/host/port.cmake)
+	include(${SRC}/port/host/port.cmake)
 elseif(AK_PORT STREQUAL "stm32l151")
-	include(${ROOT}/port/stm32l151/port.cmake)
+	include(${SRC}/port/stm32l151/port.cmake)
 else()
 	message(FATAL_ERROR "Unknown AK_PORT: ${AK_PORT}")
 endif()

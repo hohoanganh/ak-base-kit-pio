@@ -29,7 +29,7 @@ pio run -e boot         # bootloader
 
 - `--board` là tên board ghi trong header ảnh (tối đa 15 ký tự). Bootloader từ chối ảnh mang tên board khác, nên
   **mỗi dòng sản phẩm đặt một tên riêng** để không nạp nhầm firmware giữa các sản phẩm.
-- Script chép base, phần SPL/CMSIS mà build cần (`vendor/stm32l1/`), file board (`boards/`), và ghi `BASE_VERSION`
+- Script chép base, phần SPL/CMSIS mà build cần (`third_party/stm32l1/`), file board, và ghi `BASE_VERSION`
   (tag/commit của base lúc xuất). Thư mục đích phải chưa có hoặc đang trống; base không bị sửa gì.
 - Sau khi xuất: `git init`, commit mốc "clean base", rồi mới viết code sản phẩm trong `app/`.
 

@@ -146,7 +146,7 @@ Khác với kit: nhiệt độ, độ ẩm là số giả; đồng hồ lấy gi
 Dựng lại (cần [Emscripten SDK](https://emscripten.org)):
 
 ```bash
-python port/web/build.py            # ghi ra docs/play/ ở gốc repo
+python src/port/web/build.py        # ghi ra docs/play/ ở gốc repo
 ```
 
 Mã nguồn nằm ở `port/web/`: `web_main.c` thay cho bo mạch (`demo/kit.h`), `kit-ui.js` là một kit trên trang web,

@@ -54,7 +54,7 @@ USB Type-C có sẵn mạch USB–UART. Ảnh và sơ đồ bo: [AK Foundation](
 </p>
 
 Sơ đồ đã đối chiếu với schematic AK MCU KIT 3.0 và khớp với cấu hình chân trong firmware
-(`port/stm32l151`). Sinh bởi [`tools/pinout_svg.py`](tools/pinout_svg.py).
+(`src/port/stm32l151`). Sinh bởi [`tools/pinout_svg.py`](tools/pinout_svg.py).
 
 ### Các cổng nối
 
@@ -112,23 +112,25 @@ File `.img` và `.bin` của mọi bản: [Releases](https://github.com/hohoanga
 
 ```
 ak-mcu-base/
-├── kernel/         kernel AK: task, message, timer, fsm, tsm
-├── hal/            giao diện phần cứng mà mọi port phải có
-├── common/         xprintf, CRC, log
-├── services/       fw (ảnh, OTA, boot_ctrl) · sys (nhật ký sự cố) · modbus
-├── boot/           bootloader, không phụ thuộc chip
-├── app/            app mẫu: watchdog và giám sát task, shell, OTA  ← dự án viết task ở đây
-├── demo/           demo trên AK Base Kit (OLED, 3 nút, còi)
-├── port/           stm32l151 (chip) · host (máy tính, ak_sim) · web (WebAssembly)
+├── src/            mã nguồn firmware
+│   ├── kernel/     kernel AK: task, message, timer, fsm, tsm
+│   ├── hal/        giao diện phần cứng mà mọi port phải có
+│   ├── common/     xprintf, CRC, log
+│   ├── services/   fw (ảnh, OTA, boot_ctrl) · sys (nhật ký sự cố) · modbus
+│   ├── boot/       bootloader, không phụ thuộc chip
+│   ├── app/        app mẫu: watchdog và giám sát task, shell, OTA  ← dự án viết task ở đây
+│   ├── demo/       demo trên AK Base Kit (OLED, 3 nút, còi)
+│   └── port/       stm32l151 (chip) · host (máy tính, ak_sim) · web (WebAssembly)
 ├── tests/          unit test và test đầu-cuối trên ak_sim
 ├── tools/          ak_fw.py, ak_mb.py, mkimage.py, new_project.py, tool cho demo và sơ đồ
-├── vendor/         SPL + CMSIS của STM32L1 mà bản build dùng
-├── third_party/    nanoMODBUS
+├── third_party/    nanoMODBUS · SPL + CMSIS của STM32L1 mà bản build dùng
 ├── docs/           tài liệu và trang web (GitHub Pages)
 ├── legacy/         base cũ (v1.3.0), chỉ còn bảo trì
 ├── platformio.ini  build bằng PlatformIO: env boot, app, app_mbmaster, demo
 └── CMakeLists.txt  build bằng CMake, test trên máy tính
 ```
+
+Trong tài liệu và chú thích mã, đường dẫn kiểu `port/stm32l151`, `demo/scr_pong.c`, `services/fw` là tính **từ `src/`**.
 
 ## Base cũ nằm ở `legacy/`
 

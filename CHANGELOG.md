@@ -15,11 +15,12 @@ firmware, không tăng số phiên bản.
 - Địa chỉ mới: <https://github.com/hohoanganh/ak-mcu-base>, trang web <https://hohoanganh.github.io/ak-mcu-base/>.
   GitHub tự chuyển hướng địa chỉ repo cũ (kể cả `git clone`); địa chỉ trang web cũ thì không.
 
-- Nội dung `ak-mcu-base/` chuyển ra **gốc repo** (`kernel/`, `hal/`, `app/`, `boot/`, `demo/`, `port/`, `tests/`, `tools/`…);
-  tài liệu của nó từ `ak-mcu-base/docs/` vào `docs/`, README của nó thành `docs/ak-mcu-base.md`.
+- Nội dung `ak-mcu-base/` chuyển ra **gốc repo**: mã nguồn firmware gom vào `src/` (`kernel/`, `hal/`, `common/`,
+  `services/`, `boot/`, `app/`, `demo/`, `port/`), còn `tests/`, `tools/`, `third_party/` ở gốc. Tài liệu của nó từ
+  `ak-mcu-base/docs/` vào `docs/`, README của nó thành `docs/ak-mcu-base.md`.
 - Base cũ (`sources/`, `platformio.ini` và các script `pio_*.py`, `release/`, `tests_host/`, `tools/`, `boards/`, tài liệu
   của nó) chuyển nguyên vẹn vào **`legacy/`**. Build base cũ: `cd legacy` rồi `pio run` như trước.
-- SPL và CMSIS mà base chính dùng nay nằm trong `vendor/stm32l1/` (trước mượn từ `sources/`), nên base chính không còn
+- SPL và CMSIS mà base chính dùng nay nằm trong `third_party/stm32l1/` (trước mượn từ `sources/`), nên base chính không còn
   phụ thuộc thư mục nào của base cũ. `tools/new_project.py` chép thẳng từ gốc repo.
 - CI chạy cho mọi thay đổi ngoài `legacy/` và tài liệu.
 - Đường dẫn trong các mục bên dưới là đường dẫn **của thời điểm đó**. Các tag cũ giữ nguyên cấu trúc cũ; link tới

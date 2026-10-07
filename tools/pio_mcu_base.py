@@ -1,7 +1,8 @@
 # PlatformIO extra script for ak-mcu-base (STM32L151).
 #  - link flags: no startup files, newlib-nano, search path for sections.ld
 #  - env:app post-build: patch image header (size + CRC) into firmware.elf and
-#    write app.img next to it (same steps as port/stm32l151/port.cmake)
+#    write app.img next to it (same steps as src/port/stm32l151/port.cmake)
+#  - the SPL lives outside src_dir (third_party/stm32l1): built from here
 Import("env")
 
 import os
@@ -16,11 +17,11 @@ env.Append(LINKFLAGS=[
     "-Wl,--defsym=__app_part_size=" + app_part_size,
     "-nostartfiles", "--specs=nano.specs",
     "-Wl,--gc-sections", "-Wl,--print-memory-usage",
-    "-L" + os.path.join(proj, "port", "stm32l151"),
+    "-L" + os.path.join(proj, "src", "port", "stm32l151"),
 ])
 
 # SPL sources (outside src_dir -> built explicitly). Location: [common] spl in
-# platformio.ini - the parent tree here, vendor/stm32l1 in an exported project.
+# platformio.ini.
 spl_dir = env.GetProjectConfig().get("common", "spl").strip()
 spl_src = os.path.normpath(os.path.join(proj, spl_dir, "STM32L1xx_StdPeriph_Driver", "src"))
 if not os.path.isdir(spl_src):

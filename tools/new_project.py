@@ -9,9 +9,9 @@ alone into one self-contained folder:
   python tools/new_project.py D:/work/my-product --board my-board
 
   my-product/
-    kernel/ hal/ common/ services/ boot/ app/ port/ tests/ tools/ docs/ ...
-    vendor/stm32l1/   SPL + CMSIS headers (only what the build uses)
-    boards/           PlatformIO board file
+    src/              kernel/ hal/ common/ services/ boot/ app/ demo/ port/
+    tests/ tools/ docs/
+    third_party/      nanoMODBUS, SPL + CMSIS of the STM32L1 (only what the build uses)
     BASE_VERSION      which ak-mcu-base the project started from
 
 Nothing is written into the base. The destination must not exist or be empty.
@@ -99,14 +99,14 @@ def main(argv=None):
         fail("destination exists and is not empty: " + dest)
     if a.board and not re.fullmatch(r"[A-Za-z0-9_.-]{1,15}", a.board):
         fail("--board: 1..15 characters of A-Z a-z 0-9 _ . -")
-    if not os.path.isdir(os.path.join(BASE, "vendor", "stm32l1", "STM32L1xx_StdPeriph_Driver")):
-        fail("SPL not found below " + os.path.join(BASE, "vendor", "stm32l1"))
+    if not os.path.isdir(os.path.join(BASE, "third_party", "stm32l1", "STM32L1xx_StdPeriph_Driver")):
+        fail("SPL not found below " + os.path.join(BASE, "third_party", "stm32l1"))
 
-    # vendor/ (SPL + CMSIS) and boards/ are part of the base and come along;
+    # third_party/ (SPL + CMSIS, nanoMODBUS) is part of the base and comes along;
     # platformio.ini and port.cmake already point at them
     n = copy_base(dest)
     if a.board:
-        edit(os.path.join(dest, "port", "stm32l151", "port_cfg.h"), [
+        edit(os.path.join(dest, "src", "port", "stm32l151", "port_cfg.h"), [
             (r'^(#define PORT_BOARD_NAME\s+)"[^"]*"', r'\1"%s"' % a.board),
         ])
 

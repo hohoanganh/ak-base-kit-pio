@@ -24,11 +24,11 @@ sim: host
 	$(BUILD_HOST)/ak_sim --flash $(BUILD_HOST)/ak_sim_flash.bin
 
 stm32:
-	cmake -S . -B $(BUILD_STM32) -DAK_PORT=stm32l151 -DAK_STAGING=external -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
+	cmake -S . -B $(BUILD_STM32) -DAK_PORT=stm32l151 -DAK_STAGING=external -DCMAKE_TOOLCHAIN_FILE=src/port/stm32l151/arm-none-eabi.cmake
 	cmake --build $(BUILD_STM32) -j
 
 stm32-internal:
-	cmake -S . -B $(BUILD_STM32)-internal -DAK_PORT=stm32l151 -DAK_STAGING=internal -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
+	cmake -S . -B $(BUILD_STM32)-internal -DAK_PORT=stm32l151 -DAK_STAGING=internal -DCMAKE_TOOLCHAIN_FILE=src/port/stm32l151/arm-none-eabi.cmake
 	cmake --build $(BUILD_STM32)-internal -j
 
 clean:

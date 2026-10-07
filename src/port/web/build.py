@@ -21,18 +21,18 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(os.path.dirname(HERE))               # the repository
-REPO = ROOT
+ROOT = os.path.dirname(os.path.dirname(HERE))               # src/
+REPO = os.path.dirname(ROOT)
 
 SOURCES = [
     "kernel/src/*.c", "common/*.c",
     "services/fw/fw_image.c", "services/fw/fw_update.c", "services/fw/fw_proto.c", "services/fw/boot_ctrl.c",
-    "services/sys/*.c", "services/modbus/*.c", "third_party/nanomodbus/nanomodbus.c",
+    "services/sys/*.c", "services/modbus/*.c", "../third_party/nanomodbus/nanomodbus.c",
     "app/*.c", "demo/*.c",
     "port/host/port_host.c", "port/web/web_main.c",
 ]
 INCLUDES = ["kernel/inc", "common", "hal", "services/fw", "services/sys", "services/modbus",
-            "third_party/nanomodbus", "boot", "app", "demo", "port/host"]
+            "../third_party/nanomodbus", "boot", "app", "demo", "port/host"]
 # APP_CRASH_TEST=0: "crash test hang" and "test fault" would freeze or kill the page
 DEFINES = ["AK_SIM", "APP_KIT_DEMO", "APP_MODBUS_SLAVE", "NMBS_CLIENT_DISABLED", "NMBS_STRERROR_DISABLED",
            "APP_CRASH_TEST=0"]
@@ -52,7 +52,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", default=os.path.join(REPO, "docs", "play"))
     ap.add_argument("--emcc", default=None, help="path of emcc (default: from the PATH)")
-    ap.add_argument("--work", default=os.path.join(ROOT, "build", "web"), help="folder for generated files")
+    ap.add_argument("--work", default=os.path.join(REPO, "build", "web"), help="folder for generated files")
     a = ap.parse_args()
 
     emcc = a.emcc or shutil.which("emcc")
