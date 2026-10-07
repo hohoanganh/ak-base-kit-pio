@@ -66,6 +66,28 @@ static void dump_hex(uint8_t v) {
 	dump_char(digits[v & 15]);
 }
 
+uint16_t ui_stream_batch(ui_stream_t* st, uint16_t max_chars, void (*out)(uint8_t c)) {
+	const uint8_t mask = (st->mode == UI_STREAM_ONCE) ? st->todo
+						 : (st->mode == UI_STREAM_ON) ? st->dirty : 0;
+	uint16_t chars = 0;
+
+	for (uint8_t i = 0; i < KIT_LCD_PAGES && chars < max_chars; i++) {
+		const uint8_t page = (uint8_t)((st->next + i) % KIT_LCD_PAGES);
+		const uint8_t bit = (uint8_t)(1u << page);
+
+		if (mask & bit) {
+			chars = (uint16_t)(chars + ui_dump_page(page, out));
+			st->dirty &= (uint8_t)~bit;
+			st->todo &= (uint8_t)~bit;
+			st->next = (uint8_t)((page + 1u) % KIT_LCD_PAGES);
+		}
+	}
+	if (st->mode == UI_STREAM_ONCE && st->todo == 0) {
+		st->mode = UI_STREAM_OFF;
+	}
+	return chars;
+}
+
 uint16_t ui_dump_page(uint8_t page, void (*out)(uint8_t c)) {
 	const uint8_t* p = gfx_page(page);
 	uint16_t crc = crc16_update(CRC16_INIT, p, GFX_W);

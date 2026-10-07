@@ -32,8 +32,7 @@ static uint8_t lcd_ok;
 
 /* screen mirror (shell "ui dump" / "ui stream") */
 #define STREAM_CHARS_PER_FRAME	(400)		/* about 35 ms of UART time at 115200 baud */
-static uint8_t stream_on;
-static uint8_t stream_dirty;			/* pages the PC has not seen yet */
+static ui_stream_t stream;
 static uint32_t stream_next_ms;			/* the UART is busy with the last batch until then */
 
 /*----------------------------------------------------------------------------
@@ -157,17 +156,20 @@ void cmd_ui(const char* args) {
 		task_post_pure_msg(TASK_UI_ID, UI_SIG_BACK);
 	}
 	else if (args[0] == 'd') {
-		stream_dirty = 0xFF;		/* the whole screen once (stream_on stays as it is) */
+		/* the whole screen once; a running stream just sends it all again */
+		stream.dirty = 0xFF;
+		stream.todo = 0xFF;
 		stream_next_ms = 0;
-		if (!stream_on) {
-			stream_on = 2;			/* 2 = off again when the screen is out */
+		if (stream.mode == UI_STREAM_OFF) {
+			stream.mode = UI_STREAM_ONCE;
 		}
 	}
 	else if (args[0] == 's') {
-		stream_on = (stream_on == 1) ? 0 : 1;
-		stream_dirty = 0xFF;
+		stream.mode = (stream.mode == UI_STREAM_ON) ? UI_STREAM_OFF : UI_STREAM_ON;
+		stream.dirty = 0xFF;
+		stream.todo = 0;
 		stream_next_ms = 0;
-		xprintf("stream %s\n", stream_on ? "on" : "off");
+		xprintf("stream %s\n", stream.mode ? "on" : "off");
 	}
 	else if (args[0] == 'o') {
 		const char* name = args;
@@ -368,20 +370,13 @@ void task_ui(ak_msg_t* msg) {
 		}
 		ui_last_pages = lcd_ok ? gfx_flush(0) : 0;
 		ui_last_frame_ms = (uint16_t)(hal_millis() - t0);
-		stream_dirty |= gfx_changed();
-		if (stream_on && stream_dirty && (int32_t)(t0 - stream_next_ms) >= 0) {
-			uint16_t chars = 0;
+		stream.dirty |= gfx_changed();
+		if (stream.mode != UI_STREAM_OFF && (int32_t)(t0 - stream_next_ms) >= 0) {
+			uint16_t chars = ui_stream_batch(&stream, STREAM_CHARS_PER_FRAME, hal_console_putc);
 
-			for (uint8_t p = 0; p < KIT_LCD_PAGES && chars < STREAM_CHARS_PER_FRAME; p++) {
-				if (stream_dirty & (1 << p)) {
-					chars = (uint16_t)(chars + ui_dump_page(p, hal_console_putc));
-					stream_dirty &= (uint8_t)~(1 << p);
-				}
-			}
-			xprintf("@E\n");			/* end of the batch: the PC redraws */
-			stream_next_ms = hal_millis() + chars / 11U;
-			if (stream_on == 2 && !stream_dirty) {
-				stream_on = 0;
+			if (chars) {
+				xprintf("@E\n");		/* end of the batch: the PC redraws */
+				stream_next_ms = hal_millis() + chars / 11U;
 			}
 		}
 		/* The next frame is asked for only now. A periodic timer would keep

@@ -115,6 +115,29 @@ extern void pong_poll(void);
  * Returns the number of characters written. */
 extern uint16_t ui_dump_page(uint8_t page, void (*out)(uint8_t c));
 
+/* Which pages of the screen still have to go to the PC. */
+#define UI_STREAM_OFF		(0)
+#define UI_STREAM_ON		(1)		/* every page that changes, until switched off */
+#define UI_STREAM_ONCE		(2)		/* the screen as it is, once ("ui dump"), then off */
+
+typedef struct {
+	uint8_t mode;		/* UI_STREAM_* */
+	uint8_t dirty;		/* ON: pages the PC has not seen in their present state */
+	uint8_t todo;		/* ONCE: pages of the dump still to send */
+	uint8_t next;		/* page the next batch starts with */
+} ui_stream_t;
+
+/* Sends pages until max_chars are out (at least one page if any is waiting)
+ * and returns the number of characters written, 0 if there was nothing to
+ * send.
+ *
+ * The pages take turns: a batch starts where the last one stopped. Starting
+ * at page 0 every time never reaches the last pages on a screen whose first
+ * pages change in every frame (seen on the kit: "ui dump" of the System
+ * monitor never delivered page 7, and never ended).
+ * A dump sends each page exactly once and ends, whatever changes meanwhile. */
+extern uint16_t ui_stream_batch(ui_stream_t* st, uint16_t max_chars, void (*out)(uint8_t c));
+
 /* 1: the games play themselves (shell "ui auto", also used to record the
  * pictures in the documentation). Any button gives control back. */
 extern uint8_t ui_autoplay;

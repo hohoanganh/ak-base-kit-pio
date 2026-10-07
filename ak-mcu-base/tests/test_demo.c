@@ -1356,6 +1356,85 @@ static void test_screen_dump(void) {
 	scr_saver.key(KIT_BTN_1);						/* back to Life for whoever comes next */
 }
 
+/* Which pages go out, and when a dump ends (ui_stream_batch) */
+static uint8_t pages_in_dump_text(void) {
+	uint8_t mask = 0;
+
+	dump_text[dump_len] = 0;
+	for (const char* p = dump_text; (p = strstr(p, "@P")) != 0; p += 2) {
+		mask |= (uint8_t)(1u << (p[2] - '0'));
+	}
+	return mask;
+}
+
+static void test_screen_stream(void) {
+	ui_stream_t st;
+	uint8_t seen;
+	int batches;
+
+	scr_system.enter();
+	frames(&scr_system, 5);
+
+	/* nothing asked for: nothing sent */
+	memset(&st, 0, sizeof(st));
+	st.dirty = 0xFF;
+	dump_len = 0;
+	CHECK_EQ(ui_stream_batch(&st, 400, dump_put), 0);
+	CHECK_EQ(dump_len, 0);
+
+	/* A dump while pages 1, 2 and 5 change in EVERY frame, as on the System
+	 * monitor of the kit. With every batch starting at page 0 the budget was
+	 * used up before page 7 and the dump never ended. */
+	memset(&st, 0, sizeof(st));
+	st.mode = UI_STREAM_ONCE;
+	st.todo = 0xFF;
+	st.dirty = 0xFF;
+	seen = 0;
+	for (batches = 0; batches < 20 && st.mode != UI_STREAM_OFF; batches++) {
+		uint8_t now;
+
+		st.dirty |= 0x26;
+		dump_len = 0;
+		CHECK(ui_stream_batch(&st, 400, dump_put) > 0);
+		now = pages_in_dump_text();
+		CHECK_EQ(seen & now, 0);				/* no page twice */
+		seen |= now;
+	}
+	CHECK_EQ(seen, 0xFF);						/* every page, page 7 included */
+	CHECK_EQ(st.mode, UI_STREAM_OFF);			/* and then it is over */
+	CHECK(batches <= 8);
+	dump_len = 0;
+	CHECK_EQ(ui_stream_batch(&st, 400, dump_put), 0);
+
+	/* A stream: with three pages changing all the time, a page that changed
+	 * once (page 7) still gets its turn within a few batches. */
+	memset(&st, 0, sizeof(st));
+	st.mode = UI_STREAM_ON;
+	st.dirty = 0x80;
+	seen = 0;
+	for (batches = 0; batches < 6 && !(seen & 0x80); batches++) {
+		st.dirty |= 0x26;
+		dump_len = 0;
+		ui_stream_batch(&st, 400, dump_put);
+		seen |= pages_in_dump_text();
+	}
+	CHECK(seen & 0x80);
+	CHECK_EQ(st.mode, UI_STREAM_ON);			/* a stream does not end by itself */
+
+	/* a page that did not change is not sent */
+	st.dirty = 0x01;
+	dump_len = 0;
+	ui_stream_batch(&st, 400, dump_put);
+	CHECK_EQ(pages_in_dump_text(), 0x01);
+
+	/* the budget is a limit per batch, but one page always goes out */
+	st.dirty = 0xFF;
+	dump_len = 0;
+	ui_stream_batch(&st, 1, dump_put);
+	seen = pages_in_dump_text();
+	CHECK(seen != 0 && (seen & (seen - 1)) == 0);
+}
+
 static void test_plot(void) {
 	int a;
 
@@ -1481,6 +1560,7 @@ int main(int argc, char** argv) {
 	RUN_TEST(test_plot);
 	RUN_TEST(test_menu_find);
 	RUN_TEST(test_screen_dump);
+	RUN_TEST(test_screen_stream);
 	printf("%d checks, %d failed\n", tt_checks, tt_fails);
 	return tt_fails ? 1 : 0;
 }
