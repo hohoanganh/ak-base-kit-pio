@@ -4,9 +4,9 @@ name: ak-mcu-base
 
 on:
   push:
-    paths: ['ak-mcu-base/**', '.github/workflows/ak-mcu-base.yml']
+    paths-ignore: ['legacy/**', 'docs/**', '*.md']
   pull_request:
-    paths: ['ak-mcu-base/**', '.github/workflows/ak-mcu-base.yml']
+    paths-ignore: ['legacy/**', 'docs/**', '*.md']
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,7 @@ jobs:
       # ASan needs a smaller ASLR range than some runner kernels default to
       - run: sudo sysctl -w vm.mmap_rnd_bits=28
       - name: Build
-        run: cmake -S ak-mcu-base -B build/host && cmake --build build/host -j
+        run: cmake -S . -B build/host && cmake --build build/host -j
       - name: Unit tests + simulator OTA
         run: ctest --test-dir build/host --output-on-failure
 
@@ -34,7 +34,7 @@ jobs:
       - name: Build
         run: |
           emcc --version | head -1
-          python3 ak-mcu-base/port/web/build.py --out build/play
+          python3 port/web/build.py --out build/play
           test -s build/play/ak-kit.js && test -s build/play/index.html
 
   stm32-build:
@@ -46,10 +46,10 @@ jobs:
       - name: Build (external + internal staging)
         run: |
           arm-none-eabi-gcc --version | head -1
-          make -C ak-mcu-base stm32 stm32-internal
+          make stm32 stm32-internal
       - name: Size budget
         run: |
-          cd ak-mcu-base/build
+          cd build
           ls -l stm32l151/boot.bin stm32l151/app.img stm32l151-internal/boot.bin stm32l151-internal/app.img
           # BOOT partition is 12288 B; keep 2K headroom for fixes in the field
           for f in stm32l151/boot.bin stm32l151-internal/boot.bin; do
@@ -60,6 +60,6 @@ jobs:
         with:
           name: ak-mcu-base-stm32l151
           path: |
-            ak-mcu-base/build/stm32l151/boot.bin
-            ak-mcu-base/build/stm32l151/app.img
-            ak-mcu-base/build/stm32l151/*.elf
+            build/stm32l151/boot.bin
+            build/stm32l151/app.img
+            build/stm32l151/*.elf

@@ -275,7 +275,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   <div class="wrap">
     <h2 class="reveal"><span class="num">01</span>Tổng quan</h2>
     <p class="sub reveal">Repo gồm hai phần: <strong>ak-mcu-base</strong> (bản viết lại, tách khỏi chip, có unit test; dự án mới
-      bắt đầu từ đây) và <strong>base cũ</strong> trong <code>sources/</code> (dành cho dự án đang chạy trên nó).
+      bắt đầu từ đây) và <strong>base cũ</strong> trong <code>legacy/</code> (dành cho dự án đang chạy trên nó).
       Cả hai cùng dựa trên kernel AK.</p>
 
     <div class="grid c4 reveal">
@@ -376,7 +376,7 @@ task_t app_task_table[] = {
       cùng ý tưởng nhưng tách khỏi chip để port sang chip khác, và có test chạy trên máy tính.</p>
     <div class="table-wrap reveal">
       <table>
-        <thead><tr><th></th><th>Base v1.3.0 — <code>sources/</code></th><th>ak-mcu-base — <code>ak-mcu-base/</code></th></tr></thead>
+        <thead><tr><th></th><th>Base cũ v1.3.0 — <code>legacy/</code></th><th>ak-mcu-base — gốc repo</th></tr></thead>
         <tbody>
           <tr><td>Trạng thái</td><td class="y">Ổn định, đã kiểm trên board</td><td class="w">v1.1.0, đã chạy trên board; còn thiếu driver và Modbus</td></tr>
           <tr><td>Chip</td><td>STM32L151CBT6</td><td>Đa nền tảng qua lớp HAL · port STM32L151 + host (PC)</td></tr>
@@ -441,14 +441,14 @@ task_t app_task_table[] = {
         <h4>EPCB Modbus Flash (exe)</h4>
         <p>Không cần cài Python. Chọn cổng COM, baud <code>9600</code>, slave <code>1</code> → Kiểm tra board → chọn file
           <code>.bin</code> của <code>app_mbslave</code> → Nạp. Xong hiện PASS/FAIL và tự đọc lại phiên bản.
-          <br><a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/tools/EPCB_Modbus_Flash_v1.0.0.exe">tools/EPCB_Modbus_Flash_v1.0.0.exe</a></p>
+          <br><a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/tools/EPCB_Modbus_Flash_v1.0.0.exe">legacy/tools/EPCB_Modbus_Flash_v1.0.0.exe</a></p>
       </div>
       <div class="cell">
         <span class="tag">DÒNG LỆNH</span>
         <h4>Python</h4>
         <p style="margin-bottom:10px">Kiểm ảnh trước khi gửi, tự xác nhận phiên bản sau khi board khởi động lại.</p>
         <pre style="font-size:12.5px">python -m epcb_applib.ota COMx \
-  release/app_mbslave/ak_base_kit_app_mbslave_v1.3.0.bin \
+  legacy/release/app_mbslave/ak_base_kit_app_mbslave_v1.3.0.bin \
   --slave 1 --baud 9600</pre>
       </div>
     </div>
@@ -549,8 +549,8 @@ task_t app_task_table[] = {
         </tbody>
       </table>
     </div>
-    <p class="reveal" style="margin-top:16px"><a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/README.md">README đầy đủ của ak-mcu-base →</a>
-      · <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/docs/porting.md">Hướng dẫn port sang chip mới →</a></p>
+    <p class="reveal" style="margin-top:16px"><a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/ak-mcu-base.md">README đầy đủ của ak-mcu-base →</a>
+      · <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/porting.md">Hướng dẫn port sang chip mới →</a></p>
   </div>
 </section>
 
@@ -583,11 +583,11 @@ task_t app_task_table[] = {
     <p class="sub reveal">Toàn bộ tài liệu viết bằng tiếng Việt, nằm trong repo.</p>
     <div class="grid c3 docs reveal">
       <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/README.md"><b>README</b><span>Cấu trúc, build, nạp, OTA RS485, 7 bước dự án mới</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/huong-dan-su-dung-source-base.md"><b>Hướng dẫn sử dụng</b><span>Dùng source base cho dự án mới</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/ak-base-kit-pio-luong-hoat-dong.md"><b>Luồng hoạt động</b><span>Sơ đồ bootloader, kernel AK, timer, bảng ưu tiên</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/known-bugs.md"><b>Lỗi đã biết</b><span>13 lỗi đã sửa và các bẫy thường gặp</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/tinh-nang-moi-v1.2-v1.3.md"><b>Tính năng v1.2 – v1.3</b><span>nanoMODBUS, OTA RS485, kết quả kiểm trên board</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/ak-mcu-base/README.md"><b>ak-mcu-base</b><span>Kiến trúc, bootloader/OTA, test, giới hạn</span></a>
+      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/docs/huong-dan-su-dung-source-base.md"><b>Hướng dẫn sử dụng</b><span>Dùng source base cho dự án mới</span></a>
+      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/docs/ak-base-kit-pio-luong-hoat-dong.md"><b>Luồng hoạt động</b><span>Sơ đồ bootloader, kernel AK, timer, bảng ưu tiên</span></a>
+      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/docs/known-bugs.md"><b>Lỗi đã biết</b><span>13 lỗi đã sửa và các bẫy thường gặp</span></a>
+      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/docs/tinh-nang-moi-v1.2-v1.3.md"><b>Tính năng v1.2 – v1.3</b><span>nanoMODBUS, OTA RS485, kết quả kiểm trên board</span></a>
+      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/ak-mcu-base.md"><b>ak-mcu-base</b><span>Kiến trúc, bootloader/OTA, test, giới hạn</span></a>
     </div>
   </div>
 </section>

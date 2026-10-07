@@ -3,7 +3,7 @@
 **Tiếng Việt** · [English](README.en.md)
 
 <p align="center">
-  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/"><img src="ak-mcu-base/docs/demo-highlights.gif" alt="Demo trên AK Base Kit: logo xoay 3D, khối 3D, mê cung, Tetris, Dino, Invaders, máy hiện sóng" width="404"></a>
+  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/"><img src="docs/demo-highlights.gif" alt="Demo trên AK Base Kit: logo xoay 3D, khối 3D, mê cung, Tetris, Dino, Invaders, máy hiện sóng" width="404"></a>
 </p>
 
 <p align="center">
@@ -26,8 +26,8 @@ cập nhật firmware qua UART và RS485. Dựng lại từ
 | Muốn… | Vào đây |
 |---|---|
 | **Xem nó chạy** | [Một kit, đủ 16 màn hình](https://hohoanganh.github.io/ak-base-kit-pio/play/) · [hai kit chơi Pong với nhau](https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html) |
-| **Biết demo có gì** | [Từng màn hình, kèm ảnh động](ak-mcu-base/docs/demo-kit.md) |
-| **Bắt đầu dự án mới** | `python ak-mcu-base/tools/new_project.py <thư-mục> --board <tên-board>` · [hướng dẫn](ak-mcu-base/docs/tien-ich.md) |
+| **Biết demo có gì** | [Từng màn hình, kèm ảnh động](docs/demo-kit.md) |
+| **Bắt đầu dự án mới** | `python tools/new_project.py <thư-mục> --board <tên-board>` · [hướng dẫn](docs/tien-ich.md) |
 | **Tải firmware** | [Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases) |
 | **Đọc tổng quan** | [Trang giới thiệu](https://hohoanganh.github.io/ak-base-kit-pio/) |
 
@@ -54,7 +54,7 @@ USB Type-C có sẵn mạch USB–UART. Ảnh và sơ đồ bo: [AK Foundation](
 </p>
 
 Sơ đồ đã đối chiếu với schematic AK MCU KIT 3.0 và khớp với cấu hình chân trong firmware
-(`ak-mcu-base/port/stm32l151`). Sinh bởi [`tools/pinout_svg.py`](ak-mcu-base/tools/pinout_svg.py).
+(`port/stm32l151`). Sinh bởi [`tools/pinout_svg.py`](tools/pinout_svg.py).
 
 ### Các cổng nối
 
@@ -62,8 +62,8 @@ Sơ đồ đã đối chiếu với schematic AK MCU KIT 3.0 và khớp với c�
   <img src="docs/kit/connectors.svg" alt="Mười cổng nối của AK Base Kit 3.0 và tín hiệu trên từng chân: J14 nạp và console, J15 SWD, J12 console UART1, J10 RS485, J4 UART3, J7 I2C1, J13 chân vi điều khiển, J6 SPI mở rộng, J9 I2C và UART mở rộng, J3 màn hình OLED" width="860">
 </p>
 
-Theo schematic AK MCU KIT 3.0, sinh bởi [`tools/connectors_svg.py`](ak-mcu-base/tools/connectors_svg.py).
-Bảng chân dạng chữ: [demo-kit.md](ak-mcu-base/docs/demo-kit.md#phần-cứng-ak-base-kit-3i0).
+Theo schematic AK MCU KIT 3.0, sinh bởi [`tools/connectors_svg.py`](tools/connectors_svg.py).
+Bảng chân dạng chữ: [demo-kit.md](docs/demo-kit.md#phần-cứng-ak-base-kit-3i0).
 
 ### Cây nguồn
 
@@ -74,120 +74,78 @@ Bảng chân dạng chữ: [demo-kit.md](ak-mcu-base/docs/demo-kit.md#phần-c�
 ## Phần mềm: một mã nguồn, ba nơi chạy
 
 <p align="center">
-  <img src="ak-mcu-base/docs/diagram-layers.svg" alt="Các lớp của ak-mcu-base: ứng dụng, kernel và dịch vụ, HAL; bên dưới là ba port: chip STM32L151, máy tính chạy unit test, trình duyệt chạy WebAssembly" width="860">
+  <img src="docs/diagram-layers.svg" alt="Các lớp của ak-mcu-base: ứng dụng, kernel và dịch vụ, HAL; bên dưới là ba port: chip STM32L151, máy tính chạy unit test, trình duyệt chạy WebAssembly" width="860">
 </p>
 
-Sơ đồ bộ nhớ, luồng cập nhật firmware và cách demo chạy trên kernel: xem [ak-mcu-base/README.md](ak-mcu-base/README.md)
-và [tài liệu demo](ak-mcu-base/docs/demo-kit.md).
-
-## Repo có hai base — chọn cái nào
-
-| | [`sources/`](sources/) — base cũ | [`ak-mcu-base/`](ak-mcu-base/README.md) — base cho dự án mới |
-|---|---|---|
-| Phiên bản | **v1.3.0**, bootloader 0.0.3 | **v1.3.7**, bootloader 1.2.1 |
-| Dùng khi | Dự án đang chạy trên nó; cần driver có sẵn (EEPROM ngoài, nRF24, lớp Arduino…) | Dự án mới: OTA an toàn khi mất điện, có unit test, dễ chuyển sang chip khác |
-| Mức hoàn thiện | Đầy đủ, đã dùng cho sản phẩm | Kernel, bootloader, OTA, Modbus RTU, nhật ký sự cố, demo trên kit; driver khác tự viết thêm |
-| Build | PlatformIO | PlatformIO hoặc CMake |
-| Cập nhật firmware | UART, RS485 (Modbus), flash SPI ngoài | UART và RS485 (Modbus); ảnh có CRC32, tên board, chống cài dở |
-| Kiểm thử trên máy tính | Lớp Modbus | Kernel, bootloader, Modbus, OTA đầu-cuối trên giả lập, màn hình demo |
-
-So sánh chi tiết, kèm những gì base mới còn thiếu: **[xem trang so sánh](https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html)** · bản Markdown: [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
-
-Phần còn lại của trang này nói về base `sources/`, dành cho các dự án đang chạy trên nó.
-
-## Bộ nhớ và kiến trúc
-
-```mermaid
-flowchart LR
-    subgraph FLASH["Flash trong 128K"]
-        B["BOOT<br>8K @ 0x08000000"]
-        S["BSF<br>4K @ 0x08002000"]
-        A["APP<br>116K @ 0x08003000"]
-    end
-    X["Flash SPI ngoài<br>ảnh firmware mới"]
-    B -- "app hợp lệ" --> A
-    X -- "có lệnh update:<br>chép, kiểm checksum" --> A
-    S -. "lệnh boot ↔ app" .- B
-```
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│ APP TASKS   task_system · task_fw · task_shell · task_life ·     │
-│             task_if · task_uart_if · task_dbg · task_display     │
-├───────────────────────────────┬──────────────────────────────────┤
-│ AK KERNEL   scheduler ·       │ NETWORKS/LIBS  nanoMODBUS        │
-│ message · timer · fsm/tsm     │ net/link UART · ArduinoJson · QR │
-├───────────────────────────────┼──────────────────────────────────┤
-│ DRIVERS     button · buzzer · │ COMMON   xprintf · cmd_line ·    │
-│ eeprom · flash · led · OLED   │ fifo / ring_buffer · view        │
-├───────────────────────────────┴──────────────────────────────────┤
-│ PLATFORM    startup/vector · io_cfg/sys_cfg · Arduino core ·     │
-│             SPL StdPeriph + CMSIS · ak.ld                        │
-├──────────────────────────────────────────────────────────────────┤
-│ HW          STM32L151CBT6 (M3 · 32MHz · 128K/16K) + ext flash    │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-Luồng chạy đầy đủ (bootloader, kernel, timer, bảng ưu tiên task):
-[docs/ak-base-kit-pio-luong-hoat-dong.md](docs/ak-base-kit-pio-luong-hoat-dong.md).
+Sơ đồ bộ nhớ, luồng cập nhật firmware và cách demo chạy trên kernel: xem [docs/ak-mcu-base.md](docs/ak-mcu-base.md)
+và [tài liệu demo](docs/demo-kit.md).
 
 ## Bắt đầu nhanh
 
-Cần PlatformIO và ST-Link. Board trắng phải nạp cả boot lẫn app.
+Cần PlatformIO và ST-Link (hoặc chỉ một máy tính, nếu chỉ chạy test).
 
 ```bash
-pio run -e boot -t upload      # 1. bootloader
-pio run -e app  -t upload      # 2. app (Modbus master, mặc định)
-pio device monitor             # console UART1, 115200
+pio run -e boot -t upload      # 1. bootloader, 0x08000000
+pio run -e demo -t upload      # 2. demo trên AK Base Kit (hoặc -e app: app mẫu, Modbus slave)
+pio device monitor             # console UART1, 115200: gõ help
 ```
 
-Biến thể Modbus slave để cập nhật qua RS485: `pio run -e app_mbslave`.
-File `.bin` thành phẩm nằm ở `release/`; `.bin` và `.elf` của mọi bản tải ở
-[Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
+Từ lần sau cập nhật qua cổng console, không cần ST-Link: `python tools/ak_fw.py --port COMx flash .pio/build/demo/app.img`.
 
-## Tôi muốn…
+Chạy test và bộ giả lập trên máy tính (Linux / WSL): `make test`, `make sim`.
+Dự án mới: `python tools/new_project.py <thư-mục> --board <tên-board>` xuất một dự án độc lập, không dính repo này.
+File `.img` và `.bin` của mọi bản: [Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
+
+## Tài liệu
 
 | Việc | Đọc |
 |---|---|
-| Tạo dự án mới từ base này | [docs/bat-dau-du-an-moi.md](docs/bat-dau-du-an-moi.md) — 7 bước, build, phát hành, các bẫy |
-| Hiểu kernel AK, viết task, port chip khác | [docs/huong-dan-su-dung-source-base.md](docs/huong-dan-su-dung-source-base.md) |
-| Cập nhật firmware qua RS485, không cần ST-Link | [docs/ota-rs485.md](docs/ota-rs485.md) — bảng thanh ghi, lệnh, tool có giao diện |
-| Biết bản nào sửa lỗi gì | [CHANGELOG.md](CHANGELOG.md) · [docs/known-bugs.md](docs/known-bugs.md) |
-| Xem tính năng Modbus mới (v1.2 – v1.3) | [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md) |
-| Dùng base mới `ak-mcu-base` | [ak-mcu-base/README.md](ak-mcu-base/README.md) |
+| Kiến trúc, bản đồ flash, bootloader và OTA, đã kiểm gì | [docs/ak-mcu-base.md](docs/ak-mcu-base.md) |
+| Demo trên kit: 16 màn hình, phần cứng, cách viết màn hình mới | [docs/demo-kit.md](docs/demo-kit.md) |
+| Nhật ký sự cố, giám sát task, đo stack, tạo dự án mới, CI | [docs/tien-ich.md](docs/tien-ich.md) |
+| Modbus RTU trên RS485: slave, master, OTA | [docs/modbus.md](docs/modbus.md) |
+| Port sang chip khác | [docs/porting.md](docs/porting.md) |
+| Biết bản nào sửa lỗi gì | [CHANGELOG.md](CHANGELOG.md) |
 | Cho AI assistant tra tài liệu kernel AK | [docs/ak-mcp-docs-server.md](docs/ak-mcp-docs-server.md) — repo có sẵn [.mcp.json](.mcp.json) |
-
-## Ba điều dễ dính nhất
-
-1. **Dự án mới phải clone theo tag** (`git clone --depth 1 --branch v1.3.0 …`) và ghi version base vào README
-   của dự án. Chép tay từ một dự án khác là mất dấu các bản sửa lỗi.
-2. **`pio run` ghi đè file cùng version trong `release/`.** Build thử thì tăng version, hoặc
-   `git checkout -- release` sau khi build.
-3. **Board mang bootloader cũ hơn 0.0.2** phải nạp thêm BSF (`pio run -e app -t bsf`). Thiếu bước này board
-   đứng ở vòng chờ nháy LED, nhìn giống hệt board treo.
-
-Các ghi chú còn lại (cờ link bắt buộc, `build_dir` ngoài OneDrive, Zigbee, test host…):
-[docs/bat-dau-du-an-moi.md](docs/bat-dau-du-an-moi.md#3-ghi-chú-quan-trọng).
 
 ## Cấu trúc thư mục
 
 ```
 ak-base-kit-pio/
-├── sources/
-│   ├── application/      firmware ứng dụng
-│   │   ├── ak/           kernel AK
-│   │   ├── app/          task của dự án  ← viết code ở đây
-│   │   ├── driver/       button, buzzer, eeprom, flash, led, OLED
-│   │   ├── networks/     net/link UART, nanoMODBUS
-│   │   └── platform/     io_cfg, sys_cfg, startup, SPL + CMSIS, ak.ld
-│   └── boot/             bootloader 8K
-├── ak-mcu-base/          base mới, độc lập với sources/
-├── docs/                 tài liệu
-├── release/              firmware thành phẩm (.bin)
-├── tools/                tool nạp qua RS485
-├── tests_host/           test lớp Modbus trên máy tính
-└── platformio.ini        cấu hình build: env app, app_mbslave, boot
+├── kernel/         kernel AK: task, message, timer, fsm, tsm
+├── hal/            giao diện phần cứng mà mọi port phải có
+├── common/         xprintf, CRC, log
+├── services/       fw (ảnh, OTA, boot_ctrl) · sys (nhật ký sự cố) · modbus
+├── boot/           bootloader, không phụ thuộc chip
+├── app/            app mẫu: watchdog và giám sát task, shell, OTA  ← dự án viết task ở đây
+├── demo/           demo trên AK Base Kit (OLED, 3 nút, còi)
+├── port/           stm32l151 (chip) · host (máy tính, ak_sim) · web (WebAssembly)
+├── tests/          unit test và test đầu-cuối trên ak_sim
+├── tools/          ak_fw.py, ak_mb.py, mkimage.py, new_project.py, tool cho demo và sơ đồ
+├── vendor/         SPL + CMSIS của STM32L1 mà bản build dùng
+├── third_party/    nanoMODBUS
+├── docs/           tài liệu và trang web (GitHub Pages)
+├── legacy/         base cũ (v1.3.0), chỉ còn bảo trì
+├── platformio.ini  build bằng PlatformIO: env boot, app, app_mbmaster, demo
+└── CMakeLists.txt  build bằng CMake, test trên máy tính
 ```
+
+## Base cũ nằm ở `legacy/`
+
+Đến 07/10/2026 repo này có hai base nằm cạnh nhau: base cũ ở gốc repo (thư mục `sources/`) và base mới trong
+`ak-mcu-base/`. Nay **base mới ở gốc repo**, base cũ chuyển nguyên vẹn vào [`legacy/`](legacy/README.md) cho các dự án
+đang chạy trên nó. Các tag cũ (`v1.0.0` … `v1.3.0`, `ak-mcu-base-v1.x`) vẫn giữ cấu trúc thư mục của thời điểm đó.
+
+| | Base này (gốc repo) | [`legacy/`](legacy/README.md) — base cũ |
+|---|---|---|
+| Phiên bản | **v1.3.7**, bootloader 1.2.1 | **v1.3.0**, bootloader 0.0.3 |
+| Dùng khi | Dự án mới: OTA an toàn khi mất điện, có unit test, dễ chuyển sang chip khác | Dự án đang chạy trên nó; cần driver có sẵn (EEPROM ngoài, nRF24, lớp Arduino…) |
+| Mức hoàn thiện | Kernel, bootloader, OTA, Modbus RTU, nhật ký sự cố, demo trên kit; driver khác tự viết thêm | Đầy đủ, đã dùng cho sản phẩm |
+| Build | PlatformIO hoặc CMake | PlatformIO (`cd legacy`) |
+| Cập nhật firmware | UART và RS485 (Modbus); ảnh có CRC32, tên board, chống cài dở | UART, RS485 (Modbus), flash SPI ngoài |
+| Kiểm thử trên máy tính | Kernel, bootloader, Modbus, OTA đầu-cuối trên giả lập, màn hình demo | Lớp Modbus |
+
+So sánh chi tiết, kèm những gì base mới còn thiếu: **[xem trang so sánh](https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html)** · bản Markdown: [docs/so-voi-base-cu.md](docs/so-voi-base-cu.md).
 
 ## Nguồn gốc
 

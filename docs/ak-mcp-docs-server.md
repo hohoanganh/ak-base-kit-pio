@@ -23,7 +23,7 @@ file đó không tồn tại ở đây. Nhánh `epcb` thêm 2 guide riêng:
 Phần kernel AK không đổi nên toàn bộ guide còn lại của upstream vẫn dùng nguyên.
 
 > Hai guide đã cập nhật theo base v1.1.2 (24/09/2026): seed BSF chỉ còn cần với bootloader 0.0.1
-> ([known-bugs.md](known-bugs.md) #3), clone tag mới nhất, `APP_VERSION` là nguồn version duy nhất,
+> ([known-bugs.md](../legacy/docs/known-bugs.md) #3), clone tag mới nhất, `APP_VERSION` là nguồn version duy nhất,
 > thứ tự `app_task_table` theo enum, cờ biên dịch trong POST script phải áp cả `projenv`.
 
 ## Tool được cung cấp

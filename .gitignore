@@ -10,6 +10,11 @@ compile_commands.json
 *.su
 # ELF ~1,1 MB moi ban - khong dua vao git. Ban <= v1.1.2 van nam trong tag,
 # ban sau dinh kem GitHub Releases. Xem README muc Build & nap.
-release/**/*.elf
-tests_host/modbus/build/
+legacy/release/**/*.elf
+legacy/tests_host/modbus/build/
 .superpowers/
+# base (was ak-mcu-base/.gitignore)
+build/
+*.img
+ak_sim_flash.bin
+__pycache__/

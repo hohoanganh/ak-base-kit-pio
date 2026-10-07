@@ -5,7 +5,21 @@ nhất biết sau này dự án đang thiếu bản sửa nào. Bootloader có s
 console lúc khởi động).
 
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
-[docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
+[docs/tinh-nang-moi-v1.2-v1.3.md](legacy/docs/tinh-nang-moi-v1.2-v1.3.md).
+
+## Cấu trúc repo đổi — 07/10/2026
+
+`ak-mcu-base` thành base chính của repo. Không đổi mã firmware, không tăng số phiên bản.
+
+- Nội dung `ak-mcu-base/` chuyển ra **gốc repo** (`kernel/`, `hal/`, `app/`, `boot/`, `demo/`, `port/`, `tests/`, `tools/`…);
+  tài liệu của nó từ `ak-mcu-base/docs/` vào `docs/`, README của nó thành `docs/ak-mcu-base.md`.
+- Base cũ (`sources/`, `platformio.ini` và các script `pio_*.py`, `release/`, `tests_host/`, `tools/`, `boards/`, tài liệu
+  của nó) chuyển nguyên vẹn vào **`legacy/`**. Build base cũ: `cd legacy` rồi `pio run` như trước.
+- SPL và CMSIS mà base chính dùng nay nằm trong `vendor/stm32l1/` (trước mượn từ `sources/`), nên base chính không còn
+  phụ thuộc thư mục nào của base cũ. `tools/new_project.py` chép thẳng từ gốc repo.
+- CI chạy cho mọi thay đổi ngoài `legacy/` và tài liệu.
+- Đường dẫn trong các mục bên dưới là đường dẫn **của thời điểm đó**. Các tag cũ giữ nguyên cấu trúc cũ; link tới
+  `…/blob/main/ak-mcu-base/…` hoặc `…/blob/main/sources/…` từ bên ngoài sẽ không còn mở được, dùng link theo tag.
 
 ## ak-mcu-base v1.3.7 — 07/10/2026
 
@@ -102,7 +116,7 @@ App **1.3.2**, bootloader không đổi (1.2.0).
 - **Máy hiện sóng mini** (màn hình Scope): đồ thị cuộn 120 điểm, tự co giãn. Số liệu vào bằng lệnh shell
   `plot <số>` hoặc ghi thanh ghi Modbus 16. `tools/ak_plot.py` gửi sóng sin, nhiễu, hoặc số đọc từ stdin, qua UART
   hay RS485. Đã thử cả hai đường trên kit.
-- Tổng kết phiên làm việc 06/10/2026: [ak-mcu-base/docs/tong-ket-2026-10-06.md](ak-mcu-base/docs/tong-ket-2026-10-06.md).
+- Tổng kết phiên làm việc 06/10/2026: [ak-mcu-base/docs/tong-ket-2026-10-06.md](docs/tong-ket-2026-10-06.md).
 - Unit test demo: 456 kiểm tra.
 
 ## ak-mcu-base v1.3.1 — 06/10/2026
@@ -134,9 +148,9 @@ App **1.3.1**, bootloader không đổi (1.2.0). Bản này chủ yếu thêm b�
 - **Demo tự chơi:** lệnh shell `ui auto` cho các game và mê cung tự chạy, máy hát tự phát lần lượt; bấm nút là
   giành lại quyền điều khiển.
 - **Ảnh động cho tài liệu:** `tests/test_demo <thư mục> record` ghi từng khung từ mã vẽ thật, `tools/demo_gif.py`
-  dựng thành GIF (README, [ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md)).
+  dựng thành GIF (README, [ak-mcu-base/docs/demo-kit.md](docs/demo-kit.md)).
 - **Huy hiệu Repo Traffic** ở đầu README.
-- **Ý tưởng demo tiếp theo**, kèm nguồn tham khảo: [ak-mcu-base/docs/y-tuong-demo.md](ak-mcu-base/docs/y-tuong-demo.md).
+- **Ý tưởng demo tiếp theo**, kèm nguồn tham khảo: [ak-mcu-base/docs/y-tuong-demo.md](docs/y-tuong-demo.md).
 
 ## ak-mcu-base v1.3.0 — 06/10/2026
 
@@ -146,10 +160,10 @@ App **1.3.0**, bootloader không đổi (1.2.0).
   `0xF000` mang ảnh `.img` của base mới; tool `tools/ak_mb.py`. Vai trò chọn lúc build (`env:app` là slave,
   `env:app_mbmaster`). Unit test 174 kiểm tra. Đã kiểm trên kit: đọc/ghi thanh ghi, OTA qua RS485 (20K trong 26 s ở
   9600 baud), master.
-  Tài liệu: [ak-mcu-base/docs/modbus.md](ak-mcu-base/docs/modbus.md).
+  Tài liệu: [ak-mcu-base/docs/modbus.md](docs/modbus.md).
 - **Demo trên AK Base Kit** (`env:demo`): menu, đồng hồ số (RTC hoặc tự đếm), Snake, Flappy, màn hình hệ thống trên
   OLED 128×64 + 3 nút + còi; điều khiển được qua shell (`ui`). Đã chạy trên kit; ảnh màn hình dựng từ mã vẽ thật.
-  Tài liệu: [ak-mcu-base/docs/demo-kit.md](ak-mcu-base/docs/demo-kit.md).
+  Tài liệu: [ak-mcu-base/docs/demo-kit.md](docs/demo-kit.md).
 
 ## ak-mcu-base v1.2.0 — 06/10/2026
 
@@ -166,12 +180,12 @@ Bootloader **1.2.0**. Từ bản này `ak-mcu-base` là base cho các dự án m
 - **Đo mức dùng stack:** lệnh `stat` in số byte RAM chưa từng dùng.
 - **CI:** GitHub Actions chạy test host và build STM32, giới hạn bootloader 10.240 B.
 - **NVM:** `HAL_NVM_SIZE` tăng lên 256; `boot_ctrl` giữ nguyên chỗ (hai bản ghi 32 B ở đầu).
-- Tài liệu: [ak-mcu-base/docs/tien-ich.md](ak-mcu-base/docs/tien-ich.md) ·
-  [ak-mcu-base/docs/huong-toi-uu-tiep.md](ak-mcu-base/docs/huong-toi-uu-tiep.md) (các hướng tra cứu được, kèm nguồn).
+- Tài liệu: [ak-mcu-base/docs/tien-ich.md](docs/tien-ich.md) ·
+  [ak-mcu-base/docs/huong-toi-uu-tiep.md](docs/huong-toi-uu-tiep.md) (các hướng tra cứu được, kèm nguồn).
 
 ## ak-mcu-base v1.1.0 — 06/10/2026
 
-Thư mục [`ak-mcu-base/`](ak-mcu-base/README.md) đánh số riêng (tag `ak-mcu-base-v<x.y.z>`), không ảnh hưởng
+Thư mục [`ak-mcu-base/`](docs/ak-mcu-base.md) đánh số riêng (tag `ak-mcu-base-v<x.y.z>`), không ảnh hưởng
 base trong `sources/`. Bản đầu tiên chạy trên board thật; bootloader **1.1.0**.
 
 - **Kernel:** timer mềm dùng mốc hết hạn tuyệt đối (không trôi, không nổ sớm, tick chỉ post khi đến hạn);
@@ -182,9 +196,9 @@ base trong `sources/`. Bản đầu tiên chạy trên board thật; bootloader 
 - **Bootloader 1.1.0:** `boot_ctrl` hai bản ghi luân phiên, watchdog 10 s, vòng chờ flash SPI có giới hạn.
   **App từ 1.1.0 phải đi với bootloader từ 1.1.0.**
 - **Tool:** `ak_fw.py` OTA ảnh 10,5K từ 5,4 s xuống 1,6 s.
-- **So với base cũ:** [ak-mcu-base/docs/so-voi-base-cu.md](ak-mcu-base/docs/so-voi-base-cu.md).
-- README gốc viết lại gọn; các mục dài chuyển sang [docs/bat-dau-du-an-moi.md](docs/bat-dau-du-an-moi.md) và
-  [docs/ota-rs485.md](docs/ota-rs485.md).
+- **So với base cũ:** [ak-mcu-base/docs/so-voi-base-cu.md](docs/so-voi-base-cu.md).
+- README gốc viết lại gọn; các mục dài chuyển sang [docs/bat-dau-du-an-moi.md](legacy/docs/bat-dau-du-an-moi.md) và
+  [docs/ota-rs485.md](legacy/docs/ota-rs485.md).
 
 ## v1.3.0 — 25/09/2026
 
@@ -214,7 +228,7 @@ Bootloader **không đổi mã** (vẫn 0.0.3), chỉ nâng `-DAPP_VERSION` cho 
 - **Đã kiểm trên board thật (25/09/2026):** OTA 1.3.0 → 1.3.1 → 1.3.0 qua USB-RS485 @9600
   ≈ 78 s/lượt, bootloader xóa 0,8 s + chép 2,7 s; cắt ngang giữa chừng board vẫn chạy app cũ và
   chạy lại được; 200/200 lần đọc FC03 đúng. Chi tiết + các ca thử âm:
-  [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md) mục 5.
+  [docs/tinh-nang-moi-v1.2-v1.3.md](legacy/docs/tinh-nang-moi-v1.2-v1.3.md) mục 5.
 - **Công cụ PC:** `python -m epcb_applib.ota` (epcb-applib ≥ 1.4.0) — kiểm bảng vector ảnh, tự
   ABORT phiên dở, xác nhận phiên bản sau khi board khởi động lại.
 - **Nạp bằng ST-Link:** nếu `pio run -t upload` báo lỗi `hla_swd` (OpenOCD mới + ST-Link V2), dùng
@@ -284,7 +298,7 @@ Bootloader **không đổi** (vẫn 0.0.3).
 
 Họ lỗi "struct cấu hình SPL không khởi tạo" — rà toàn bộ 62 biến `*_InitTypeDef`, 4 chỗ là lỗi thật:
 ADC đọc kênh ngoài ra 0 (#8), rác vào điện trở kéo GPIOA, đo được chân RX RS485 ở trạng thái cấm
-dùng (#9), SPI của bootloader (#10), NVIC buzzer (#11). Chi tiết: [docs/known-bugs.md](docs/known-bugs.md).
+dùng (#9), SPI của bootloader (#10), NVIC buzzer (#11). Chi tiết: [docs/known-bugs.md](legacy/docs/known-bugs.md).
 
 ## v1.1.0 — 23/09/2026 · bootloader 0.0.2
 
