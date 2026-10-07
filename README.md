@@ -1,19 +1,19 @@
-# ak-base-kit-pio — Firmware source base cho STM32L151
+# ak-mcu-base — Firmware source base cho STM32L151
 
 **Tiếng Việt** · [English](README.en.md)
 
 <p align="center">
-  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/"><img src="docs/demo-highlights.gif" alt="Demo trên AK Base Kit: logo xoay 3D, khối 3D, mê cung, Tetris, Dino, Invaders, máy hiện sóng" width="404"></a>
+  <a href="https://hohoanganh.github.io/ak-mcu-base/play/"><img src="docs/demo-highlights.gif" alt="Demo trên AK Base Kit: logo xoay 3D, khối 3D, mê cung, Tetris, Dino, Invaders, máy hiện sóng" width="404"></a>
 </p>
 
 <p align="center">
-  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/"><img src="https://img.shields.io/badge/%E2%96%B6%20CH%E1%BA%A0Y%20TH%E1%BB%AC%20NGAY-tr%C3%AAn%20tr%C3%ACnh%20duy%E1%BB%87t-a8ff3e?style=for-the-badge&labelColor=0b0f14" alt="Chạy thử firmware ngay trên trình duyệt"></a>
-  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html"><img src="https://img.shields.io/badge/HAI%20KIT-ch%C6%A1i%20Pong%20qua%20RS485-d9e1ea?style=for-the-badge&labelColor=0b0f14" alt="Hai kit chơi Pong qua RS485"></a>
+  <a href="https://hohoanganh.github.io/ak-mcu-base/play/"><img src="https://img.shields.io/badge/%E2%96%B6%20CH%E1%BA%A0Y%20TH%E1%BB%AC%20NGAY-tr%C3%AAn%20tr%C3%ACnh%20duy%E1%BB%87t-a8ff3e?style=for-the-badge&labelColor=0b0f14" alt="Chạy thử firmware ngay trên trình duyệt"></a>
+  <a href="https://hohoanganh.github.io/ak-mcu-base/play/pong.html"><img src="https://img.shields.io/badge/HAI%20KIT-ch%C6%A1i%20Pong%20qua%20RS485-d9e1ea?style=for-the-badge&labelColor=0b0f14" alt="Hai kit chơi Pong qua RS485"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/hohoanganh/ak-base-kit-pio/actions/workflows/ak-mcu-base.yml"><img src="https://github.com/hohoanganh/ak-base-kit-pio/actions/workflows/ak-mcu-base.yml/badge.svg" alt="CI"></a>
-  <img src="https://hits.sh/github.com/hohoanganh/ak-base-kit-pio.svg?style=flat-square&label=Repo%20Traffic&color=007ec6" alt="Repo Traffic">
+  <a href="https://github.com/hohoanganh/ak-mcu-base/actions/workflows/ak-mcu-base.yml"><img src="https://github.com/hohoanganh/ak-mcu-base/actions/workflows/ak-mcu-base.yml/badge.svg" alt="CI"></a>
+  <img src="https://hits.sh/github.com/hohoanganh/ak-mcu-base.svg?style=flat-square&label=Repo%20Traffic&color=007ec6" alt="Repo Traffic">
 </p>
 
 Nền firmware bare-metal cho **STM32L151CBT6** (AK Base Kit): kernel AK hướng sự kiện không cần RTOS, bootloader,
@@ -25,11 +25,11 @@ cập nhật firmware qua UART và RS485. Dựng lại từ
 
 | Muốn… | Vào đây |
 |---|---|
-| **Xem nó chạy** | [Một kit, đủ 16 màn hình](https://hohoanganh.github.io/ak-base-kit-pio/play/) · [hai kit chơi Pong với nhau](https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html) |
+| **Xem nó chạy** | [Một kit, đủ 16 màn hình](https://hohoanganh.github.io/ak-mcu-base/play/) · [hai kit chơi Pong với nhau](https://hohoanganh.github.io/ak-mcu-base/play/pong.html) |
 | **Biết demo có gì** | [Từng màn hình, kèm ảnh động](docs/demo-kit.md) |
 | **Bắt đầu dự án mới** | `python tools/new_project.py <thư-mục> --board <tên-board>` · [hướng dẫn](docs/tien-ich.md) |
-| **Tải firmware** | [Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases) |
-| **Đọc tổng quan** | [Trang giới thiệu](https://hohoanganh.github.io/ak-base-kit-pio/) |
+| **Tải firmware** | [Releases](https://github.com/hohoanganh/ak-mcu-base/releases) |
+| **Đọc tổng quan** | [Trang giới thiệu](https://hohoanganh.github.io/ak-mcu-base/) |
 
 ## Phần cứng: AK Base Kit
 
@@ -94,7 +94,7 @@ Từ lần sau cập nhật qua cổng console, không cần ST-Link: `python to
 
 Chạy test và bộ giả lập trên máy tính (Linux / WSL): `make test`, `make sim`.
 Dự án mới: `python tools/new_project.py <thư-mục> --board <tên-board>` xuất một dự án độc lập, không dính repo này.
-File `.img` và `.bin` của mọi bản: [Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
+File `.img` và `.bin` của mọi bản: [Releases](https://github.com/hohoanganh/ak-mcu-base/releases).
 
 ## Tài liệu
 
@@ -111,7 +111,7 @@ File `.img` và `.bin` của mọi bản: [Releases](https://github.com/hohoanga
 ## Cấu trúc thư mục
 
 ```
-ak-base-kit-pio/
+ak-mcu-base/
 ├── kernel/         kernel AK: task, message, timer, fsm, tsm
 ├── hal/            giao diện phần cứng mà mọi port phải có
 ├── common/         xprintf, CRC, log
@@ -132,9 +132,10 @@ ak-base-kit-pio/
 
 ## Base cũ nằm ở `legacy/`
 
-Đến 07/10/2026 repo này có hai base nằm cạnh nhau: base cũ ở gốc repo (thư mục `sources/`) và base mới trong
+Đến 07/10/2026 repo này tên là `ak-base-kit-pio` và có hai base nằm cạnh nhau: base cũ ở gốc repo (thư mục `sources/`) và base mới trong
 `ak-mcu-base/`. Nay **base mới ở gốc repo**, base cũ chuyển nguyên vẹn vào [`legacy/`](legacy/README.md) cho các dự án
-đang chạy trên nó. Các tag cũ (`v1.0.0` … `v1.3.0`, `ak-mcu-base-v1.x`) vẫn giữ cấu trúc thư mục của thời điểm đó.
+đang chạy trên nó, và repo đổi tên thành `ak-mcu-base` (GitHub tự chuyển hướng địa chỉ cũ; riêng trang web chuyển sang
+`hohoanganh.github.io/ak-mcu-base`, địa chỉ cũ không còn). Các tag cũ (`v1.0.0` … `v1.3.0`, `ak-mcu-base-v1.x`) vẫn giữ cấu trúc thư mục của thời điểm đó.
 
 | | Base này (gốc repo) | [`legacy/`](legacy/README.md) — base cũ |
 |---|---|---|
@@ -145,7 +146,7 @@ ak-base-kit-pio/
 | Cập nhật firmware | UART và RS485 (Modbus); ảnh có CRC32, tên board, chống cài dở | UART, RS485 (Modbus), flash SPI ngoài |
 | Kiểm thử trên máy tính | Kernel, bootloader, Modbus, OTA đầu-cuối trên giả lập, màn hình demo | Lớp Modbus |
 
-So sánh chi tiết, kèm những gì base mới còn thiếu: **[xem trang so sánh](https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html)** · bản Markdown: [docs/so-voi-base-cu.md](docs/so-voi-base-cu.md).
+So sánh chi tiết, kèm những gì base mới còn thiếu: **[xem trang so sánh](https://hohoanganh.github.io/ak-mcu-base/ak-mcu-base-so-voi-base-cu.html)** · bản Markdown: [docs/so-voi-base-cu.md](docs/so-voi-base-cu.md).
 
 ## Nguồn gốc
 

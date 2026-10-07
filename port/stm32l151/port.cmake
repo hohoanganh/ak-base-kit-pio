@@ -2,7 +2,7 @@
 set(PORT_DIR ${ROOT}/port/stm32l151)
 
 # SPL + CMSIS: vendor/stm32l1 in a project exported by tools/new_project.py,
-# otherwise reused from the parent ak-base-kit-pio tree (not duplicated).
+# otherwise taken from the old base in legacy/.
 if(EXISTS ${ROOT}/vendor/stm32l1/STM32L1xx_StdPeriph_Driver)
 	set(_spl_default ${ROOT}/vendor/stm32l1)
 else()

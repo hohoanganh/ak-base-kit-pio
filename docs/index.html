@@ -234,7 +234,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <li><a href="#lich-su">Lịch sử</a></li>
       <li><a href="#tai-lieu">Tài liệu</a></li>
     </ul>
-    <a class="gh" href="https://github.com/hohoanganh/ak-base-kit-pio">GitHub ↗</a>
+    <a class="gh" href="https://github.com/hohoanganh/ak-mcu-base">GitHub ↗</a>
   </div>
 </nav>
 
@@ -258,7 +258,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <a class="btn primary" href="play/">Chạy thử, đủ 16 màn hình</a>
       <a class="btn" href="play/pong.html">Hai kit chơi Pong</a>
       <a class="btn" href="#mcu-base">Xem ak-mcu-base</a>
-      <a class="btn" href="https://github.com/hohoanganh/ak-base-kit-pio/releases">Tải firmware</a>
+      <a class="btn" href="https://github.com/hohoanganh/ak-mcu-base/releases">Tải firmware</a>
     </div>
    </div>
    <div class="hero-kit">
@@ -441,7 +441,7 @@ task_t app_task_table[] = {
         <h4>EPCB Modbus Flash (exe)</h4>
         <p>Không cần cài Python. Chọn cổng COM, baud <code>9600</code>, slave <code>1</code> → Kiểm tra board → chọn file
           <code>.bin</code> của <code>app_mbslave</code> → Nạp. Xong hiện PASS/FAIL và tự đọc lại phiên bản.
-          <br><a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/tools/EPCB_Modbus_Flash_v1.0.0.exe">legacy/tools/EPCB_Modbus_Flash_v1.0.0.exe</a></p>
+          <br><a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/legacy/tools/EPCB_Modbus_Flash_v1.0.0.exe">legacy/tools/EPCB_Modbus_Flash_v1.0.0.exe</a></p>
       </div>
       <div class="cell">
         <span class="tag">DÒNG LỆNH</span>
@@ -549,8 +549,8 @@ task_t app_task_table[] = {
         </tbody>
       </table>
     </div>
-    <p class="reveal" style="margin-top:16px"><a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/ak-mcu-base.md">README đầy đủ của ak-mcu-base →</a>
-      · <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/porting.md">Hướng dẫn port sang chip mới →</a></p>
+    <p class="reveal" style="margin-top:16px"><a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/docs/ak-mcu-base.md">README đầy đủ của ak-mcu-base →</a>
+      · <a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/docs/porting.md">Hướng dẫn port sang chip mới →</a></p>
   </div>
 </section>
 
@@ -558,7 +558,7 @@ task_t app_task_table[] = {
 <section id="lich-su">
   <div class="wrap">
     <h2 class="reveal"><span class="num">06</span>Lịch sử phiên bản</h2>
-    <p class="sub reveal">Chi tiết từng bản ở <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</p>
+    <p class="sub reveal">Chi tiết từng bản ở <a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</p>
     <ul class="timeline reveal">
       <li class="exp"><span class="ver">ak-mcu-base</span><span class="date">10/2026</span>
         <p>Base đa nền tảng: kernel AK tách khỏi chip, bootloader + OTA an toàn khi mất điện, ghi half-page, staging trên flash SPI ngoài, port host + trình giả lập.</p></li>
@@ -582,12 +582,12 @@ task_t app_task_table[] = {
     <h2 class="reveal"><span class="num">07</span>Tài liệu</h2>
     <p class="sub reveal">Toàn bộ tài liệu viết bằng tiếng Việt, nằm trong repo.</p>
     <div class="grid c3 docs reveal">
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/README.md"><b>README</b><span>Cấu trúc, build, nạp, OTA RS485, 7 bước dự án mới</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/docs/huong-dan-su-dung-source-base.md"><b>Hướng dẫn sử dụng</b><span>Dùng source base cho dự án mới</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/docs/ak-base-kit-pio-luong-hoat-dong.md"><b>Luồng hoạt động</b><span>Sơ đồ bootloader, kernel AK, timer, bảng ưu tiên</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/docs/known-bugs.md"><b>Lỗi đã biết</b><span>13 lỗi đã sửa và các bẫy thường gặp</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/legacy/docs/tinh-nang-moi-v1.2-v1.3.md"><b>Tính năng v1.2 – v1.3</b><span>nanoMODBUS, OTA RS485, kết quả kiểm trên board</span></a>
-      <a href="https://github.com/hohoanganh/ak-base-kit-pio/blob/main/docs/ak-mcu-base.md"><b>ak-mcu-base</b><span>Kiến trúc, bootloader/OTA, test, giới hạn</span></a>
+      <a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/README.md"><b>README</b><span>Cấu trúc, build, nạp, OTA RS485, 7 bước dự án mới</span></a>
+      <a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/legacy/docs/huong-dan-su-dung-source-base.md"><b>Hướng dẫn sử dụng</b><span>Dùng source base cho dự án mới</span></a>
+      <a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/legacy/docs/ak-base-kit-pio-luong-hoat-dong.md"><b>Luồng hoạt động</b><span>Sơ đồ bootloader, kernel AK, timer, bảng ưu tiên</span></a>
+      <a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/legacy/docs/known-bugs.md"><b>Lỗi đã biết</b><span>13 lỗi đã sửa và các bẫy thường gặp</span></a>
+      <a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/legacy/docs/tinh-nang-moi-v1.2-v1.3.md"><b>Tính năng v1.2 – v1.3</b><span>nanoMODBUS, OTA RS485, kết quả kiểm trên board</span></a>
+      <a href="https://github.com/hohoanganh/ak-mcu-base/blob/main/docs/ak-mcu-base.md"><b>ak-mcu-base</b><span>Kiến trúc, bootloader/OTA, test, giới hạn</span></a>
     </div>
   </div>
 </section>
@@ -597,7 +597,7 @@ task_t app_task_table[] = {
 <footer>
   <div class="wrap">
     <span>Dựa trên <a href="https://github.com/the-ak-foundation/ak-base-kit-stm32l151">ak-base-kit-stm32l151</a> của The AK Foundation.</span>
-    <span><a href="https://github.com/hohoanganh/ak-base-kit-pio">github.com/hohoanganh/ak-base-kit-pio</a></span>
+    <span><a href="https://github.com/hohoanganh/ak-mcu-base">github.com/hohoanganh/ak-mcu-base</a></span>
   </div>
 </footer>
 

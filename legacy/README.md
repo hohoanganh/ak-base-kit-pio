@@ -1,4 +1,4 @@
-# Base cũ của ak-base-kit-pio (v1.3.0) — chỉ còn bảo trì
+# Base cũ `ak-base-kit-pio` (v1.3.0) — chỉ còn bảo trì
 
 Đây là base firmware đầu tiên của repo: kernel AK, lớp Arduino, driver của AK Base Kit, bootloader 8K + BSF, Modbus
 bằng nanoMODBUS, OTA qua RS485. Nó đã dùng cho sản phẩm và vẫn được giữ cho **các dự án đang chạy trên nó**.
@@ -59,7 +59,7 @@ pio device monitor             # console UART1, 115200
 
 Biến thể Modbus slave để cập nhật qua RS485: `pio run -e app_mbslave`.
 File `.bin` thành phẩm nằm ở `release/`; `.bin` và `.elf` của mọi bản tải ở
-[Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
+[Releases](https://github.com/hohoanganh/ak-mcu-base/releases).
 
 ## Tôi muốn…
 

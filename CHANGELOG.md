@@ -9,7 +9,11 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 
 ## Cấu trúc repo đổi — 07/10/2026
 
-`ak-mcu-base` thành base chính của repo. Không đổi mã firmware, không tăng số phiên bản.
+`ak-mcu-base` thành base chính của repo, và **repo đổi tên từ `ak-base-kit-pio` thành `ak-mcu-base`**. Không đổi mã
+firmware, không tăng số phiên bản.
+
+- Địa chỉ mới: <https://github.com/hohoanganh/ak-mcu-base>, trang web <https://hohoanganh.github.io/ak-mcu-base/>.
+  GitHub tự chuyển hướng địa chỉ repo cũ (kể cả `git clone`); địa chỉ trang web cũ thì không.
 
 - Nội dung `ak-mcu-base/` chuyển ra **gốc repo** (`kernel/`, `hal/`, `app/`, `boot/`, `demo/`, `port/`, `tests/`, `tools/`…);
   tài liệu của nó từ `ak-mcu-base/docs/` vào `docs/`, README của nó thành `docs/ak-mcu-base.md`.
@@ -78,7 +82,7 @@ App **1.3.4**, bootloader không đổi (1.2.0).
   `ui open menu`), không phải bấm qua menu. Dùng được trên kit qua shell.
 - **Trang chạy thử sống ngay khi mở:** kit tự đi một vòng qua các màn hình đẹp nhất cho tới khi có người bấm nút;
   hàng nút tắt tới từng màn hình; link chia sẻ dạng `play/?screen=tetris`.
-- **Trang [hai kit chơi Pong](https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html):** hai bản firmware cạnh nhau trên một trang, nối bằng đường
+- **Trang [hai kit chơi Pong](https://hohoanganh.github.io/ak-mcu-base/play/pong.html):** hai bản firmware cạnh nhau trên một trang, nối bằng đường
   RS485 giả lập; xem được ai làm chủ, số byte qua lại, và rút dây để thấy chúng tự quay về chơi một mình.
 - **`port/web/kit-ui.js`**: một kit thành một thành phần nhúng được vào trang bất kỳ; trang giới thiệu của dự án
   giờ có kit chạy thật ngay đầu trang.
@@ -107,7 +111,7 @@ App **1.3.2**, bootloader không đổi (1.2.0).
   đã đổi dưới dạng dòng chữ nén PackBits, có CRC. `tools/ak_screen.py` chụp ảnh (`shot`), quay GIF (`record`) hoặc mở
   cửa sổ xem trực tiếp (`live`), bấm phím 1 2 3 thay cho ba nút. Đo trên kit: 19 hình/giây với màn hình đồng hồ,
   9,5 hình/giây khi cả màn hình đổi liên tục.
-- **Bản chạy trên trình duyệt** (<https://hohoanganh.github.io/ak-base-kit-pio/play/>): firmware (kernel, shell, Modbus slave, bộ demo) biên dịch sang
+- **Bản chạy trên trình duyệt** (<https://hohoanganh.github.io/ak-mcu-base/play/>): firmware (kernel, shell, Modbus slave, bộ demo) biên dịch sang
   WebAssembly bằng Emscripten. `port/web/web_main.c` đóng vai bo mạch, `port/host` đóng vai chip; trang web có màn hình,
   ba nút (chuột, chạm, phím 1 2 3), còi, console gõ lệnh shell, nút gây FATAL để xem nhật ký sự cố, nạp clip `.akv`.
   Mở trang ở hai tab là hai bản firmware chơi Pong với nhau: byte RS485 đi giữa hai tab. Dựng lại bằng
@@ -258,7 +262,7 @@ app + boot).
   bị giờ đợi ~2 s cho thiết bị đó (thay vì ~0,4 s trước đây) trước khi báo lỗi và sang thiết bị kế.
 - **Repo:** thôi đưa file `.elf` trong `release/` vào git (~1,1 MB mỗi bản, repo phình theo từng
   bản). Git chỉ giữ `.bin`; `.bin` + `.elf` của các bản đính kèm ở
-  [GitHub Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
+  [GitHub Releases](https://github.com/hohoanganh/ak-mcu-base/releases).
 - **Tài liệu:** hai guide EPCB trong repo MCP (`epcb-platformio-build`, `epcb-start-project`) cập
   nhật theo v1.1.2.
 - **Số flash (env:app, không tính env:app_mbslave):**

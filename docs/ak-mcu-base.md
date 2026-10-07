@@ -8,7 +8,7 @@ không cần board.
 ![Demo chạy trên AK Base Kit, dựng từ chính mã vẽ của firmware](demo-tour.gif)
 
 *Demo trên kit: đồng hồ số, bảy game, khối 3D, mê cung 3D, máy hát, video, trạm thời tiết, máy hiện sóng, màn hình chờ.
-**[Chạy thử ngay trên trình duyệt](https://hohoanganh.github.io/ak-base-kit-pio/play/)**, không cần kit. Chi tiết: [docs/demo-kit.md](demo-kit.md).*
+**[Chạy thử ngay trên trình duyệt](https://hohoanganh.github.io/ak-mcu-base/play/)**, không cần kit. Chi tiết: [docs/demo-kit.md](demo-kit.md).*
 
 > **Dự án mới:** `python tools/new_project.py <thư-mục> --board <tên-board>` xuất một dự án độc lập.
 > Tiện ích có sẵn (nhật ký sự cố, giám sát task, đo stack, CI): [docs/tien-ich.md](tien-ich.md).

@@ -3,7 +3,7 @@
 Cập nhật: 06/10/2026 · `ak-mcu-base` v1.3.0 (bootloader 1.2.0) · so với `ak-base-kit-pio` v1.3.0 (bootloader 0.0.3)
 · Board: AK Base Kit, STM32L151CBT6 (128K flash, 16K RAM)
 
-Bản HTML (có bản đồ flash vẽ đúng tỉ lệ, in được): <https://hohoanganh.github.io/ak-base-kit-pio/ak-mcu-base-so-voi-base-cu.html> · nguồn: `docs/ak-mcu-base-so-voi-base-cu.html`.
+Bản HTML (có bản đồ flash vẽ đúng tỉ lệ, in được): <https://hohoanganh.github.io/ak-mcu-base/ak-mcu-base-so-voi-base-cu.html> · nguồn: `docs/ak-mcu-base-so-voi-base-cu.html`.
 
 Tài liệu này trả lời một câu hỏi: **khi nào nên bắt đầu dự án từ `ak-mcu-base` thay vì base cũ.**
 Mỗi dòng "hơn" đều ghi rõ đã kiểm bằng gì. Chỗ nào bản mới chưa bằng bản cũ cũng ghi thẳng ở mục 4.

@@ -1,14 +1,14 @@
-# ak-base-kit-pio — firmware source base for STM32L151
+# ak-mcu-base — firmware source base for STM32L151
 
 **English** · [Tiếng Việt](README.md)
 
 <p align="center">
-  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/"><img src="docs/demo-highlights.gif" alt="The demo on the AK Base Kit: a spinning logo, 3D solids, a ray-cast maze, Tetris, Dino, Invaders, a scope" width="404"></a>
+  <a href="https://hohoanganh.github.io/ak-mcu-base/play/"><img src="docs/demo-highlights.gif" alt="The demo on the AK Base Kit: a spinning logo, 3D solids, a ray-cast maze, Tetris, Dino, Invaders, a scope" width="404"></a>
 </p>
 
 <p align="center">
-  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/"><img src="https://img.shields.io/badge/%E2%96%B6%20RUN%20IT-in%20your%20browser-a8ff3e?style=for-the-badge&labelColor=0b0f14" alt="Run the firmware in your browser"></a>
-  <a href="https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html"><img src="https://img.shields.io/badge/TWO%20KITS-play%20Pong%20over%20RS485-d9e1ea?style=for-the-badge&labelColor=0b0f14" alt="Two kits play Pong over RS485"></a>
+  <a href="https://hohoanganh.github.io/ak-mcu-base/play/"><img src="https://img.shields.io/badge/%E2%96%B6%20RUN%20IT-in%20your%20browser-a8ff3e?style=for-the-badge&labelColor=0b0f14" alt="Run the firmware in your browser"></a>
+  <a href="https://hohoanganh.github.io/ak-mcu-base/play/pong.html"><img src="https://img.shields.io/badge/TWO%20KITS-play%20Pong%20over%20RS485-d9e1ea?style=for-the-badge&labelColor=0b0f14" alt="Two kits play Pong over RS485"></a>
 </p>
 
 A bare-metal firmware base for the **STM32L151CBT6** on the AK Base Kit: an event-driven kernel without an RTOS,
@@ -71,7 +71,7 @@ The connectors, pin by pin, from the schematic (*chân* = pin, *cầu hàn* = so
   Vietnamese). Portable (the code above the HAL never includes a chip header), unit-tested, builds with PlatformIO or
   CMake. Current version: v1.3.7.
 - [`legacy/`](legacy/README.md) — the older base (v1.3.0), kept for projects already running on it. Until 7 October 2026
-  it sat at the root and this base in `ak-mcu-base/`; older tags still have that layout.
+  it sat at the root and this base in `ak-mcu-base/`; older tags still have that layout. The repository was called `ak-base-kit-pio` until then.
 
 ## Try it
 
@@ -83,7 +83,7 @@ pio run -e boot -e demo -t upload
 cmake -S . -B build/host && cmake --build build/host -j && ctest --test-dir build/host
 ```
 
-Firmware images: [Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases).
+Firmware images: [Releases](https://github.com/hohoanganh/ak-mcu-base/releases).
 
 ## Documentation
 
@@ -91,5 +91,5 @@ Most of the documentation is in Vietnamese; the code and its comments are in Eng
 
 - [The demo, screen by screen](docs/demo-kit.md) (Vietnamese)
 - [What the new base changes](docs/so-voi-base-cu.md) (Vietnamese)
-- [Project page](https://hohoanganh.github.io/ak-base-kit-pio/) (Vietnamese)
+- [Project page](https://hohoanganh.github.io/ak-mcu-base/) (Vietnamese)
 - [Changelog](CHANGELOG.md) (Vietnamese)

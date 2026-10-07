@@ -44,7 +44,7 @@ pio device monitor             # console UART1 115200
 Thành phẩm tự copy về `release/app/` và `release/boot/`, tên kèm version từ `-DAPP_VERSION`. Git chỉ
 giữ file **`.bin`**; file `.elf` (~1,1 MB mỗi bản, cần khi debug firmware đã phát hành) không đưa vào git
 để repo khỏi phình theo từng bản. **`.bin` và `.elf` của mọi bản** (app + bootloader) tải ở trang
-[Releases](https://github.com/hohoanganh/ak-base-kit-pio/releases). Phát hành bản mới thì đính kèm 4 file
+[Releases](https://github.com/hohoanganh/ak-mcu-base/releases). Phát hành bản mới thì đính kèm 4 file
 đó vào Release của tag:
 
 ```bash

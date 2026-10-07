@@ -1,6 +1,6 @@
 # Demo trên AK Base Kit: đồng hồ, game, 3D, nhạc, video, trạm thời tiết
 
-**Không có kit? [Chạy thử ngay trên trình duyệt](https://hohoanganh.github.io/ak-base-kit-pio/play/)**: chính firmware này, biên dịch sang WebAssembly.
+**Không có kit? [Chạy thử ngay trên trình duyệt](https://hohoanganh.github.io/ak-mcu-base/play/)**: chính firmware này, biên dịch sang WebAssembly.
 
 Bộ demo chạy trên nền `ak-mcu-base`, dùng màn hình OLED 128×64, ba nút bấm, còi và flash SPI của kit, cùng một mô-đun cảm biến SHT45 cắm vào cổng I2C.
 Nó vẫn giữ nguyên mọi thứ của app mẫu: shell, OTA qua UART, Modbus slave, nhật ký sự cố.
@@ -135,12 +135,12 @@ nhận được mỗi giây. Đã thử trên kit: 20 điểm/giây qua UART, 10
 
 ## Chạy trên trình duyệt
 
-<https://hohoanganh.github.io/ak-base-kit-pio/play/> là chính firmware này (kernel, shell, Modbus slave, mọi màn hình) biên dịch sang WebAssembly.
+<https://hohoanganh.github.io/ak-mcu-base/play/> là chính firmware này (kernel, shell, Modbus slave, mọi màn hình) biên dịch sang WebAssembly.
 Khác với kit: nhiệt độ, độ ẩm là số giả; đồng hồ lấy giờ máy tính; flash nằm trong bộ nhớ.
 
 - Vừa mở trang, kit tự đi một vòng qua các màn hình cho tới khi bạn bấm nút. Hàng ô bên dưới kit mở thẳng từng màn hình,
   và `play/?screen=tetris` là link tới thẳng một màn hình (tên như lệnh `ui open`).
-- [Hai kit chơi Pong](https://hohoanganh.github.io/ak-base-kit-pio/play/pong.html): hai bản firmware cạnh nhau, nối bằng đường RS485 giả lập.
+- [Hai kit chơi Pong](https://hohoanganh.github.io/ak-mcu-base/play/pong.html): hai bản firmware cạnh nhau, nối bằng đường RS485 giả lập.
 - Muốn nhúng một kit vào trang khác: nạp `ak-kit.js` và `kit-ui.js` rồi gọi `AkKitUI.create(phần_tử)`.
 
 Dựng lại (cần [Emscripten SDK](https://emscripten.org)):

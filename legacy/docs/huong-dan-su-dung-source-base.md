@@ -32,7 +32,7 @@ STM32L151CBT6 · PlatformIO
 3. Lấy source base **theo tag**, đừng copy thư mục tay:
 
 ```bash
-git clone --depth 1 --branch v1.3.0 https://github.com/hohoanganh/ak-base-kit-pio.git my-project-fw
+git clone --depth 1 --branch v1.3.0 https://github.com/hohoanganh/ak-mcu-base.git my-project-fw
 cd my-project-fw
 rm -rf .git && git init
 ```

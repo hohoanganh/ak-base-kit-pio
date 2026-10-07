@@ -113,7 +113,7 @@ def main(argv=None):
     ver = base_version()
     with open(os.path.join(dest, "BASE_VERSION"), "w", encoding="utf-8", newline="\n") as f:
         f.write("base: ak-mcu-base %s\n" % ver)
-        f.write("source: https://github.com/hohoanganh/ak-base-kit-pio \n")
+        f.write("source: https://github.com/hohoanganh/ak-mcu-base \n")
         f.write("exported: %s\n" % time.strftime("%Y-%m-%d"))
         if a.board:
             f.write("board name: %s\n" % a.board)

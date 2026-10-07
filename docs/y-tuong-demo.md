@@ -28,7 +28,7 @@ Cỡ việc: S = vài giờ, M = một hai ngày, L = nhiều ngày.
 | Truyền màn hình về máy tính (mục 9) | `ui dump` / `ui stream` + `tools/ak_screen.py` (chụp, quay GIF, cửa sổ trực tiếp có phím bấm) |
 | Pong qua RS485 (mục 10) | Đã thử với máy tính đóng vai kit thứ hai (`tools/pong_peer.py`). Chưa thử hai kit thật |
 | Máy hiện sóng mini (mục 11) | Màn hình Scope: số liệu từ lệnh `plot` hoặc thanh ghi Modbus 16; `tools/ak_plot.py` |
-| Chạy trên trình duyệt (mục 12) | <https://hohoanganh.github.io/ak-base-kit-pio/play/>: cả firmware biên dịch sang WebAssembly, `port/web/` |
+| Chạy trên trình duyệt (mục 12) | <https://hohoanganh.github.io/ak-mcu-base/play/>: cả firmware biên dịch sang WebAssembly, `port/web/` |
 | Máy hát RTTTL (mục 3) | 6 bài nằm trong flash của chip, một kênh. Chưa lưu bài trong flash SPI, chưa thử hợp âm rải |
 
 Tham khảo cách làm: trình giả lập [Ardens](https://github.com/retrom-project/Ardens) và
