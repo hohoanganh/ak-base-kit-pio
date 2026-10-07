@@ -3,6 +3,9 @@
 #if defined(APP_KIT_DEMO)
 #include "ui.h"
 #endif
+#if defined(APP_REMOTE)
+#include "remote.h"
+#endif
 
 task_t app_task_table[] = {
 	/*************************************************************************/
@@ -21,6 +24,10 @@ task_t app_task_table[] = {
 	/* below the console and the update task: a frame may take 20 ms */
 	{TASK_UI_ID,			TASK_PRI_LEVEL_2,		task_ui			},
 #endif
+#if defined(APP_REMOTE)
+	/* above the console: a packet every 8 ms must not wait for a shell command */
+	{TASK_REMOTE_ID,		TASK_PRI_LEVEL_5,		task_remote		},
+#endif
 
 	/*************************************************************************/
 	/* END OF TABLE */
@@ -37,6 +44,9 @@ task_polling_t app_task_polling_table[] = {
 #endif
 #if defined(APP_KIT_DEMO)
 	{TASK_POLL_BUTTONS_ID,	AK_ENABLE,		task_poll_buttons	},
+#endif
+#if defined(APP_REMOTE)
+	{TASK_POLL_REMOTE_ID,	AK_ENABLE,		task_poll_remote	},
 #endif
 	{AK_TASK_POLLING_EOT_ID,AK_DISABLE,		(pf_task_polling)0	},
 };

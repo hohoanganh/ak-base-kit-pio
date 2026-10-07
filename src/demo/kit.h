@@ -34,6 +34,11 @@ extern uint8_t kit_init(void);
  * Returns 0 if the display did not acknowledge. */
 extern uint8_t kit_lcd_write_page(uint8_t page, const uint8_t* data);
 
+/* Does address a acknowledge? bus 0 = display pins, 1 = display pins swapped,
+ * 2 = I2C1 header, 3 = I2C1 swapped (stm32l151 port only: a diagnosis for a
+ * board whose display stays dark). */
+extern uint8_t kit_bus_probe(uint8_t bus, uint8_t a);
+
 /* Buttons held down right now (KIT_BTN_* mask, not debounced). */
 extern uint8_t kit_buttons(void);
 

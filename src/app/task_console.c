@@ -202,6 +202,9 @@ static void cmd_loader(const char* args) {
 #if defined(APP_RF_TEST)
 extern void cmd_rf(const char* args);		/* port/stm32l151/rf_test.c */
 #endif
+#if defined(APP_REMOTE)
+extern void cmd_rc(const char* args);		/* remote/task_remote.c */
+#endif
 
 static const shell_cmd_t shell_cmds[] = {
 	{ "help",	"list commands",				cmd_help	},
@@ -226,6 +229,9 @@ static const shell_cmd_t shell_cmds[] = {
 #endif
 #if defined(APP_RF_TEST)
 	{ "rf",		"nRF24 listen: rf | rf <ch> <rate> [crc]",	cmd_rf	},
+#endif
+#if defined(APP_REMOTE)
+	{ "rc",		"remote: rc | rc 1|2|3|h | rc go <n> | rc dump | rc lcd",	cmd_rc	},
 #endif
 	{ "reboot",	"software reset",				cmd_reboot	},
 	{ "loader",	"reset into bootloader loader",	cmd_loader	},

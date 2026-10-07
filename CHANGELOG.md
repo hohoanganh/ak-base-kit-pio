@@ -14,6 +14,11 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
   bằng nRF24L01+. Hai lệnh sau tách riêng vì bộ đệm bắt SPI chiếm 5,6 KB RAM. Cách dùng: `docs/demo-kit.md`.
 - Ba công cụ này đã được dùng trên kit thật để dò một giao thức radio; trong repo chúng mới qua biên dịch (cả bản web)
   và bộ test hiện có, chưa có test riêng. `rf` viết cho kit có CSN của mô-đun ở PB9; trên kit 3.0 (CSN ở PA4) chưa thử.
+- **Bản build `remote`** (`src/remote`): AK Base Kit 2.1 (chip 64K, nRF24L01+ và OLED SSD1306 trên bo) làm tay điều
+  khiển thử nghiệm cho thiết bị đã dò bằng `rf`: menu trên OLED và ba nút chọn nội dung gói, nRF24 phát liên tục. Lệnh
+  shell `rc`. Đã chạy trên kit 2.1 thật (màn hình lên, thiết bị ghép cặp và đọc đúng gói); ba nút mới bấm qua `rc`.
+- `kit.c`: thêm tuỳ chọn build `KIT_LCD_SSD1306` (bật bơm điện áp cho OLED 0,96") và `KIT_LCD_COL_OFFSET` (SH1106);
+  mặc định không đổi gì với kit 3.0. Thêm `kit_bus_probe()` để dò bus màn hình và bus I2C1.
 
 ## Cấu trúc repo đổi — 07/10/2026
 

@@ -35,6 +35,9 @@ static const i2c_bus_t bus_lcd = { GPIOB, GPIO_Pin_13, GPIO_Pin_12 };
 static const i2c_bus_t bus_rtc = { GPIOB, GPIO_Pin_6, GPIO_Pin_7 };
 
 #define LCD_ADDR		(0x3C)
+#ifndef KIT_LCD_COL_OFFSET
+#define KIT_LCD_COL_OFFSET	(0)
+#endif
 #define RTC_ADDR		(0x51)
 #define SHT_ADDR		(0x44)
 
@@ -129,7 +132,15 @@ static const uint8_t lcd_init_seq[] = {
 	0xC8,			/* scan direction */
 	0xDA, 0x12,		/* COM pins */
 	0x81, 0x6F,		/* contrast */
+#if defined(KIT_LCD_SSD1306)
+	/* 0.96" SSD1306 module (AK Base Kit 2.1): the panel voltage comes from
+	 * the charge pump of the chip, which is off after reset - without this
+	 * the display answers on the bus and stays dark */
+	0xD9, 0xF1,		/* pre-charge, for the internal pump */
+	0x8D, 0x14,		/* charge pump on */
+#else
 	0xD9, 0xD3,		/* pre-charge */
+#endif
 	0xDB, 0x20,		/* VCOMH */
 	0x2E,			/* scroll off */
 	0xA4,			/* show RAM */
@@ -150,8 +161,25 @@ static uint8_t lcd_cmds(const uint8_t* cmd, uint8_t n) {
 	return ok;
 }
 
+/* does address a acknowledge? bus 0 = display (SCL PB13, SDA PB12), 1 = the
+ * same pins swapped, 2 = I2C1 header (SCL PB6, SDA PB7), 3 = that swapped */
+uint8_t kit_bus_probe(uint8_t bus, uint8_t a) {
+	static const i2c_bus_t lcd_swapped = { GPIOB, GPIO_Pin_12, GPIO_Pin_13 };
+	static const i2c_bus_t rtc_swapped = { GPIOB, GPIO_Pin_7, GPIO_Pin_6 };
+	const i2c_bus_t* b = bus == 0 ? &bus_lcd : bus == 1 ? &lcd_swapped : bus == 2 ? &bus_rtc : &rtc_swapped;
+	uint8_t ok;
+
+	i2c_start(b);
+	ok = i2c_tx(b, (uint8_t)(a << 1));
+	i2c_stop(b);
+	return ok;
+}
+
 uint8_t kit_lcd_write_page(uint8_t page, const uint8_t* data) {
-	uint8_t pos[3] = { (uint8_t)(0xB0 | (page & 7)), 0x00, 0x10 };	/* page, column 0 */
+	/* page, first column. KIT_LCD_COL_OFFSET = 2 for an SH1106 (132 columns
+	 * of RAM, the glass shows 2..129); 0 for an SSD1306 / SSD1309 */
+	uint8_t pos[3] = { (uint8_t)(0xB0 | (page & 7)), (uint8_t)(KIT_LCD_COL_OFFSET & 0x0F),
+					   (uint8_t)(0x10 | (KIT_LCD_COL_OFFSET >> 4)) };
 	uint8_t ok;
 
 	if (!lcd_cmds(pos, sizeof(pos))) {

@@ -25,6 +25,9 @@ enum {
 #if defined(APP_KIT_DEMO)
 	TASK_UI_ID,				/* demo/: display, buttons, games */
 #endif
+#if defined(APP_REMOTE)
+	TASK_REMOTE_ID,			/* remote/: bench remote for a toy drone */
+#endif
 
 	/* EOT task ID */
 	AK_TASK_EOT_ID,
@@ -35,6 +38,9 @@ enum {
 	TASK_POLL_MODBUS_ID,
 #if defined(APP_KIT_DEMO)
 	TASK_POLL_BUTTONS_ID,
+#endif
+#if defined(APP_REMOTE)
+	TASK_POLL_REMOTE_ID,
 #endif
 
 	/* EOT polling task ID */

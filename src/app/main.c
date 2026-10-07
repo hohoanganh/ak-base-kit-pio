@@ -21,6 +21,9 @@
 #if defined(APP_KIT_DEMO)
 #include "ui.h"
 #endif
+#if defined(APP_REMOTE)
+#include "remote.h"
+#endif
 
 static fw_version_t running_version = { APP_VER_MAJOR, APP_VER_MINOR, APP_VER_PATCH, 0, APP_VER_BUILD };
 
@@ -63,6 +66,9 @@ void app_init(void) {
 	task_post_pure_msg(TASK_CONSOLE_ID, CONSOLE_SIG_INIT);
 #if defined(APP_KIT_DEMO)
 	task_post_pure_msg(TASK_UI_ID, UI_SIG_INIT);
+#endif
+#if defined(APP_REMOTE)
+	task_post_pure_msg(TASK_REMOTE_ID, REMOTE_SIG_INIT);
 #endif
 }
 

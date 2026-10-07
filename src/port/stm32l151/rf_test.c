@@ -525,4 +525,64 @@ void cmd_rf(const char* args) {
 	xprintf("%d packet(s)\n", got);
 }
 
+/*----------------------------------------------------------------------------
+ * the same frames for remote/task_remote.c, one packet per call
+ *--------------------------------------------------------------------------*/
+#if defined(APP_REMOTE)
+static void rf_own_addr(uint8_t* addr) {
+	for (uint8_t i = 0; i < 4; i++) {
+		addr[i] = rf_tx_id[i];
+	}
+	addr[4] = 0xCC;
+}
+
+uint8_t rf_remote_setup(uint8_t mode) {
+	uint8_t addr[5];
+
+	rf_pins();
+	if (!(SPI1->CR1 & SPI_CR1_SPE)) {
+		return 0;
+	}
+	rf_own_addr(addr);
+	rf_tx_setup(mode ? addr : rf_bind_addr);
+	rf_wreg(0x05, 0x2A);
+	return (uint8_t)(rf_rreg(0x05) == 0x2A);
+}
+
+void rf_remote_bind(uint8_t mode) {
+	uint8_t addr[5];
+	uint8_t msg[10];
+
+	rf_own_addr(addr);
+	msg[0] = 0xB0;
+	for (uint8_t i = 0; i < 4; i++) {
+		msg[1 + i] = rf_tx_id[i];
+	}
+	for (uint8_t i = 0; i < 5; i++) {
+		msg[5 + i] = rf_hop[i];
+	}
+	rf_send(RF_BIND_CH, rf_build(mode ? addr : rf_bind_addr, msg, 10));
+}
+
+void rf_remote_ctrl(uint8_t* msg, uint8_t hop) {
+	uint8_t addr[5];
+
+	rf_own_addr(addr);
+	/* The original remote sets bit 3 of byte 0 in every other packet, and
+	 * with it the receiver only ever reads the packets that have the bit.
+	 * Which packet of a pair the receiver catches from THIS transmitter
+	 * depends on timing (its hop order and timing are not the original's,
+	 * those have not been measured), so the bit is set in all of them: the
+	 * receiver then reads what it reads from the original. What the bit
+	 * means is not known. */
+	msg[0] |= 0x08;
+	rf_send(rf_hop[hop % 5], rf_build(addr, msg, 13));
+}
+
+void rf_remote_off(void) {
+	rf_ce(0);
+	rf_wreg(0x00, 0x00);
+}
+#endif /* APP_REMOTE */
+
 #endif /* APP_RF_TEST */

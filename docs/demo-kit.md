@@ -266,6 +266,35 @@ HS6200 cho một thiết bị cụ thể đã dò; chúng là ví dụ về các
 
 Mỗi lần nghe dài 1,5 giây rồi trả về, vì một handler chạy quá 3 giây bị `task_system` coi là treo.
 
+### Bản build `remote`: kit 2.1 làm tay điều khiển thử nghiệm
+
+`pio run -e remote` dựng một bản riêng cho **AK Base Kit 2.1** (STM32L151C8 64K, nRF24L01+ và OLED 0,96" SSD1306 trên
+bo): menu trên OLED và ba nút chọn nội dung gói điều khiển, nRF24 phát nó liên tục, 8 ms một gói. Đây là dụng cụ thử
+từng lệnh cho thiết bị đã dò ở mục `rf` (một drone đồ chơi 2,4 GHz), không phải tay lái: mỗi mục menu đổi một trường
+hoặc một bit của gói 13 byte, để nhìn thiết bị phản ứng với từng thứ một. Mã ở `src/remote/` và phần phát trong
+`src/port/stm32l151/rf_test.c`.
+
+| Nút | Việc |
+|---|---|
+| 1 | Mục kế tiếp |
+| 2 | Mục trước |
+| 3, bấm | Thực hiện mục đang chọn (bật/tắt, cộng, đổi) |
+| 3, giữ 0,7 s | Ga về `00` ngay, bíp dài |
+
+Mục đầu là `LINK`: OFF → phát gói ghép cặp 0,4 s rồi gói điều khiển liên tục; bấm lần nữa thì ngừng phát. Radio luôn
+tắt lúc bật nguồn. Lệnh shell `rc` bấm nút và xem trạng thái từ máy tính: `rc`, `rc 1|2|3|h`, `rc go <n>`, `rc dump`
+(màn hình dạng chữ), `rc lcd` (dò bus màn hình khi màn hình tối).
+
+Ba điều riêng của bản này:
+
+- **Không có màn hình demo.** Chip 64K chỉ còn 52K cho app sau bootloader; bản này dùng 29K.
+- **OLED SSD1306 cần bật bơm điện áp** (`-DKIT_LCD_SSD1306`), khác SSD1309 của kit 3.0. Thiếu thì màn hình vẫn trả
+  lời trên bus nhưng tối. Màn hình SH1106 thì thêm `-DKIT_LCD_COL_OFFSET=2`.
+- **`LINK` phải OFF khi nạp firmware qua console**: nRF24 và flash SPI (vùng chờ cài) dùng chung SPI1.
+
+Đã chạy trên kit 2.1 thật: màn hình lên, thiết bị nhận ghép cặp và đọc đúng gói. Ba nút mới được bấm qua lệnh `rc`,
+chưa bấm tay. Mã và bảng kênh của bộ phát đang ghi cứng theo một bộ tay điều khiển cụ thể.
+
 ## Điều khiển qua shell
 
 Không cần đứng cạnh kit vẫn thử được:
