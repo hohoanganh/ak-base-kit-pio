@@ -84,7 +84,7 @@ và [tài liệu demo](ak-mcu-base/docs/demo-kit.md).
 
 | | [`sources/`](sources/) — base cũ | [`ak-mcu-base/`](ak-mcu-base/README.md) — base cho dự án mới |
 |---|---|---|
-| Phiên bản | **v1.3.0**, bootloader 0.0.3 | **v1.3.6**, bootloader 1.2.0 |
+| Phiên bản | **v1.3.0**, bootloader 0.0.3 | **v1.3.7**, bootloader 1.2.1 |
 | Dùng khi | Dự án đang chạy trên nó; cần driver có sẵn (EEPROM ngoài, nRF24, lớp Arduino…) | Dự án mới: OTA an toàn khi mất điện, có unit test, dễ chuyển sang chip khác |
 | Mức hoàn thiện | Đầy đủ, đã dùng cho sản phẩm | Kernel, bootloader, OTA, Modbus RTU, nhật ký sự cố, demo trên kit; driver khác tự viết thêm |
 | Build | PlatformIO | PlatformIO hoặc CMake |

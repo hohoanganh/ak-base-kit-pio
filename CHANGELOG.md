@@ -7,14 +7,30 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](docs/tinh-nang-moi-v1.2-v1.3.md).
 
-## ak-mcu-base — sau v1.3.6, chưa phát hành
+## ak-mcu-base v1.3.7 — 07/10/2026
 
-- **LED nhịp tim đúng pha với bo** (`port/stm32l151`): theo schematic kit 3.0, LED đỏ ở PB8 sáng khi chân ở mức thấp.
+App **1.3.7**, bootloader **1.2.1**. Bản đầu tiên có firmware sửa theo schematic của kit 3.0, và sửa hai lỗi lộ ra
+khi chạy trên kit thật.
+
+- **LED nhịp tim đúng pha với bo** (`port/stm32l151`): LED đỏ ở PB8 nối giữa 3V3 và chân, sáng khi chân ở mức thấp.
   `hal_led_set(1)` giờ kéo chân xuống thấp; thêm `PORT_LED_ACTIVE_LOW` (mặc định 1, đặt 0 cho bo có LED sáng mức cao).
-  Chân được đặt về mức "tắt" trước khi thành ngõ ra. Áp dụng cho cả app và bootloader.
+  Chân được đặt về mức "tắt" trước khi thành ngõ ra.
+- **Bootloader 1.2.1**: cùng bản sửa LED. Bootloader 1.2.0 bật LED suốt khoảng 73 ms nó kiểm ảnh, nhìn thấy như một
+  cái chớp lúc khởi động; muốn hết chớp phải nạp cả bootloader mới (ST-Link, `0x08000000`). Ngoài LED, 1.2.1 không
+  khác 1.2.0: app 1.3.7 vẫn chạy với bootloader 1.2.0.
 - **Chân CSN của mô-đun SPI ở J6 là PA4**: `PORT_KIT_NRF24_CSN` (mặc định tắt) giờ giữ PA4 ở mức cao thay cho PB9;
   kit đời trước ghi đè ba macro `PORT_NRF_CSN_*`.
-- Chưa thử trên kit: mới kiểm bằng biên dịch và CI.
+- **Sửa `ui dump` trên màn hình đổi liên tục** (`demo/`): ở màn hình System, trang cuối không bao giờ được gửi và bản
+  chụp một lần không tự tắt, nên `tools/ak_screen.py shot` báo "no screen received". Các trang giờ chia lượt xoay vòng
+  (`ui_stream_batch()`), một lần dump gửi mỗi trang đúng một lần rồi dừng.
+- **Sửa bộ đọc khung của `tools/ak_fw.py`**: một byte `0xA5` lạc trong log của board đứng ngay trước khung trả lời làm
+  khung đó không được đọc và lệnh hết giờ. Test mới `tests/test_ak_fw.py` (12 phép kiểm), chạy trong `ctest`.
+- Sơ đồ cổng nối: J5, J8, J11 (Grove 2,0 mm) là jack tuỳ chọn, bo thương mại không hàn; J9 chân 4, 6, 9 là GND
+  (đã xác nhận trên kit).
+- **Đã chạy trên AK Base Kit 3.0 (07/10/2026)**, với mã của bản này build trước khi tăng số phiên bản: LED đúng pha và
+  không chớp lúc khởi động, `ui open` mở đủ 16 màn hình, `ak_screen.py shot` chụp đủ 16 màn hình. Các file đính kèm
+  của bản phát hành (mang số 1.3.7 / 1.2.1) chưa được nạp lại lên kit.
+- Chưa thử: tuỳ chọn giữ CSN ở PA4 với mô-đun nRF24 cắm thật.
 
 ## ak-mcu-base v1.3.6 — 06/10/2026
 

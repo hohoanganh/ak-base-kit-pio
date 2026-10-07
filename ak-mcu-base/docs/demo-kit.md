@@ -277,7 +277,7 @@ Sơ đồ cổng nối sinh bởi `tools/connectors_svg.py` theo trang Connector
 
 ![Cây nguồn của bo](../../docs/kit/power-tree.svg)
 
-Hai điều schematic cho thấy, firmware đã sửa theo từ sau v1.3.6:
+Hai điều schematic cho thấy, firmware đã sửa theo từ v1.3.7:
 
 - **LED đỏ (PB8) sáng khi chân ở mức thấp** (net `LED_DBG_N`). `hal_led_set(1)` giờ kéo chân xuống thấp
   (`PORT_LED_ACTIVE_LOW`, mặc định 1); trước đó "bật" trong firmware là tắt trên bo.
