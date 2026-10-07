@@ -23,6 +23,9 @@ firmware, không tăng số phiên bản.
 - SPL và CMSIS mà base chính dùng nay nằm trong `third_party/stm32l1/` (trước mượn từ `sources/`), nên base chính không còn
   phụ thuộc thư mục nào của base cũ. `tools/new_project.py` chép thẳng từ gốc repo.
 - CI chạy cho mọi thay đổi ngoài `legacy/` và tài liệu.
+- Bản build từ cấu trúc mới (bootloader 1.2.1, demo 1.3.7) đã nạp và chạy trên AK Base Kit 3.0: OTA qua UART và qua
+  RS485, Modbus, đủ 16 màn hình. Bootloader giống từng byte với file của bản v1.3.7; ba ảnh app cùng kích thước nhưng
+  khác thứ tự liên kết.
 - Đường dẫn trong các mục bên dưới là đường dẫn **của thời điểm đó**. Các tag cũ giữ nguyên cấu trúc cũ; link tới
   `…/blob/main/ak-mcu-base/…` hoặc `…/blob/main/sources/…` từ bên ngoài sẽ không còn mở được, dùng link theo tag.
 

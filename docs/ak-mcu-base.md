@@ -216,6 +216,7 @@ log queue debug của bản gốc.
 | Build bằng PlatformIO, ảnh nạp và OTA trên board | ✅ |
 | Nhật ký sự cố trên board: HardFault, FATAL, task bị bỏ đói, handler treo đều ghi đúng loại và đúng task | ✅ |
 | **AK Base Kit 3.0, 07/10/2026**, bootloader và demo của v1.3.7 (build từ `main` trước khi gắn số phiên bản): LED PB8 đúng pha (sáng khi chân ở mức thấp) và không còn chớp lúc khởi động — cần cả bootloader mới, vì bootloader cũ bật LED trong khoảng 73 ms nó kiểm ảnh; `ui open` mở đủ 16 màn hình; `ak_screen.py shot` chụp đủ 16 màn hình sau khi sửa lỗi `ui dump` ở màn hình System | ✅ |
+| **Bản build từ cấu trúc `src/`** (commit `bec2546`, 07/10/2026) trên AK Base Kit 3.0: bootloader 1.2.1 (ST-Link) và demo 1.3.7; OTA qua UART (7,7 s) và qua RS485 Modbus (50,9 KB trong 64,8 s); đọc và ghi thanh ghi Modbus; `ui open` và `ak_screen.py shot` đủ 16 màn hình; nhật ký sự cố trống | ✅ |
 | Tuỳ chọn giữ CSN của J6 (PA4, `kit_nrf24 = 1`) với mô-đun nRF24 cắm thật | ❌ chưa |
 
 Khi thử trên board, nên kiểm theo thứ tự: log boot qua UART → `info` → OTA một ảnh →
