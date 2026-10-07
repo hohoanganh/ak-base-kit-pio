@@ -50,7 +50,7 @@ CONNECTORS = [
 NOTES = [
     "USB Type-C (J1): cấp nguồn 5V và nối console UART1 với máy tính qua CH340E. Theo schematic, cầu hàn SB1, SB2 mặc định nối "
     "TX1, RX1 vào CH340E; đổi sang vị trí kia thì console ra J12 và J14.",
-    "Ba cổng Grove 2,0 mm (J5 UART3, J8 I2C1, J11 RS485) mang cùng tín hiệu với J4, J7, J10; schematic bản PVT ghi chúng không lắp.",
+    "Ba cổng Grove 2,0 mm (J5 UART3, J8 I2C1, J11 RS485) mang cùng tín hiệu với J4, J7, J10; tuỳ chọn, bo thương mại không hàn.",
     "Flash SPI trên bo dùng chung SCK, MOSI, MISO với J6: mô-đun cắm vào J6 phải có chân chọn chip riêng (CSN ở PA4).",
 ]
 
