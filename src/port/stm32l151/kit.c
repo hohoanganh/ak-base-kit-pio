@@ -304,6 +304,271 @@ uint8_t kit_sht_read(int16_t* t10, uint16_t* rh10) {
 }
 
 /*----------------------------------------------------------------------------
+ * raw access to the I2C1 header (SCL PB6, SDA PB7), for the "i2c" shell command
+ *--------------------------------------------------------------------------*/
+uint8_t kit_i2c_probe(uint8_t addr) {
+	uint8_t ok;
+
+	i2c_start(&bus_rtc);
+	ok = i2c_tx(&bus_rtc, (uint8_t)(addr << 1));
+	i2c_stop(&bus_rtc);
+	return ok;
+}
+
+uint8_t kit_i2c_read(uint8_t addr, uint8_t reg, uint8_t* buf, uint8_t len) {
+	uint8_t ok;
+
+	i2c_start(&bus_rtc);
+	ok = i2c_tx(&bus_rtc, (uint8_t)(addr << 1));
+	ok &= i2c_tx(&bus_rtc, reg);
+	i2c_start(&bus_rtc);
+	ok &= i2c_tx(&bus_rtc, (uint8_t)((addr << 1) | 1));
+	if (!ok) {
+		i2c_stop(&bus_rtc);
+		return 0;
+	}
+	for (uint8_t i = 0; i < len; i++) {
+		buf[i] = i2c_rx(&bus_rtc, (uint8_t)(i + 1 < len));
+	}
+	i2c_stop(&bus_rtc);
+	return 1;
+}
+
+/* releases both lines and samples them n times: how often each one was high
+ * and how many times it changed. A poor man's logic probe. */
+void kit_i2c_watch(uint32_t n, uint32_t* scl_high, uint32_t* sda_high, uint32_t* scl_edges, uint32_t* sda_edges) {
+	uint32_t last, now;
+
+	sda_hi(&bus_rtc);
+	scl_hi(&bus_rtc);
+	*scl_high = *sda_high = *scl_edges = *sda_edges = 0;
+	last = bus_rtc.port->IDR;
+	for (uint32_t i = 0; i < n; i++) {
+		now = bus_rtc.port->IDR;
+		if (now & bus_rtc.scl) {
+			(*scl_high)++;
+		}
+		if (now & bus_rtc.sda) {
+			(*sda_high)++;
+		}
+		if ((now ^ last) & bus_rtc.scl) {
+			(*scl_edges)++;
+		}
+		if ((now ^ last) & bus_rtc.sda) {
+			(*sda_edges)++;
+		}
+		last = now;
+	}
+}
+
+#if defined(APP_KIT_SPI_SNIFF)
+/*----------------------------------------------------------------------------
+ * SPI sniffer: SPI1 as a receive-only slave on the J6 pins (NSS PA4, SCK PA5,
+ * MOSI PA7); DMA1 channel 2 moves every byte into sniff_buf. A falling edge of
+ * NSS (EXTI4) records the byte offset and a time stamp = start of a frame.
+ * MISO stays a plain input: the kit never drives a line of the board under
+ * test. The NOR driver gets SPI1 back in kit_spi_sniff_stop().
+ *--------------------------------------------------------------------------*/
+static uint8_t sniff_buf[KIT_SPI_SNIFF_BUF];
+static uint16_t sniff_off[KIT_SPI_SNIFF_FRAMES];
+static uint16_t sniff_t[KIT_SPI_SNIFF_FRAMES];	/* DWT cycle count >> 8 */
+static volatile uint16_t sniff_nframes;
+static uint16_t sniff_bytes;			/* latched at stop */
+static uint8_t sniff_on;
+
+/* bytes in the buffer. After a rewind CNDTR is reloaded with what is left of
+ * the buffer from the new write position, so this stays true. */
+static uint16_t sniff_count(void) {
+	return (uint16_t)(KIT_SPI_SNIFF_BUF - DMA1_Channel2->CNDTR);
+}
+
+static uint16_t sniff_trig;				/* first byte that starts the capture, > 0xFF = at once */
+static uint8_t sniff_armed;				/* 1 = still waiting for sniff_trig */
+
+/* Falling edge of NSS only, and as short as it gets: frames follow each other
+ * within 15 us on a busy bus, so nothing here may take long (an earlier
+ * version compared frames in this handler and lost the frame boundaries).
+ * Until a frame starting with sniff_trig has been seen, each new frame
+ * overwrites the previous one. */
+void exti4_irq_handler(void) {
+	uint16_t n = sniff_nframes;
+	uint16_t cnt = sniff_count();
+
+	EXTI->PR = EXTI_PR_PR4;
+	if (sniff_armed) {
+		if (n && cnt > sniff_off[n - 1] && sniff_buf[sniff_off[n - 1]] == (uint8_t)sniff_trig) {
+			sniff_armed = 0;
+		}
+		else {
+			DMA1_Channel2->CCR &= (uint32_t)~DMA_CCR2_EN;
+			DMA1_Channel2->CMAR = (uint32_t)sniff_buf;
+			DMA1_Channel2->CNDTR = KIT_SPI_SNIFF_BUF;
+			DMA1_Channel2->CCR |= DMA_CCR2_EN;
+			n = 0;
+			cnt = 0;
+		}
+	}
+	if (n < KIT_SPI_SNIFF_FRAMES) {
+		sniff_off[n] = cnt;
+		sniff_t[n] = (uint16_t)(DWT->CYCCNT >> 8);		/* 8 us units at 32 MHz */
+		sniff_nframes = (uint16_t)(n + 1);
+	}
+}
+
+void kit_spi_sniff_start(uint8_t mode, uint16_t trig) {
+	GPIO_InitTypeDef gpio;
+	SPI_InitTypeDef spi;
+
+	if (sniff_on) {
+		kit_spi_sniff_stop();
+	}
+	/* DMA, EXTI and SYSCFG are driven by register here: their SPL sources are
+	 * not in the build (tools/pio_mcu_base.py, port.cmake) */
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1 | RCC_APB2Periph_SYSCFG, ENABLE);
+
+	SPI_Cmd(SPI1, DISABLE);
+	SPI_I2S_DeInit(SPI1);
+
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource4, GPIO_AF_SPI1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource5, GPIO_AF_SPI1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource7, GPIO_AF_SPI1);
+	GPIO_StructInit(&gpio);
+	gpio.GPIO_Mode = GPIO_Mode_AF;
+	gpio.GPIO_OType = GPIO_OType_PP;
+	gpio.GPIO_Speed = GPIO_Speed_40MHz;
+	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;		/* the 2.8 V board drives these; no pull into its rail */
+	gpio.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_7;
+	GPIO_Init(GPIOA, &gpio);
+	gpio.GPIO_PuPd = GPIO_PuPd_UP;			/* unplugged = deselected */
+	gpio.GPIO_Pin = GPIO_Pin_4;
+	GPIO_Init(GPIOA, &gpio);
+	gpio.GPIO_Mode = GPIO_Mode_IN;
+	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	gpio.GPIO_Pin = GPIO_Pin_6;
+	GPIO_Init(GPIOA, &gpio);
+
+	/* DMA1 channel 2 = SPI1_RX: peripheral -> memory, bytes, memory
+	 * increment, one shot, highest priority */
+	DMA1_Channel2->CCR = 0;
+	DMA1->IFCR = DMA_IFCR_CGIF2;
+	DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
+	DMA1_Channel2->CMAR = (uint32_t)sniff_buf;
+	DMA1_Channel2->CNDTR = KIT_SPI_SNIFF_BUF;
+	DMA1_Channel2->CCR = DMA_CCR2_MINC | DMA_CCR2_PL | DMA_CCR2_EN;
+
+	SPI_StructInit(&spi);
+	spi.SPI_Direction = SPI_Direction_2Lines_RxOnly;
+	spi.SPI_Mode = SPI_Mode_Slave;
+	spi.SPI_DataSize = SPI_DataSize_8b;
+	spi.SPI_CPOL = (mode & 2) ? SPI_CPOL_High : SPI_CPOL_Low;
+	spi.SPI_CPHA = (mode & 1) ? SPI_CPHA_2Edge : SPI_CPHA_1Edge;
+	spi.SPI_NSS = SPI_NSS_Hard;
+	spi.SPI_FirstBit = SPI_FirstBit_MSB;
+	SPI_Init(SPI1, &spi);
+	SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Rx, ENABLE);
+
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	DWT->CYCCNT = 0;
+	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+	sniff_nframes = 0;
+	sniff_bytes = 0;
+	sniff_trig = trig;
+	sniff_armed = (uint8_t)(trig <= 0xFF);
+
+	/* EXTI4 <- PA4, falling edge. Highest priority: a frame mark that comes
+	 * late lands on the wrong byte. */
+	SYSCFG->EXTICR[1] &= (uint32_t)~SYSCFG_EXTICR2_EXTI4;		/* PA4 */
+	EXTI->RTSR &= (uint32_t)~EXTI_RTSR_TR4;
+	EXTI->FTSR |= EXTI_FTSR_TR4;
+	EXTI->PR = EXTI_PR_PR4;
+	EXTI->IMR |= EXTI_IMR_MR4;
+	NVIC_SetPriority(EXTI4_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
+	NVIC_EnableIRQ(EXTI4_IRQn);
+
+	sniff_on = 1;
+	SPI_Cmd(SPI1, ENABLE);
+}
+
+void kit_spi_sniff_stop(void) {
+	if (!sniff_on) {
+		return;
+	}
+	sniff_bytes = sniff_count();
+	NVIC_DisableIRQ(EXTI4_IRQn);
+	EXTI->IMR &= (uint32_t)~EXTI_IMR_MR4;
+	EXTI->RTSR &= (uint32_t)~EXTI_RTSR_TR4;
+	EXTI->FTSR &= (uint32_t)~EXTI_FTSR_TR4;
+	SPI_Cmd(SPI1, DISABLE);
+	SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Rx, DISABLE);
+	DMA1_Channel2->CCR &= (uint32_t)~DMA_CCR2_EN;
+	sniff_on = 0;
+	spi_nor_init();						/* SPI1 back to the flash */
+}
+
+/* PA4, PA5, PA7 as plain inputs, sampled n times: how often each was high and
+ * how many times it changed. Tells which wire is SCK (most edges), CSN (fewest)
+ * and DATA before the real capture. Leaves the pins as inputs: call
+ * kit_spi_sniff_start() or kit_spi_sniff_stop() afterwards. */
+void kit_spi_watch(uint32_t n, uint8_t pull, uint32_t high[3], uint32_t edges[3]) {
+	static const uint16_t pin[3] = { GPIO_Pin_4, GPIO_Pin_5, GPIO_Pin_7 };
+	GPIO_InitTypeDef gpio;
+	uint32_t last, now;
+
+	if (sniff_on) {
+		kit_spi_sniff_stop();
+	}
+	SPI_Cmd(SPI1, DISABLE);					/* the NOR driver is re-armed by kit_spi_sniff_stop() */
+	GPIO_StructInit(&gpio);
+	gpio.GPIO_Mode = GPIO_Mode_IN;
+	/* a weak pull tells a wire that is driven from one that floats */
+	gpio.GPIO_PuPd = pull == 1 ? GPIO_PuPd_UP : pull == 2 ? GPIO_PuPd_DOWN : GPIO_PuPd_NOPULL;
+	gpio.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_7;
+	GPIO_Init(GPIOA, &gpio);
+	for (uint8_t k = 0; k < 3; k++) {
+		high[k] = edges[k] = 0;
+	}
+	last = GPIOA->IDR;
+	for (uint32_t i = 0; i < n; i++) {
+		now = GPIOA->IDR;
+		for (uint8_t k = 0; k < 3; k++) {
+			if (now & pin[k]) {
+				high[k]++;
+			}
+			if ((now ^ last) & pin[k]) {
+				edges[k]++;
+			}
+		}
+		last = now;
+	}
+	sniff_on = 1;							/* so that stop() restores SPI1 for the flash */
+	kit_spi_sniff_stop();
+	sniff_bytes = 0;						/* nothing was captured, whatever the DMA counter says */
+}
+
+uint8_t kit_spi_sniff_status(uint16_t* bytes, uint16_t* frames) {
+	*bytes = sniff_on ? sniff_count() : sniff_bytes;
+	*frames = sniff_nframes;
+	return sniff_on;
+}
+
+uint8_t kit_spi_sniff_frame(uint16_t i, const uint8_t** data, uint16_t* len, uint32_t* dt_us) {
+	uint16_t n = sniff_nframes;
+	uint16_t end;
+
+	if (i >= n) {
+		return 0;
+	}
+	end = (uint16_t)(i + 1 < n ? sniff_off[i + 1] : (sniff_on ? sniff_count() : sniff_bytes));
+	*data = &sniff_buf[sniff_off[i]];
+	*len = (uint16_t)(end - sniff_off[i]);
+	/* 16 bit of cycles >> 8: wraps after 0.5 s, so a longer pause reads short */
+	*dt_us = i ? (uint32_t)(uint16_t)(sniff_t[i] - sniff_t[i - 1]) * 256UL / (SystemCoreClock / 1000000UL) : 0;
+	return 1;
+}
+#endif /* APP_KIT_SPI_SNIFF */
+
+/*----------------------------------------------------------------------------
  * media store: SPI NOR from 0 up to the OTA staging area. The port found the
  * chip at start-up (STAGING has a size only then).
  *--------------------------------------------------------------------------*/

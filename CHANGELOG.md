@@ -7,6 +7,14 @@ console lúc khởi động).
 Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 [docs/tinh-nang-moi-v1.2-v1.3.md](legacy/docs/tinh-nang-moi-v1.2-v1.3.md).
 
+## ak-mcu-base — sau v1.3.7, chưa phát hành
+
+- **Kit làm dụng cụ đo trên bàn** (`src/demo`, `src/port/stm32l151`): lệnh `i2c` quét và đọc cổng I2C1, có trong mọi bản
+  demo. Bản build mới `kit_tools` (demo cộng thêm) có lệnh `spi` bắt gói SPI trên các chân J6 và lệnh `rf` nghe / phát
+  bằng nRF24L01+. Hai lệnh sau tách riêng vì bộ đệm bắt SPI chiếm 5,6 KB RAM. Cách dùng: `docs/demo-kit.md`.
+- Ba công cụ này đã được dùng trên kit thật để dò một giao thức radio; trong repo chúng mới qua biên dịch (cả bản web)
+  và bộ test hiện có, chưa có test riêng. `rf` viết cho kit có CSN của mô-đun ở PB9; trên kit 3.0 (CSN ở PA4) chưa thử.
+
 ## Cấu trúc repo đổi — 07/10/2026
 
 `ak-mcu-base` thành base chính của repo, và **repo đổi tên từ `ak-base-kit-pio` thành `ak-mcu-base`**. Không đổi mã

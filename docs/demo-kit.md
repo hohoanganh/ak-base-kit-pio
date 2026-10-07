@@ -205,6 +205,67 @@ python tools/ak_video.py upload --port COMx clip.akv
 `spin_clip.py` dựng ảnh thành một tấm có bề dày quay quanh trục đứng: mặt trước trắng, cạnh bên tô dither để thấy chiều sâu
 trên màn hình 1 bit. Các tham số `--turn`, `--hold`, `--tilt`, `--thickness`, `--size` chỉnh tốc độ và dáng quay.
 
+## Kit làm dụng cụ đo trên bàn: I2C, SPI, nRF24
+
+Ba lệnh shell biến kit thành dụng cụ soi một mạch khác. Chúng sinh ra khi dò giao thức của một thiết bị không có tài
+liệu: hỏi xem trên bus có gì, nghe hai con chip nói gì với nhau, rồi nghe sóng.
+
+| Lệnh | Làm gì | Có trong |
+|---|---|---|
+| `i2c` | Quét cổng I2C1 (J7, J9), đọc thanh ghi | mọi bản demo |
+| `spi` | Bắt gói SPI trên các chân của J6 | `pio run -e kit_tools` |
+| `rf` | Nghe và phát bằng mô-đun nRF24L01+ cắm ở J6 | `pio run -e kit_tools` |
+
+Bản `kit_tools` là bản demo cộng hai công cụ sau. Chúng tách riêng vì bộ đệm bắt SPI chiếm 5,6 KB trong 16 KB RAM
+(bản demo dùng 7,6 KB, bản `kit_tools` 12,3 KB).
+
+### `i2c`: trên bus có gì
+
+```
+> i2c                    quét địa chỉ 0x08..0x77, in những địa chỉ có trả lời
+0x44 0x51
+2 device(s)
+> i2c 51 4 7             đọc 7 byte từ thanh ghi 0x04 của thiết bị 0x51 (số hex, tối đa 16 byte)
+0x51[0x04]: 12 34 08 07 03 10 26
+> i2c w                  thả hai dây rồi lấy mẫu: mỗi dây ở mức cao bao nhiêu phần trăm, đổi mức bao nhiêu lần
+```
+
+`i2c w` dùng khi quét không ra gì: dây nào nằm ở mức thấp là thiếu trở kéo lên hoặc bị giữ; có cạnh nghĩa là trên bus
+đang có một master khác.
+
+### `spi`: nghe hai con chip nói chuyện
+
+SPI1 của kit thành slave chỉ nhận trên J6: NSS ở PA4, SCK ở PA5, dữ liệu ở PA7. Mỗi lần NSS xuống thấp là một khung
+mới; kit lưu từng byte kèm khoảng cách thời gian giữa các khung, tối đa 2560 byte và 512 khung.
+
+```
+> spi w                  chưa biết dây nào là dây nào: đếm cạnh trên PA4, PA5, PA7 (spi wu / spi wd: kéo lên / kéo xuống)
+> spi start 0            bắt đầu bắt, mode 0..3 = CPOL*2 + CPHA; thêm một byte hex để chỉ bắt từ khung mở đầu bằng byte đó
+> spi                    đang bật hay tắt, đã bắt bao nhiêu byte, bao nhiêu khung
+> spi dump 0             in 24 khung từ khung 0: số thứ tự, cách khung trước bao nhiêu µs, độ dài, các byte
+> spi stop               trả SPI1 lại cho flash
+```
+
+Trong lúc bắt, flash SPI của kit rời khỏi bus: không cập nhật firmware và không mở màn hình Video cho tới khi `spi stop`.
+Khoảng cách thời gian đếm bằng 16 bit nên quay vòng sau 0,5 giây: khoảng nghỉ dài hơn thế hiện ra ngắn.
+
+### `rf`: nghe sóng 2,4 GHz
+
+Cần mô-đun nRF24L01+ ở J6. Mã viết trên kit có CSN của mô-đun ở PB9; kit 3.0 theo schematic đặt CSN ở PA4, khi đó
+build thêm `-DRF_CSN_PORT=GPIOA -DRF_CSN_PIN=GPIO_Pin_4`.
+
+```
+> rf                     đọc các thanh ghi của mô-đun: có mô-đun hay không
+> rf 40 1                nghe kênh 40 (2440 MHz) ở 1 Mbps trong 1,5 giây, in từng gói kèm thời điểm
+> rf 40 2 2              2 Mbps, Enhanced ShockBurst, CRC 2 byte (không ghi số cuối: in thô 32 byte, không kiểm CRC)
+```
+
+Chế độ thô in các byte đứng sau địa chỉ đúng như trên sóng (trường điều khiển, dữ liệu và CRC của bên phát, không căn
+theo byte): dùng nó khi chưa biết bên phát đóng gói thế nào. Tập tin còn các lệnh con `rf t…` phát lại khung kiểu
+HS6200 cho một thiết bị cụ thể đã dò; chúng là ví dụ về cách dựng khung bằng tay, không phải lệnh dùng chung.
+
+Mỗi lần nghe dài 1,5 giây rồi trả về, vì một handler chạy quá 3 giây bị `task_system` coi là treo.
+
 ## Điều khiển qua shell
 
 Không cần đứng cạnh kit vẫn thử được:

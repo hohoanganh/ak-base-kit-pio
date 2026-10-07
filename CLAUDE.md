@@ -49,6 +49,7 @@ make sim                       # bộ giả lập: bootloader + app, gõ help
 
 # firmware
 pio run -e boot -e app -e app_mbmaster -e demo     # .pio/build/<env>/app.img, boot: firmware.bin
+pio run -e kit_tools                               # demo + lệnh spi (bắt SPI trên J6) và rf (nRF24)
 make stm32 stm32-internal                          # cùng mã, build bằng CMake (CI dùng cách này)
 
 # bản chạy trên trình duyệt, ghi vào docs/play/ (cần Emscripten)

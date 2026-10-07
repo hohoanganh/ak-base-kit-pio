@@ -36,6 +36,7 @@ void svc_handler(void)			__attribute__((weak, alias("default_handler")));
 void debug_mon_handler(void)	__attribute__((weak, alias("default_handler")));
 void pendsv_handler(void)		__attribute__((weak, alias("default_handler")));
 void usart2_irq_handler(void)	__attribute__((weak, alias("default_handler")));	/* rs485.c, if built */
+void exti4_irq_handler(void)	__attribute__((weak, alias("default_handler")));	/* kit.c SPI sniffer, if built */
 
 port_noinit_t port_noinit __attribute__((section(".noinit")));
 
@@ -66,7 +67,7 @@ void (* const isr_vector[])(void) = {
 	default_handler,	/*  7 EXTI1 */
 	default_handler,	/*  8 EXTI2 */
 	default_handler,	/*  9 EXTI3 */
-	default_handler,	/* 10 EXTI4 */
+	exti4_irq_handler,	/* 10 EXTI4 */
 	default_handler,	/* 11 DMA1_Channel1 */
 	default_handler,	/* 12 DMA1_Channel2 */
 	default_handler,	/* 13 DMA1_Channel3 */

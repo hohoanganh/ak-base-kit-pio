@@ -102,6 +102,55 @@ uint8_t kit_sht_read(int16_t* t10, uint16_t* rh10) {
 	return 1;
 }
 
+/* no I2C header in a browser */
+uint8_t kit_i2c_probe(uint8_t addr) {
+	(void)addr;
+	return 0;
+}
+
+uint8_t kit_i2c_read(uint8_t addr, uint8_t reg, uint8_t* buf, uint8_t len) {
+	(void)addr;
+	(void)reg;
+	(void)buf;
+	(void)len;
+	return 0;
+}
+
+void kit_i2c_watch(uint32_t n, uint32_t* scl_high, uint32_t* sda_high, uint32_t* scl_edges, uint32_t* sda_edges) {
+	*scl_high = *sda_high = n;
+	*scl_edges = *sda_edges = 0;
+}
+
+/* no SPI header in a browser */
+void kit_spi_sniff_start(uint8_t mode, uint16_t trig) {
+	(void)mode;
+	(void)trig;
+}
+
+void kit_spi_sniff_stop(void) {
+}
+
+uint8_t kit_spi_sniff_status(uint16_t* bytes, uint16_t* frames) {
+	*bytes = *frames = 0;
+	return 0;
+}
+
+uint8_t kit_spi_sniff_frame(uint16_t i, const uint8_t** data, uint16_t* len, uint32_t* dt_us) {
+	(void)i;
+	(void)data;
+	(void)len;
+	(void)dt_us;
+	return 0;
+}
+
+void kit_spi_watch(uint32_t n, uint8_t pull, uint32_t high[3], uint32_t edges[3]) {
+	(void)pull;
+	for (uint8_t k = 0; k < 3; k++) {
+		high[k] = n;
+		edges[k] = 0;
+	}
+}
+
 uint32_t kit_store_size(void) {
 	return STORE_SIZE;
 }

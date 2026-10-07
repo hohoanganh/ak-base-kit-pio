@@ -132,6 +132,55 @@ static const uint8_t* link_heard(uint8_t type, uint8_t n) {
 static uint8_t sht_present = 1;
 static uint8_t sht_started;
 
+/* I2C header: only the two devices of the kit answer */
+uint8_t kit_i2c_probe(uint8_t addr) {
+	return (uint8_t)(addr == 0x44 || addr == 0x51);
+}
+
+uint8_t kit_i2c_read(uint8_t addr, uint8_t reg, uint8_t* buf, uint8_t len) {
+	if (!kit_i2c_probe(addr)) {
+		return 0;
+	}
+	for (uint8_t i = 0; i < len; i++) {
+		buf[i] = (uint8_t)(reg + i);
+	}
+	return 1;
+}
+
+void kit_i2c_watch(uint32_t n, uint32_t* scl_high, uint32_t* sda_high, uint32_t* scl_edges, uint32_t* sda_edges) {
+	*scl_high = *sda_high = n;
+	*scl_edges = *sda_edges = 0;
+}
+
+void kit_spi_sniff_start(uint8_t mode, uint16_t trig) {
+	(void)mode;
+	(void)trig;
+}
+
+void kit_spi_sniff_stop(void) {
+}
+
+uint8_t kit_spi_sniff_status(uint16_t* bytes, uint16_t* frames) {
+	*bytes = *frames = 0;
+	return 0;
+}
+
+uint8_t kit_spi_sniff_frame(uint16_t i, const uint8_t** data, uint16_t* len, uint32_t* dt_us) {
+	(void)i;
+	(void)data;
+	(void)len;
+	(void)dt_us;
+	return 0;
+}
+
+void kit_spi_watch(uint32_t n, uint8_t pull, uint32_t high[3], uint32_t edges[3]) {
+	(void)pull;
+	for (uint8_t k = 0; k < 3; k++) {
+		high[k] = n;
+		edges[k] = 0;
+	}
+}
+
 uint8_t kit_sht_start(void) {
 	sht_started = sht_present;
 	return sht_present;

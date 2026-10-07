@@ -235,6 +235,184 @@ void cmd_th(const char* args) {
 	}
 }
 
+/* "i2c": scan the I2C1 header. "i2c <addr> <reg> [n]": read n bytes (1..16)
+ * starting at a register; numbers in hex. */
+static const char* i2c_hex(const char* p, uint16_t* v) {
+	uint8_t n = 0;
+
+	*v = 0;
+	while (*p == ' ') {
+		p++;
+	}
+	for (;; p++, n++) {
+		char c = *p;
+
+		if (c >= '0' && c <= '9') {
+			*v = (uint16_t)((*v << 4) | (uint16_t)(c - '0'));
+		}
+		else if (c >= 'a' && c <= 'f') {
+			*v = (uint16_t)((*v << 4) | (uint16_t)(c - 'a' + 10));
+		}
+		else if (c >= 'A' && c <= 'F') {
+			*v = (uint16_t)((*v << 4) | (uint16_t)(c - 'A' + 10));
+		}
+		else {
+			break;
+		}
+	}
+	return n ? p : (const char*)0;
+}
+
+void cmd_i2c(const char* args) {
+	uint8_t buf[16];
+	uint16_t addr, reg, len = 1;
+	uint8_t found = 0;
+	const char* p = args;
+
+	while (*p == ' ') {
+		p++;
+	}
+	if (*p == 'w') {					/* "i2c w": watch the idle lines */
+		uint32_t sh, dh, se, de;
+		const uint32_t n = 400000;
+
+		kit_i2c_watch(n, &sh, &dh, &se, &de);
+		xprintf("SCL high %d%% edges %d   SDA high %d%% edges %d   (%d samples)\n", (int)(sh / (n / 100)),
+				(int)se, (int)(dh / (n / 100)), (int)de, (int)n);
+		return;
+	}
+	if (*p == 0) {
+		for (addr = 0x08; addr < 0x78; addr++) {
+			if (kit_i2c_probe((uint8_t)addr)) {
+				xprintf("0x%02X ", addr);
+				found++;
+			}
+		}
+		xprintf("\n%d device(s)\n", found);
+		return;
+	}
+	p = i2c_hex(p, &addr);
+	if (p) {
+		p = i2c_hex(p, &reg);
+	}
+	if (!p || addr > 0x7F || reg > 0xFF) {
+		xprintf("usage: i2c | i2c <addr> <reg> [n]   (hex, n up to 10 = 16 bytes)\n");
+		return;
+	}
+	if (i2c_hex(p, &len) == (const char*)0) {
+		len = 1;
+	}
+	if (len < 1 || len > sizeof(buf)) {
+		len = sizeof(buf);
+	}
+	if (!kit_i2c_read((uint8_t)addr, (uint8_t)reg, buf, (uint8_t)len)) {
+		xprintf("no answer from 0x%02X\n", addr);
+		return;
+	}
+	xprintf("0x%02X[0x%02X]:", addr, reg);
+	for (uint8_t i = 0; i < len; i++) {
+		xprintf(" %02X", buf[i]);
+	}
+	xprintf("\n");
+}
+
+#if defined(APP_KIT_SPI_SNIFF)
+static const char* dec_num(const char* p, uint16_t* v) {
+	uint8_t n = 0;
+
+	*v = 0;
+	while (*p == ' ') {
+		p++;
+	}
+	while (*p >= '0' && *p <= '9' && *v < 6000) {
+		*v = (uint16_t)(*v * 10 + (*p++ - '0'));
+		n++;
+	}
+	return n ? p : (const char*)0;
+}
+
+/* "spi start [mode]" arms the sniffer (mode = CPOL*2 + CPHA, default 0),
+ * "spi" shows what came in, "spi dump [from]" prints frames, 24 per call,
+ * "spi stop" hands SPI1 back to the flash. */
+void cmd_spi(const char* args) {
+	const char* p = args;
+	const uint8_t* d;
+	uint16_t bytes, frames, len, v, i, n;
+	uint32_t dt;
+	uint8_t on;
+
+	while (*p == ' ') {
+		p++;
+	}
+	if (strncmp(p, "start", 5) == 0) {
+		uint16_t trig = 0x100;			/* "spi start [mode] [trig]": trig = first byte (hex) that starts the capture */
+		const char* q = dec_num(p + 5, &v);
+
+		if (!q) {
+			v = 0;
+		}
+		else if (!i2c_hex(q, &trig) || trig > 0xFF) {
+			trig = 0x100;
+		}
+		kit_spi_sniff_start((uint8_t)(v & 3), trig);
+		xprintf("sniffing: J6 NSS PA4, SCK PA5, MOSI PA7, mode %d, %d bytes / %d frames max", v & 3,
+				KIT_SPI_SNIFF_BUF, KIT_SPI_SNIFF_FRAMES);
+		if (trig <= 0xFF) {
+			xprintf(", starts at a frame beginning with %02X", trig);
+		}
+		xprintf("\n");
+		return;
+	}
+	if (strncmp(p, "stop", 4) == 0) {
+		kit_spi_sniff_stop();
+		xprintf("stopped, SPI1 back to the flash\n");
+		return;
+	}
+	if (*p == 'w') {					/* "spi w": which wire is which */
+		static const char* const name[3] = { "PA4", "PA5", "PA7" };
+		uint32_t high[3], edges[3];
+		const uint32_t cnt = 400000;
+
+		/* "spi w", "spi wu", "spi wd": no pull, pull-up, pull-down */
+		kit_spi_watch(cnt, (uint8_t)(p[1] == 'u' ? 1 : p[1] == 'd' ? 2 : 0), high, edges);
+		for (uint8_t k = 0; k < 3; k++) {
+			xprintf("%s high %3d%% edges %6d\n", name[k], (int)(high[k] / (cnt / 100)), (int)edges[k]);
+		}
+		xprintf("most edges = SCK -> PA5, fewest = CSN -> PA4, the other = DATA -> PA7\n");
+		return;
+	}
+	on = kit_spi_sniff_status(&bytes, &frames);
+	if (strncmp(p, "dump", 4) == 0) {
+		if (!dec_num(p + 4, &v)) {
+			v = 0;
+		}
+		for (i = v, n = 0; n < 24 && kit_spi_sniff_frame(i, &d, &len, &dt); i++, n++) {
+			xprintf("%3d +%5d us %2d:", i, (int)dt, len);
+			for (uint16_t j = 0; j < len && j < 40; j++) {
+				xprintf(" %02X", d[j]);
+			}
+			if (len > 40) {
+				xprintf(" ...");
+			}
+			xprintf("\n");
+		}
+		if (i < frames) {
+			xprintf("more: spi dump %d\n", i);
+		}
+		else if (n == 0) {
+			xprintf("no frame %d (%d captured)\n", v, frames);
+		}
+		return;
+	}
+	xprintf("%s, %d bytes, %d frames%s%s\n", on ? "on" : "off", bytes, frames,
+			bytes >= KIT_SPI_SNIFF_BUF ? " (buffer full)" : "",
+			frames >= KIT_SPI_SNIFF_FRAMES ? " (frame table full)" : "");
+	if (*p) {
+		xprintf("usage: spi start [mode] | spi | spi dump [from] | spi stop\n");
+	}
+}
+#endif /* APP_KIT_SPI_SNIFF */
+
 /*----------------------------------------------------------------------------
  * media store over the console protocol (tools/ak_video.py)
  *   40 INFO   -                 size(4) sector(4)

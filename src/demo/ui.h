@@ -155,6 +155,10 @@ extern void cmd_ui(const char* args);
 extern void cmd_plot(const char* args);
 /* shell: "th" = temperature, humidity and the graph of the weather screen as CSV */
 extern void cmd_th(const char* args);
+/* shell: "i2c" = scan the I2C1 header, "i2c <addr> <reg> [n]" = read registers */
+extern void cmd_i2c(const char* args);
+/* shell: "spi start [mode]" / "spi" / "spi dump [from]" / "spi stop" = SPI sniffer on J6 */
+extern void cmd_spi(const char* args);
 /* fw_proto extension (console): commands 0x40.. load files into the media
  * store, see tools/ak_video.py. Returns the status byte, fills the response. */
 extern uint8_t ui_proto_ext(uint8_t cmd, const uint8_t* req, uint16_t len, uint8_t* resp, uint16_t* resp_len);
