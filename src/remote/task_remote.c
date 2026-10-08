@@ -8,6 +8,10 @@
  * The radio starts OFF. "LINK" binds (bind packets with both addresses a
  * receiver may be waiting on) and then sends the control packet for good:
  * one packet every 8 ms, two per hop channel, like the original remote.
+ *
+ * A PC can drive it over the console instead of the buttons: "rc p" sets
+ * the whole packet, "rc wd" arms a watchdog that pulls the throttle to 00
+ * when the PC stops talking. See cmd_rc.
  */
 #if defined(APP_REMOTE)
 
@@ -31,6 +35,7 @@
 #define HOLD_MS				(700)
 #define PULSE_MS			(1000)
 #define VISIBLE				(4)
+#define PC_DRAW_MS			(150)		/* a PC streaming packets must not redraw on every one */
 
 enum { LINK_OFF, LINK_BIND_A, LINK_BIND_B, LINK_ON };
 
@@ -46,6 +51,10 @@ static uint32_t sent;
 static uint8_t cursor;
 static uint8_t dirty;
 static uint8_t pulse_byte, pulse_mask;
+static uint16_t wd_ms;			/* 0 = no PC watchdog */
+static uint32_t pc_ms;			/* when the last "rc p" came */
+static uint8_t pc_lost;
+static uint32_t draw_ms;
 
 /*----------------------------------------------------------------------------
  * menu
@@ -184,6 +193,18 @@ static void link_stop(void) {
 	link = LINK_OFF;
 }
 
+static void link_start(void) {
+	radio_ok = rf_remote_setup(0);
+	if (radio_ok) {
+		link = LINK_BIND_A;
+		tx_n = 0;
+		sent = 0;
+		pc_ms = hal_millis();
+		pc_lost = 0;
+		timer_set(TASK_REMOTE_ID, REMOTE_SIG_TX, TX_PERIOD_MS, TIMER_ONE_SHOT);
+	}
+}
+
 static void act(const item_t* it) {
 	switch (it->kind) {
 	case K_LINK:
@@ -191,13 +212,7 @@ static void act(const item_t* it) {
 			link_stop();
 		}
 		else {
-			radio_ok = rf_remote_setup(0);
-			if (radio_ok) {
-				link = LINK_BIND_A;
-				tx_n = 0;
-				sent = 0;
-				timer_set(TASK_REMOTE_ID, REMOTE_SIG_TX, TX_PERIOD_MS, TIMER_ONE_SHOT);
-			}
+			link_start();
 		}
 		break;
 	case K_ADD: {
@@ -305,6 +320,7 @@ static void draw(void) {
 		gfx_flush(0);
 	}
 	dirty = 0;
+	draw_ms = hal_millis();
 }
 
 /*----------------------------------------------------------------------------
@@ -379,6 +395,15 @@ void task_remote(ak_msg_t* msg) {
 			}
 			break;
 		case LINK_ON:
+			if (wd_ms && !pc_lost && (uint32_t)(hal_millis() - pc_ms) > wd_ms) {
+				/* the PC went quiet: what the original remote sends with the
+				 * throttle stick held down and the other one let go */
+				pc_lost = 1;
+				pkt[1] = pkt[2] = pkt[4] = 0x80;
+				pkt[3] = 0x00;
+				beep(900, 250);
+				dirty = 1;
+			}
 			rf_remote_ctrl(pkt, (uint8_t)((tx_n >> 1) % 5));
 			tx_n = (uint16_t)((tx_n + 1) % 10);
 			sent++;
@@ -387,7 +412,21 @@ void task_remote(ak_msg_t* msg) {
 			return;
 		}
 		timer_set(TASK_REMOTE_ID, REMOTE_SIG_TX, TX_PERIOD_MS, TIMER_ONE_SHOT);
-		if (dirty) {
+		if (dirty && (uint32_t)(hal_millis() - draw_ms) >= PC_DRAW_MS) {
+			draw();
+		}
+		break;
+
+	case REMOTE_SIG_LINK_ON:
+		if (link == LINK_OFF) {
+			link_start();
+			draw();
+		}
+		break;
+
+	case REMOTE_SIG_LINK_OFF:
+		if (link != LINK_OFF) {
+			link_stop();
 			draw();
 		}
 		break;
@@ -431,6 +470,12 @@ void task_remote(ak_msg_t* msg) {
 /*----------------------------------------------------------------------------
  * shell: "rc" state, "rc 1|2|3|h" press a button, "rc go <n>" move to item n,
  * "rc dump" the screen as text (64 lines of 128 characters)
+ *
+ * for a PC that drives the remote:
+ *   rc on | rc off     link on / off (unlike the LINK item, not a toggle)
+ *   rc p <13 bytes>    the whole packet in hex; byte 0 is ignored
+ *   rc wd <ms>         no "rc p" for that long while linked: throttle 00,
+ *                      sticks centred, until the next "rc p". 0 = off
  *--------------------------------------------------------------------------*/
 void cmd_rc(const char* args) {
 	char name[16], val[8];
@@ -444,6 +489,69 @@ void cmd_rc(const char* args) {
 	}
 	if (args[0] == 'h') {
 		task_post_pure_msg(TASK_REMOTE_ID, REMOTE_SIG_HOLD_3);
+		return;
+	}
+	if (args[0] == 'o') {
+		task_post_pure_msg(TASK_REMOTE_ID, args[1] == 'n' ? REMOTE_SIG_LINK_ON : REMOTE_SIG_LINK_OFF);
+		return;
+	}
+	if (args[0] == 'p') {
+		uint8_t b[13];
+		uint8_t n = 0, half = 0, v = 0;
+
+		for (args++; *args; args++) {
+			char c = *args;
+			uint8_t d;
+
+			if (c == ' ') {
+				continue;
+			}
+			if (c >= '0' && c <= '9') {
+				d = (uint8_t)(c - '0');
+			}
+			else if ((c | 0x20) >= 'a' && (c | 0x20) <= 'f') {
+				d = (uint8_t)((c | 0x20) - 'a' + 10);
+			}
+			else {
+				n = 0xFF;
+				break;
+			}
+			v = (uint8_t)((v << 4) | d);
+			half ^= 1;
+			if (!half) {
+				if (n >= sizeof(b)) {
+					n = 0xFF;
+					break;
+				}
+				b[n++] = v;
+			}
+		}
+		if (n != sizeof(b) || half) {
+			xprintf("rc p: 13 bytes in hex\n");
+			return;
+		}
+		pc_ms = hal_millis();
+		pc_lost = 0;
+		if (memcmp(pkt + 1, b + 1, sizeof(b) - 1)) {
+			memcpy(pkt + 1, b + 1, sizeof(b) - 1);
+			dirty = 1;
+			if (link == LINK_OFF && (uint32_t)(pc_ms - draw_ms) >= PC_DRAW_MS) {
+				draw();
+			}
+		}
+		return;
+	}
+	if (args[0] == 'w') {
+		uint32_t n = 0;
+
+		for (args += 2; *args == ' '; args++) {
+		}
+		while (*args >= '0' && *args <= '9') {
+			n = n * 10 + (uint32_t)(*args++ - '0');
+		}
+		wd_ms = (uint16_t)(n > 60000 ? 60000 : n);
+		pc_ms = hal_millis();
+		pc_lost = 0;
 		return;
 	}
 	if (args[0] == 'g') {
@@ -486,8 +594,8 @@ void cmd_rc(const char* args) {
 	}
 	item_name(&items[cursor], name);
 	item_value(&items[cursor], val);
-	xprintf("link %d radio %d lcd %d sent %d item %d/%d \"%s\" = %s\npkt", link, radio_ok, lcd_ok, (int)sent, cursor,
-			ITEM_NUM, name, val);
+	xprintf("link %d radio %d lcd %d sent %d item %d/%d \"%s\" = %s wd %d lost %d\npkt", link, radio_ok, lcd_ok,
+			(int)sent, cursor, ITEM_NUM, name, val, wd_ms, pc_lost);
 	for (uint8_t i = 0; i < 13; i++) {
 		xprintf(" %02X", pkt[i]);
 	}

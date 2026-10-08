@@ -31,6 +31,8 @@ enum {
 	REMOTE_SIG_HOLD_3,		/* button 3 held: throttle to 0 */
 	REMOTE_SIG_PULSE_OFF,	/* one-shot timer: end of a pulsed bit */
 	REMOTE_SIG_BEEP_OFF,
+	REMOTE_SIG_LINK_ON,		/* from the shell: bind and send (nothing if already on) */
+	REMOTE_SIG_LINK_OFF,	/* from the shell: stop sending */
 };
 
 extern void task_remote(ak_msg_t* msg);

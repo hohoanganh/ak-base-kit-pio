@@ -231,7 +231,7 @@ static const shell_cmd_t shell_cmds[] = {
 	{ "rf",		"nRF24 listen: rf | rf <ch> <rate> [crc]",	cmd_rf	},
 #endif
 #if defined(APP_REMOTE)
-	{ "rc",		"remote: rc | rc 1|2|3|h | rc go <n> | rc dump | rc lcd",	cmd_rc	},
+	{ "rc",		"remote: rc | rc 1|2|3|h | rc go <n> | rc on|off | rc p <hex> | rc wd <ms>",	cmd_rc	},
 #endif
 	{ "reboot",	"software reset",				cmd_reboot	},
 	{ "loader",	"reset into bootloader loader",	cmd_loader	},
