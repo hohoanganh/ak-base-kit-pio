@@ -296,7 +296,10 @@ Một chương trình trên máy tính có thể lái thay ba nút, qua ba lện
 `rc t <ms>` đổi khoảng cách giữa hai gói lúc đang chạy (2–20, mặc định 8), để dò nhịp phát mà thiết bị nhận chịu
 được. Với thiết bị đã dò, lệch khỏi 8 ms chỉ 1 ms là tỉ lệ nhận tụt từ 98% xuống 75%.
 
-Dòng trạng thái của `rc` có thêm `wd <ms> lost <0|1> t <ms>`. Khi máy tính gửi gói dồn dập, màn hình chỉ vẽ lại tối đa
+`rc a 1` cho bit 3 của byte 0 đổi theo số thứ tự gói (`DD` với PID lẻ, `D5` với PID chẵn), như đo được trên sóng
+của tay điều khiển gốc; `rc a 0` (mặc định) giữ bit đó luôn bật.
+
+Dòng trạng thái của `rc` có thêm `wd <ms> lost <0|1> t <ms> alt <0|1>`. Khi máy tính gửi gói dồn dập, màn hình chỉ vẽ lại tối đa
 150 ms một lần để không làm trễ nhịp phát 8 ms.
 
 Ba điều riêng của bản này:

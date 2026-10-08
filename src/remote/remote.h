@@ -45,6 +45,7 @@ extern uint8_t rf_remote_setup(uint8_t mode);	/* 1 if the nRF24 answers */
 extern void rf_remote_bind(uint8_t mode);		/* one bind packet on the bind channel */
 extern void rf_remote_ctrl(uint8_t* msg, uint8_t hop);	/* one control packet on hop channel 0..4 */
 extern void rf_remote_off(void);
+extern void rf_remote_alt(uint8_t on);		/* 1: byte 0 alternates DD / D5 with the packet id */
 
 #ifdef __cplusplus
 }

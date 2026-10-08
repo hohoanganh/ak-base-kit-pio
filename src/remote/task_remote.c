@@ -55,6 +55,7 @@ static uint16_t wd_ms;			/* 0 = no PC watchdog */
 static uint32_t pc_ms;			/* when the last "rc p" came */
 static uint8_t pc_lost;
 static uint32_t draw_ms;
+static uint8_t alt_on;
 static uint8_t tx_ms = TX_PERIOD_MS;	/* "rc t": the period can be tried out without a rebuild */
 
 /*----------------------------------------------------------------------------
@@ -478,6 +479,8 @@ void task_remote(ak_msg_t* msg) {
  *   rc wd <ms>         no "rc p" for that long while linked: throttle 00,
  *                      sticks centred, until the next "rc p". 0 = off
  *   rc t <ms>          period between two packets, 2..20 (8 at power-up)
+ *   rc a 0|1           1: byte 0 alternates DD / D5 with the packet id, like the
+ *                      original remote. 0 (power-up): always DD
  *--------------------------------------------------------------------------*/
 void cmd_rc(const char* args) {
 	char name[16], val[8];
@@ -541,6 +544,13 @@ void cmd_rc(const char* args) {
 				draw();
 			}
 		}
+		return;
+	}
+	if (args[0] == 'a') {
+		for (args++; *args == ' '; args++) {
+		}
+		alt_on = (uint8_t)(*args == '1');
+		rf_remote_alt(alt_on);
 		return;
 	}
 	if (args[0] == 't') {
@@ -609,8 +619,8 @@ void cmd_rc(const char* args) {
 	}
 	item_name(&items[cursor], name);
 	item_value(&items[cursor], val);
-	xprintf("link %d radio %d lcd %d sent %d item %d/%d \"%s\" = %s wd %d lost %d t %d\npkt", link, radio_ok, lcd_ok,
-			(int)sent, cursor, ITEM_NUM, name, val, wd_ms, pc_lost, tx_ms);
+	xprintf("link %d radio %d lcd %d sent %d item %d/%d \"%s\" = %s wd %d lost %d t %d alt %d\npkt", link, radio_ok, lcd_ok,
+			(int)sent, cursor, ITEM_NUM, name, val, wd_ms, pc_lost, tx_ms, alt_on);
 	for (uint8_t i = 0; i < 13; i++) {
 		xprintf(" %02X", pkt[i]);
 	}

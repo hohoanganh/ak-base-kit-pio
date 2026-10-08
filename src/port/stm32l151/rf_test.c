@@ -564,6 +564,14 @@ void rf_remote_bind(uint8_t mode) {
 	rf_send(RF_BIND_CH, rf_build(mode ? addr : rf_bind_addr, msg, 10));
 }
 
+static uint8_t rf_alt;
+
+/* 1: bit 3 of byte 0 follows the packet id like on the original remote (measured
+ * on air: DD with PID 1 and 3, D5 with PID 0 and 2). 0: the bit is always set. */
+void rf_remote_alt(uint8_t on) {
+	rf_alt = on;
+}
+
 void rf_remote_ctrl(uint8_t* msg, uint8_t hop) {
 	uint8_t addr[5];
 
@@ -575,7 +583,12 @@ void rf_remote_ctrl(uint8_t* msg, uint8_t hop) {
 	 * those have not been measured), so the bit is set in all of them: the
 	 * receiver then reads what it reads from the original. What the bit
 	 * means is not known. */
-	msg[0] |= 0x08;
+	if (rf_alt && !(rf_pid & 1)) {
+		msg[0] &= (uint8_t)~0x08;
+	}
+	else {
+		msg[0] |= 0x08;
+	}
 	rf_send(rf_hop[hop % 5], rf_build(addr, msg, 13));
 }
 
