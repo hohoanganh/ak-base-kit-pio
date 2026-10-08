@@ -17,6 +17,8 @@ Tổng hợp tính năng v1.2.0 – v1.3.0 (Modbus mới + OTA qua RS485):
 - **Bản build `remote`** (`src/remote`): AK Base Kit 2.1 (chip 64K, nRF24L01+ và OLED SSD1306 trên bo) làm tay điều
   khiển thử nghiệm cho thiết bị đã dò bằng `rf`: menu trên OLED và ba nút chọn nội dung gói, nRF24 phát liên tục. Lệnh
   shell `rc`. Đã chạy trên kit 2.1 thật (màn hình lên, thiết bị ghép cặp và đọc đúng gói); ba nút mới bấm qua `rc`.
+- Bản `remote` nhận lệnh từ máy tính: `rc on` / `rc off`, `rc p <13 byte>` đặt cả gói, `rc wd <ms>` là bộ canh kéo ga
+  về `00` khi máy tính ngừng gửi. Đã thử trên kit 2.1 thật (đặt gói, bộ canh nhả và nối lại); chưa có test trên host.
 - `kit.c`: thêm tuỳ chọn build `KIT_LCD_SSD1306` (bật bơm điện áp cho OLED 0,96") và `KIT_LCD_COL_OFFSET` (SH1106);
   mặc định không đổi gì với kit 3.0. Thêm `kit_bus_probe()` để dò bus màn hình và bus I2C1.
 

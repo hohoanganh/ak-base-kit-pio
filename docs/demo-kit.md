@@ -285,6 +285,17 @@ Mục đầu là `LINK`: OFF → phát gói ghép cặp 0,4 s rồi gói điều
 tắt lúc bật nguồn. Lệnh shell `rc` bấm nút và xem trạng thái từ máy tính: `rc`, `rc 1|2|3|h`, `rc go <n>`, `rc dump`
 (màn hình dạng chữ), `rc lcd` (dò bus màn hình khi màn hình tối).
 
+Một chương trình trên máy tính có thể lái thay ba nút, qua ba lệnh nữa:
+
+| Lệnh | Việc |
+|---|---|
+| `rc on`, `rc off` | Bật / tắt phát. Khác mục `LINK`: không đảo trạng thái, gọi lặp lại không sao |
+| `rc p <13 byte hex>` | Đặt cả gói (byte 0 bị bỏ qua). Gửi đều đặn, ví dụ 20 lần mỗi giây |
+| `rc wd <ms>` | Bộ canh: đang phát mà quá `<ms>` không có `rc p` thì gói tự về ga `00`, hai cần ở giữa, bíp dài, cho tới `rc p` kế tiếp. `0` là tắt (mặc định) |
+
+Dòng trạng thái của `rc` có thêm `wd <ms> lost <0|1>`. Khi máy tính gửi gói dồn dập, màn hình chỉ vẽ lại tối đa
+150 ms một lần để không làm trễ nhịp phát 8 ms.
+
 Ba điều riêng của bản này:
 
 - **Không có màn hình demo.** Chip 64K chỉ còn 52K cho app sau bootloader; bản này dùng 29K.
