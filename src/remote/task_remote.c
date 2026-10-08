@@ -55,6 +55,7 @@ static uint16_t wd_ms;			/* 0 = no PC watchdog */
 static uint32_t pc_ms;			/* when the last "rc p" came */
 static uint8_t pc_lost;
 static uint32_t draw_ms;
+static uint8_t tx_ms = TX_PERIOD_MS;	/* "rc t": the period can be tried out without a rebuild */
 
 /*----------------------------------------------------------------------------
  * menu
@@ -201,7 +202,7 @@ static void link_start(void) {
 		sent = 0;
 		pc_ms = hal_millis();
 		pc_lost = 0;
-		timer_set(TASK_REMOTE_ID, REMOTE_SIG_TX, TX_PERIOD_MS, TIMER_ONE_SHOT);
+		timer_set(TASK_REMOTE_ID, REMOTE_SIG_TX, tx_ms, TIMER_ONE_SHOT);
 	}
 }
 
@@ -411,7 +412,7 @@ void task_remote(ak_msg_t* msg) {
 		default:
 			return;
 		}
-		timer_set(TASK_REMOTE_ID, REMOTE_SIG_TX, TX_PERIOD_MS, TIMER_ONE_SHOT);
+		timer_set(TASK_REMOTE_ID, REMOTE_SIG_TX, tx_ms, TIMER_ONE_SHOT);
 		if (dirty && (uint32_t)(hal_millis() - draw_ms) >= PC_DRAW_MS) {
 			draw();
 		}
@@ -476,6 +477,7 @@ void task_remote(ak_msg_t* msg) {
  *   rc p <13 bytes>    the whole packet in hex; byte 0 is ignored
  *   rc wd <ms>         no "rc p" for that long while linked: throttle 00,
  *                      sticks centred, until the next "rc p". 0 = off
+ *   rc t <ms>          period between two packets, 2..20 (8 at power-up)
  *--------------------------------------------------------------------------*/
 void cmd_rc(const char* args) {
 	char name[16], val[8];
@@ -541,6 +543,19 @@ void cmd_rc(const char* args) {
 		}
 		return;
 	}
+	if (args[0] == 't') {
+		uint8_t n = 0;
+
+		for (args++; *args == ' '; args++) {
+		}
+		while (*args >= '0' && *args <= '9') {
+			n = (uint8_t)(n * 10 + (*args++ - '0'));
+		}
+		if (n >= 2 && n <= 20) {
+			tx_ms = n;
+		}
+		return;
+	}
 	if (args[0] == 'w') {
 		uint32_t n = 0;
 
@@ -594,8 +609,8 @@ void cmd_rc(const char* args) {
 	}
 	item_name(&items[cursor], name);
 	item_value(&items[cursor], val);
-	xprintf("link %d radio %d lcd %d sent %d item %d/%d \"%s\" = %s wd %d lost %d\npkt", link, radio_ok, lcd_ok,
-			(int)sent, cursor, ITEM_NUM, name, val, wd_ms, pc_lost);
+	xprintf("link %d radio %d lcd %d sent %d item %d/%d \"%s\" = %s wd %d lost %d t %d\npkt", link, radio_ok, lcd_ok,
+			(int)sent, cursor, ITEM_NUM, name, val, wd_ms, pc_lost, tx_ms);
 	for (uint8_t i = 0; i < 13; i++) {
 		xprintf(" %02X", pkt[i]);
 	}

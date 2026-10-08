@@ -293,7 +293,10 @@ Một chương trình trên máy tính có thể lái thay ba nút, qua ba lện
 | `rc p <13 byte hex>` | Đặt cả gói (byte 0 bị bỏ qua). Gửi đều đặn, ví dụ 20 lần mỗi giây |
 | `rc wd <ms>` | Bộ canh: đang phát mà quá `<ms>` không có `rc p` thì gói tự về ga `00`, hai cần ở giữa, bíp dài, cho tới `rc p` kế tiếp. `0` là tắt (mặc định) |
 
-Dòng trạng thái của `rc` có thêm `wd <ms> lost <0|1>`. Khi máy tính gửi gói dồn dập, màn hình chỉ vẽ lại tối đa
+`rc t <ms>` đổi khoảng cách giữa hai gói lúc đang chạy (2–20, mặc định 8), để dò nhịp phát mà thiết bị nhận chịu
+được. Với thiết bị đã dò, lệch khỏi 8 ms chỉ 1 ms là tỉ lệ nhận tụt từ 98% xuống 75%.
+
+Dòng trạng thái của `rc` có thêm `wd <ms> lost <0|1> t <ms>`. Khi máy tính gửi gói dồn dập, màn hình chỉ vẽ lại tối đa
 150 ms một lần để không làm trễ nhịp phát 8 ms.
 
 Ba điều riêng của bản này:
